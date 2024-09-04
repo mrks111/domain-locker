@@ -4,43 +4,28 @@ import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '../../prime-ng.module';
+import { SupabaseService } from '../../services/supabase.service';
+import { ThemeService, Theme } from '../../services/theme.service';
+import { FormsModule } from '@angular/forms';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { OverlayModule } from 'primeng/overlay';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, PrimeNgModule],
-  template: `
-    <div class="custom-menubar flex justify-between items-center py-2 px-4">
-      <div class="flex items-center">
-        <button pButton icon="pi pi-bars" (click)="toggleSidebar()" class="p-button-text p-button-rounded mr-2 lg:hidden"></button>
-        <img src="/icon.svg" class="w-10 h-10" alt="Domain Locker Logo">
-        <span class="text-xl font-bold ml-2">Domain Locker</span>
-      </div>
-      <div class="hidden lg:block">
-        <p-menubar [model]="items" [styleClass]="'bg-transparent border-none p-0'"></p-menubar>
-      </div>
-    </div>
-
-    <p-sidebar [(visible)]="sidebarVisible" position="left" [styleClass]="'p-sidebar-sm'">
-      <ng-template pTemplate="content">
-        <div class="flex flex-col space-y-4">
-          <a *ngFor="let item of items" 
-             [routerLink]="item.routerLink"
-             class="p-3 hover:bg-gray-100 rounded-md flex items-center"
-             (click)="closeSidebar()">
-            <i [class]="item.icon + ' mr-3'"></i>
-            {{ item.label }}
-          </a>
-        </div>
-      </ng-template>
-    </p-sidebar>
-  `,
+  imports: [
+    CommonModule,
+    RouterModule,
+    PrimeNgModule,
+    FormsModule,
+    SelectButtonModule,
+    RadioButtonModule,
+    OverlayModule
+  ],
+  templateUrl: './navbar.component.html',
   styles: [`
-    ::ng-deep .custom-menubar .p-menubar {
-      background: transparent;
-      border: none;
-      padding: 0;
-    }
+
     ::ng-deep .custom-menubar .p-menubar-root-list {
       display: flex;
       align-items: center;
@@ -54,13 +39,38 @@ import { PrimeNgModule } from '../../prime-ng.module';
     ::ng-deep .p-sidebar {
       max-width: 100%;
     }
+    ::ng-deep .settings-overlay .p-selectbutton .p-button {
+      padding: 0.5rem;
+    }
   `]
 })
 export class NavbarComponent implements OnInit {
   items: MenuItem[] = [];
   sidebarVisible: boolean = false;
+  settingsVisible: boolean = false;
+  isDarkTheme: boolean = false;
+  selectedTheme: Theme;
+  themes: Theme[];
+  darkModeOptions = [
+    { label: 'Light', value: false, icon: 'pi pi-sun' },
+    { label: 'Dark', value: true, icon: 'pi pi-moon' }
+  ];
+
+  constructor(
+    public supabaseService: SupabaseService,
+    private themeService: ThemeService
+  ) {
+    this.themes = this.themeService.getThemes();
+    this.selectedTheme = this.themes[0];
+  }
 
   ngOnInit() {
+    this.initializeMenuItems();
+    this.themeService.isDarkTheme$.subscribe(isDark => this.isDarkTheme = isDark);
+    this.themeService.selectedTheme$.subscribe(theme => this.selectedTheme = theme);
+  }
+
+  initializeMenuItems() {
     this.items = [
       {
         label: 'Home',
@@ -84,22 +94,17 @@ export class NavbarComponent implements OnInit {
             label: 'Pricing',
             routerLink: '/about/pricing'
           },
-          {
-            label: 'Security',
-            routerLink: '/about/security'
-          },
-          {
-            label: 'Self-Hosting',
-            routerLink: '/about/self-hosting'
-          }
-        ]
+        ],
       },
-      {
-        label: 'Login',
-        icon: 'pi pi-fw pi-sign-in',
-        routerLink: '/login'
-      }
     ];
+  }
+
+  onDarkModeChange() {
+    this.themeService.toggleDarkMode();
+  }
+
+  onThemeChange(theme: Theme) {
+    this.themeService.setTheme(theme);
   }
 
   toggleSidebar() {
@@ -108,5 +113,10 @@ export class NavbarComponent implements OnInit {
 
   closeSidebar() {
     this.sidebarVisible = false;
+  }
+
+  toggleSettings(event: Event) {
+    this.settingsVisible = !this.settingsVisible;
+    event.preventDefault();
   }
 }
