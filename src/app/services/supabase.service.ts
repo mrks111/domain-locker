@@ -15,8 +15,8 @@ export class SupabaseService {
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
 
-    const supabaseUrl = import.meta.env['VITE_SUPABASE_URL'];
-    const supabaseAnonKey = import.meta.env['VITE_SUPABASE_ANON_KEY'];
+    const supabaseUrl = import.meta.env['SUPABASE_URL'];
+    const supabaseAnonKey = import.meta.env['SUPABASE_ANON_KEY'];
 
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error('Supabase URL and Supabase Anon Key must be provided');

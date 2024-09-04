@@ -1,8 +1,11 @@
 /// <reference types="vitest" />
 import analog from '@analogjs/platform';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig( ({ mode }) => {
+
+  const env = loadEnv(mode, process.cwd(), '')
+  
   return {
     publicDir: 'src/assets',
     optimizeDeps: {
@@ -44,10 +47,11 @@ export default defineConfig( ({ mode }) => {
       setupFiles: ['src/test.ts'],
       include: ['**/*.spec.ts'],
     },
+    envPrefix: ['VITE_', 'SUPABASE_'],
     define: {
       'import.meta.vitest': mode !== 'production',
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env['VITE_SUPABASE_URL']),
-      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env['VITE_SUPABASE_ANON_KEY']),
+      // 'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env['VITE_SUPABASE_URL']),
+      // 'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env['VITE_SUPABASE_ANON_KEY']),
     },
     server: {
       fs: {

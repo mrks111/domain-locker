@@ -24,7 +24,6 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { ChipModule } from 'primeng/chip';
 import { OverlayModule } from 'primeng/overlay';
 
-
 @NgModule({
   exports: [
     MenubarModule,

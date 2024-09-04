@@ -1,0 +1,50 @@
+<p-card styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
+  <ng-template pTemplate="title">
+    {{ isLogin ? 'Login' : 'Sign Up' }}
+  </ng-template>
+  <ng-template pTemplate="subtitle">
+    Welcome to Domain Locker
+  </ng-template>
+  <ng-template pTemplate="content">
+    <p-selectButton [options]="modes" [(ngModel)]="isLogin" optionLabel="label" optionValue="value"
+                    (onChange)="onModeChange()"></p-selectButton>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-fluid">
+      <div class="field">
+        <label for="email" class="block">Email</label>
+        <input type="email" pInputText id="email" formControlName="email" />
+        <p-message *ngIf="form.get('email')?.invalid && form.get('email')?.touched" severity="error"
+                   text="Valid email is required"></p-message>
+      </div>
+
+      <div class="field">
+        <label for="password" class="block">Password</label>
+        <p-password id="password" formControlName="password" [toggleMask]="true"
+                    [promptLabel]="isLogin ? 'Enter password' : 'Choose a password'"
+                    weakLabel="Too simple" mediumLabel="Average complexity" strongLabel="Complex password"
+                    [feedback]="!isLogin"></p-password>
+        <p-message *ngIf="form.get('password')?.invalid && form.get('password')?.touched" severity="error"
+                   text="Password is required and must be at least 6 characters long"></p-message>
+      </div>
+
+      <div *ngIf="!isLogin" class="field">
+        <label for="confirmPassword" class="block">Confirm Password</label>
+        <p-password id="confirmPassword" formControlName="confirmPassword" [toggleMask]="true"
+                    [feedback]="false"></p-password>
+        <p-message *ngIf="form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched" severity="error"
+                   text="Passwords do not match"></p-message>
+      </div>
+
+      <div *ngIf="!isLogin" class="field-checkbox">
+        <p-checkbox formControlName="acceptTerms" [binary]="true" label="I agree to the terms and conditions"></p-checkbox>
+        <p-message *ngIf="form.get('acceptTerms')?.invalid && form.get('acceptTerms')?.touched" severity="error"
+                   text="You must agree to the terms and conditions"></p-message>
+      </div>
+
+      <p-button type="submit" [label]="isLogin ? 'Login' : 'Sign Up'" styleClass="w-full"
+                [disabled]="form.invalid"></p-button>
+    </form>
+    <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage" styleClass="w-full mt-4"></p-message>
+    <p-message *ngIf="successMessage" severity="success" [text]="successMessage" styleClass="w-full mt-4"></p-message>
+  </ng-template>      
+</p-card>
