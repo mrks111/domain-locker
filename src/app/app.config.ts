@@ -1,10 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors  } from '@angular/common/http';
 import { ApplicationConfig } from '@angular/core';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideFileRouter } from '@analogjs/router';
-import { withEnabledBlockingInitialNavigation, withInMemoryScrolling, withNavigationErrorHandler } from '@angular/router';
+import { withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import { provideContent, withMarkdownRenderer } from '@analogjs/content';
 import { provideAnimations } from '@angular/platform-browser/animations';
+// import { authInterceptor } from './interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,5 +19,6 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ anchorScrolling: 'enabled' }),
       withEnabledBlockingInitialNavigation()
     ),
+    // provideHttpClient(withInterceptors([authInterceptor])),
   ],
 };

@@ -2,8 +2,6 @@
 import analog from '@analogjs/platform';
 import { defineConfig } from 'vite';
 
-
-// https://vitejs.dev/config/
 export default defineConfig( ({ mode }) => {
   return {
     publicDir: 'src/assets',
@@ -19,15 +17,19 @@ export default defineConfig( ({ mode }) => {
     },
     build: {
       target: ['es2020'],
+      sourcemap: mode === 'development' ? 'inline' : false,
+      outDir: 'dist/client',
+      assetsDir: 'assets',
     },
     plugins: [
       analog({
         prerender: {
           routes: [
             '/',
+            '/login',
             '/domains',
             '/about',
-            // Add other routes as needed
+            '/*',
           ],
           sitemap: {
             host: 'https://domain-locker.as93.net',
@@ -44,6 +46,13 @@ export default defineConfig( ({ mode }) => {
     },
     define: {
       'import.meta.vitest': mode !== 'production',
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env['VITE_SUPABASE_URL']),
+      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env['VITE_SUPABASE_ANON_KEY']),
+    },
+    server: {
+      fs: {
+        allow: ['..'],
+      },
     },
   };
 });

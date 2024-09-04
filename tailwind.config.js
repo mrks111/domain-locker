@@ -9,4 +9,7 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  corePlugins: {
+    preflight: false,  // Disable preflight if it causes too many issues
+  },
 }
