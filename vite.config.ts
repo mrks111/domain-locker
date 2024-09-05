@@ -32,6 +32,7 @@ export default defineConfig( ({ mode }) => {
             '/login',
             '/domains',
             '/about',
+            '/settings',
             '/*',
           ],
           sitemap: {
