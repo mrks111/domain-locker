@@ -41,6 +41,7 @@ export default class LoginPageComponent implements OnInit {
   form: FormGroup;
   errorMessage = '';
   successMessage = '';
+  showLoader = false;
   modes = [
     { label: 'Login', value: true },
     { label: 'Sign Up', value: false }
@@ -85,18 +86,40 @@ export default class LoginPageComponent implements OnInit {
 
   async onSubmit() {
     if (this.form.valid) {
+      this.showLoader = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+
+      const timeoutLimit = 10000;
+  
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timed out')), timeoutLimit)
+      );
+  
       try {
+        const authPromise = this.isLogin
+          ? this.supabaseService.signIn(this.form.get('email')?.value, this.form.get('password')?.value)
+          : this.supabaseService.signUp(this.form.get('email')?.value, this.form.get('password')?.value);
+  
+        await Promise.race([authPromise, timeoutPromise]);
+  
         if (this.isLogin) {
-          await this.supabaseService.signIn(this.form.get('email')?.value, this.form.get('password')?.value);
+          this.successMessage = 'Login successful! Redirecting...';
+          this.router.navigate(['/']);
         } else {
-          await this.supabaseService.signUp(this.form.get('email')?.value, this.form.get('password')?.value);
           this.successMessage = 'Sign up successful! Please check your email to confirm your account.';
-          return;
         }
-        this.router.navigate(['/']);
       } catch (error) {
-        this.errorMessage = this.isLogin ? 'Login failed. Please check your credentials.' : 'Sign up failed. Please try again.';
-        console.error(this.isLogin ? 'Login error:' : 'Sign up error:', error);
+        if (error instanceof Error && error.message === 'Request timed out') {
+          this.errorMessage = 'Request timed out. Please try again.';
+        } else {
+          this.errorMessage = this.isLogin
+            ? 'Login failed. Please check your credentials.'
+            : 'Sign up failed. Please try again.';
+          console.error(this.isLogin ? 'Login error:' : 'Sign up error:', error);
+        }
+      } finally {
+        this.showLoader = false;
       }
     }
   }

@@ -1,0 +1,71 @@
+<h1>User Settings</h1>
+
+<div class="p-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-4 grid-flow-dense auto-rows-auto">
+  <!-- Email Settings Panel -->
+  <p-fieldset legend="Email Settings">
+    <form [formGroup]="emailForm" (ngSubmit)="updateEmail()">
+      <div class="p-field">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText formControlName="email" />
+        <small *ngIf="emailForm.get('email').invalid && emailForm.get('email').touched" class="p-error">
+          Please enter a valid email address.
+        </small>
+      </div>
+      <p-button type="submit" label="Update Email" [disabled]="emailForm.invalid || loading"></p-button>
+    </form>
+  </p-fieldset>
+
+<!-- Password Settings Panel (spans multiple rows) -->
+  <p-fieldset legend="Password Settings" class="row-span-2">
+    <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()" class="flex flex-col gap-2">
+      <div class="p-field">
+        <label for="currentPassword">Current Password</label>
+        <p-password id="currentPassword" formControlName="currentPassword" [feedback]="false"></p-password>
+      </div>
+      <div class="p-field">
+        <label for="newPassword">New Password</label>
+        <p-password id="newPassword" formControlName="newPassword" [toggleMask]="true"></p-password>
+      </div>
+      <div class="p-field">
+        <label for="confirmPassword">Confirm New Password</label>
+        <p-password id="confirmPassword" formControlName="confirmPassword" [feedback]="false"></p-password>
+      </div>
+      <small *ngIf="passwordForm.hasError('mismatch')" class="p-error">
+        Passwords do not match.
+      </small>
+      <p-button type="submit" label="Update Password" [disabled]="passwordForm.invalid || loading"></p-button>
+    </form>
+  </p-fieldset>
+
+<!-- Multi-Factor Authentication Panel (spans multiple rows) -->
+  <p-fieldset legend="Multi-Factor Authentication" class="row-span-2">
+    <p-button label="Enable MFA" (click)="enableMFA()" [disabled]="loading"></p-button>
+    <form [formGroup]="mfaForm" (ngSubmit)="verifyMFA()" class="my-4">
+      <div class="p-field">
+        <label for="otpCode">OTP Code</label>
+        <p-inputOtp id="otpCode" formControlName="otpCode" [numberOfInputs]="6"></p-inputOtp>
+      </div>
+      <p-button type="submit" label="Verify MFA" [disabled]="mfaForm.invalid || loading"></p-button>
+    </form>
+    <p-button label="Download Backup Codes" (click)="downloadBackupCodes()" [disabled]="loading"></p-button>
+  </p-fieldset>
+
+<!-- Session Settings Panel -->
+  <p-fieldset legend="Session Settings">
+    <form [formGroup]="sessionForm" (ngSubmit)="updateSessionTimeout()">
+      <div class="p-field">
+        <label for="sessionTimeout">Session Timeout (minutes)</label>
+        <p-inputNumber id="sessionTimeout" formControlName="sessionTimeout"></p-inputNumber>
+      </div>
+      <p-button type="submit" label="Update Session Timeout" [disabled]="sessionForm.invalid || loading"></p-button>
+    </form>
+  </p-fieldset>
+
+<!-- Account Actions Panel -->
+  <p-fieldset legend="Account Actions">
+    <div class="flex gap-2">
+      <p-button label="Export Data" (click)="exportData()" [disabled]="loading"></p-button>
+      <p-button label="Delete Account" (click)="confirmDeleteAccount()" styleClass="p-button-danger"></p-button>
+    </div>
+  </p-fieldset>
+</div>

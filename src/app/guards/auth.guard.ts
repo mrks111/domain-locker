@@ -7,8 +7,13 @@ export const clientAuthGuard = () => {
   const supabaseService = inject(SupabaseService);
   const router = inject(Router);
 
-  if (!supabaseService.getToken()) {
+  // if (!supabaseService.getToken()) {
+  //   return router.parseUrl('/login');
+  // }
+  // return true;
+
+    if (supabaseService.isAuthenticated()) {
+      return true;
+    }
     return router.parseUrl('/login');
-  }
-  return true;
 };

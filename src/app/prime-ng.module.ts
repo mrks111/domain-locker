@@ -1,49 +1,51 @@
-// src/app/prime-ng.module.ts
 import { NgModule } from '@angular/core';
-import { MenubarModule } from 'primeng/menubar';
-import { InputTextModule } from 'primeng/inputtext';
-import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { CardModule } from 'primeng/card';
-import { SidebarModule } from 'primeng/sidebar';
-import { PasswordModule } from 'primeng/password';
-
 import { FormsModule } from '@angular/forms';
-import { TabViewModule } from 'primeng/tabview';
-import { MessageModule } from 'primeng/message';
-
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
-
-import { StyleClassModule } from 'primeng/styleclass';
-
+import { ChipModule } from 'primeng/chip';
+import { DialogModule } from 'primeng/dialog';
+import { FieldsetModule } from 'primeng/fieldset';
+import { InputOtpModule } from 'primeng/inputotp';
+import { InputTextModule } from 'primeng/inputtext';
+import { MenubarModule } from 'primeng/menubar';
 import { MenuModule } from 'primeng/menu';
-
+import { MessageModule } from 'primeng/message';
+import { OverlayModule } from 'primeng/overlay';
+import { PanelModule } from 'primeng/panel';
+import { PasswordModule } from 'primeng/password';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { ChipModule } from 'primeng/chip';
-import { OverlayModule } from 'primeng/overlay';
+import { SidebarModule } from 'primeng/sidebar';
+import { StyleClassModule } from 'primeng/styleclass';
+import { TableModule } from 'primeng/table';
+import { TabViewModule } from 'primeng/tabview';
+import { ToastModule } from 'primeng/toast';
 
 @NgModule({
   exports: [
-    MenubarModule,
-    InputTextModule,
     ButtonModule,
-    TableModule,
-    DialogModule,
     CardModule,
-    SidebarModule,
-    FormsModule,
-    TabViewModule,
-    MessageModule,
     CheckboxModule,
-    StyleClassModule,
-    PasswordModule,
+    ChipModule,
+    DialogModule,
+    FieldsetModule,
+    FormsModule,
+    InputOtpModule,
+    InputTextModule,
+    MenubarModule,
     MenuModule,
+    MessageModule,
+    OverlayModule,
+    PanelModule,
+    PasswordModule,
     RadioButtonModule,
     SelectButtonModule,
-    ChipModule,
-    OverlayModule,
+    SidebarModule,
+    StyleClassModule,
+    TableModule,
+    TabViewModule,
+    ToastModule,
   ]
 })
 export class PrimeNgModule { }

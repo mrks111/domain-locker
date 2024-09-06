@@ -42,7 +42,7 @@
       </div>
 
       <p-button type="submit" [label]="isLogin ? 'Login' : 'Sign Up'" styleClass="w-full"
-                [disabled]="form.invalid"></p-button>
+                [disabled]="form.invalid" [loading]="showLoader"></p-button>
     </form>
     <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage" styleClass="w-full mt-4"></p-message>
     <p-message *ngIf="successMessage" severity="success" [text]="successMessage" styleClass="w-full mt-4"></p-message>
