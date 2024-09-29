@@ -10,6 +10,8 @@ import { BehaviorSubject } from 'rxjs';
 export class SupabaseService {
 
   private supabase: SupabaseClient;
+  private authStateSubject = new BehaviorSubject<boolean>(false);
+  authState$ = this.authStateSubject.asObservable();
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
   private token: string | null = null;
@@ -25,13 +27,18 @@ export class SupabaseService {
 
     this.supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+    this.supabase.auth.onAuthStateChange((event, session) => {
+      this.setAuthState(!!session);
+    });
+
     if (isPlatformBrowser(this.platformId)) {
       this.initializeAuth();
     }
   }
 
-  isAuthenticated() {
-    return !!this.token;
+  async isAuthenticated(): Promise<boolean> {
+    const { data: { session } } = await this.supabase.auth.getSession();
+    return !!session;
   }
 
   private initializeAuth() {
@@ -46,6 +53,10 @@ export class SupabaseService {
         localStorage.removeItem('supabase_token');
       }
     });
+  }
+
+  setAuthState(isAuthenticated: boolean) {
+    this.authStateSubject.next(isAuthenticated);
   }
 
   async getCurrentUser(): Promise<User | null> {
@@ -67,6 +78,7 @@ export class SupabaseService {
 
   async signOut() {
     const { error } = await this.supabase.auth.signOut();
+    this.setAuthState(false);
     if (error) throw error;
   }
 
@@ -89,52 +101,47 @@ export class SupabaseService {
   }
 
   async verifyEmail() {
+    // TODO: Implement email verification logic
     const { error } = await this.supabase.auth.getUser();
     if (error) throw error;
     // The user object should now reflect the verified status
   }
 
   async updateEmail(newEmail: string): Promise<void> {
+    // TODO: Implement email update logic
     const { error } = await this.supabase.auth.updateUser({ email: newEmail });
     if (error) throw error;
   }
 
   async updatePassword(currentPassword: string, newPassword: string): Promise<void> {
-    // Note: Supabase doesn't have a built-in method to verify the current password before updating
-    // You might want to implement this security check on your own backend
+    // TODO: Implement password update logic
     const { error } = await this.supabase.auth.updateUser({ password: newPassword });
     if (error) throw error;
   }
 
   async enableMFA(): Promise<{ secret: string; qrCode: string }> {
-    // Note: As of my knowledge cutoff, Supabase doesn't have built-in MFA support
-    // You might need to implement this using a third-party service or your own backend
+    // TODO: Implement MFA setup logic
     throw new Error('MFA not implemented');
   }
 
   async verifyMFA(otpCode: string): Promise<void> {
-    // Implement MFA verification logic
+    // TODO: Implement MFA verification logic
     throw new Error('MFA verification not implemented');
   }
 
   async getBackupCodes(): Promise<string[]> {
-    // Implement backup codes generation logic
+    // TODO: Implement backup codes generation logic
     throw new Error('Backup codes not implemented');
   }
 
-  async updateSessionTimeout(timeoutMinutes: number): Promise<void> {
-    // Note: Session timeout is typically handled on the client-side
-    // You might want to store this preference in your database
-    throw new Error('Session timeout update not implemented');
-  }
-
   async exportUserData(): Promise<any> {
-    // Implement data export logic
+    // TODO: Implement data export logic
     // This will depend on what data you're storing for users
     throw new Error('Data export not implemented');
   }
 
   async deleteAccount(): Promise<void> {
+    // TODO: Implement account deletion logic
     const { error } = await this.supabase.auth.admin.deleteUser(
       (await this.getCurrentUser()).id
     );
