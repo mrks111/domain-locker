@@ -1,11 +1,12 @@
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ChipModule } from 'primeng/chip';
 import { DialogModule } from 'primeng/dialog';
 import { FieldsetModule } from 'primeng/fieldset';
+import { FormsModule } from '@angular/forms';
 import { InputOtpModule } from 'primeng/inputotp';
 import { InputTextModule } from 'primeng/inputtext';
 import { MenubarModule } from 'primeng/menubar';
@@ -24,6 +25,7 @@ import { ToastModule } from 'primeng/toast';
 
 @NgModule({
   exports: [
+    BadgeModule,
     ButtonModule,
     CardModule,
     CheckboxModule,
