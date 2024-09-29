@@ -6,6 +6,7 @@ export const clientAuthGuard = () => {
   const supabaseService = inject(SupabaseService);
   const router = inject(Router);
 
+  console.log('====>', supabaseService.getToken());
   if (!supabaseService.getToken()) {
     return router.parseUrl('/login');
   }
