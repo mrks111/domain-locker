@@ -1,4 +1,16 @@
-<p-card styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
+
+
+<p-card *ngIf="isAuthenticated" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
+  <ng-template pTemplate="title">Your Signed In</ng-template>
+  <div class="flex gap-2">
+    <a class="w-full" href="/domains">
+      <p-button severity="primary" label="Go to Account" class="w-full" styleClass="w-full" icon="pi pi-user"></p-button>
+    </a>
+    <p-button severity="secondary" label="Sign Out" class="w-full" styleClass="w-full" (click)="signOut()" icon="pi pi-sign-out"></p-button>
+  </div>
+</p-card>  
+
+<p-card *ngIf="!isAuthenticated" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
   <ng-template pTemplate="title">
     {{ isLogin ? 'Login' : 'Sign Up' }}
   </ng-template>

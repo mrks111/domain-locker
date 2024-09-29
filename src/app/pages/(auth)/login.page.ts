@@ -1,11 +1,12 @@
 // src/app/pages/(auth)/login.page.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PrimeNgModule } from '../../prime-ng.module';
+import { Subscription } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -42,15 +43,19 @@ export default class LoginPageComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   showLoader = false;
+  isAuthenticated: boolean = false;
   modes = [
     { label: 'Login', value: true },
     { label: 'Sign Up', value: false }
   ];
 
+  private subscriptions: Subscription = new Subscription();
+  
   constructor(
     private fb: FormBuilder,
     private supabaseService: SupabaseService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -62,6 +67,25 @@ export default class LoginPageComponent implements OnInit {
 
   ngOnInit() {
     this.onModeChange();
+
+    this.subscriptions.add(
+      this.supabaseService.authState$.subscribe(isAuthenticated => {
+        this.isAuthenticated = isAuthenticated;
+        this.cdr.detectChanges();
+      })
+    );
+
+    // Initial check for auth status
+    this.checkAuthStatus();
+  }
+  
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
+
+  async checkAuthStatus() {
+    const isAuthenticated = await this.supabaseService.isAuthenticated();
+    this.supabaseService.setAuthState(isAuthenticated);
   }
 
   onModeChange() {
@@ -84,43 +108,77 @@ export default class LoginPageComponent implements OnInit {
     return password === confirmPassword ? null : { 'passwordMismatch': true };
   }
 
-  async onSubmit() {
-    if (this.form.valid) {
-      this.showLoader = true;
-      this.errorMessage = '';
-      this.successMessage = '';
+  signOut() {
+    this.supabaseService.signOut();
+  }
 
-      const timeoutLimit = 10000;
+  async onSubmit() {
+    if (!this.form.valid) return;
   
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timed out')), timeoutLimit)
-      );
+    this.resetMessages();
+    this.showLoader = true;
   
-      try {
-        const authPromise = this.isLogin
-          ? this.supabaseService.signIn(this.form.get('email')?.value, this.form.get('password')?.value)
-          : this.supabaseService.signUp(this.form.get('email')?.value, this.form.get('password')?.value);
-  
-        await Promise.race([authPromise, timeoutPromise]);
-  
-        if (this.isLogin) {
-          this.successMessage = 'Login successful! Redirecting...';
-          this.router.navigate(['/']);
-        } else {
-          this.successMessage = 'Sign up successful! Please check your email to confirm your account.';
-        }
-      } catch (error) {
-        if (error instanceof Error && error.message === 'Request timed out') {
-          this.errorMessage = 'Request timed out. Please try again.';
-        } else {
-          this.errorMessage = this.isLogin
-            ? 'Login failed. Please check your credentials.'
-            : 'Sign up failed. Please try again.';
-          console.error(this.isLogin ? 'Login error:' : 'Sign up error:', error);
-        }
-      } finally {
-        this.showLoader = false;
-      }
+    try {
+      await this.performAuthAction();
+      this.handleSuccess();
+    } catch (error) {
+      this.handleError(error);
+    } finally {
+      this.showLoader = false;
     }
   }
+  
+  private resetMessages() {
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+  
+  private async performAuthAction(): Promise<void> {
+    const authPromise = this.isLogin
+      ? this.supabaseService.signIn(this.form.get('email')?.value, this.form.get('password')?.value)
+      : this.supabaseService.signUp(this.form.get('email')?.value, this.form.get('password')?.value);
+    const timeoutPromise = this.createTimeout(15000);
+    const result = await Promise.race([authPromise, timeoutPromise]);
+    if (result instanceof Error) {
+      throw result;
+    }
+  }
+  
+  private createTimeout(ms: number): Promise<never> {
+    return new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timed out')), ms);
+    });
+  }
+  
+  private handleSuccess() {
+    if (this.isLogin) {
+      this.successMessage = 'Login successful! Redirecting...';
+      this.router.navigate(['/']);
+    } else {
+      this.successMessage = 'Sign up successful! Please check your email to confirm your account.';
+    }
+    this.cdr.detectChanges();
+  }
+  
+  private handleError(error: unknown) {
+    const formType = this.isLogin ? 'Login' : 'Sign up';
+    if (error instanceof Error) {
+      if (error.message === 'Request timed out') {
+        this.errorMessage = 'Request timed out. Please try again.';
+      } else if (this.isSupabaseAuthError(error)) {
+        this.errorMessage = `${formType} Error: ${error.error.message}`;
+      } else {
+        this.errorMessage = error.message;
+      }
+    } else {
+      this.errorMessage = 'An unexpected error occurred. Please try again.';
+    }
+    this.cdr.detectChanges();
+  }
+  
+  private isSupabaseAuthError(error: any): error is { error: { message: string } } {
+    return error && typeof error === 'object' && 'error' in error && 
+           typeof error.error === 'object' && 'message' in error.error;
+  }
+  
 }
