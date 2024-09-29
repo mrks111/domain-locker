@@ -1,5 +1,5 @@
 // src/app/components/navbar/navbar.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { OverlayModule } from 'primeng/overlay';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -25,7 +26,6 @@ import { OverlayModule } from 'primeng/overlay';
   ],
   templateUrl: './navbar.component.html',
   styles: [`
-
     ::ng-deep .custom-menubar .p-menubar-root-list {
       display: flex;
       align-items: center;
@@ -42,13 +42,23 @@ import { OverlayModule } from 'primeng/overlay';
     ::ng-deep .settings-overlay .p-selectbutton .p-button {
       padding: 0.5rem;
     }
+    ::ng-deep p-menubar {
+      display: flex;
+    }
+    .logged-in-options-wrap {
+      @apply flex items-center flex-col;
+      a, button {
+        @apply flex items-center w-full flex justify-center my-1;
+      }
+    }
   `]
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   items: MenuItem[] = [];
   sidebarVisible: boolean = false;
   settingsVisible: boolean = false;
   isDarkTheme: boolean = false;
+  isAuthenticated: boolean = false;
   selectedTheme: Theme;
   themes: Theme[];
   darkModeOptions = [
@@ -56,33 +66,87 @@ export class NavbarComponent implements OnInit {
     { label: 'Dark', value: true, icon: 'pi pi-moon' }
   ];
 
+  private subscriptions: Subscription = new Subscription();
+
   constructor(
     public supabaseService: SupabaseService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.themes = this.themeService.getThemes();
     this.selectedTheme = this.themes[0];
   }
 
   ngOnInit() {
-    this.initializeMenuItems();
-    this.themeService.isDarkTheme$.subscribe(isDark => this.isDarkTheme = isDark);
-    this.themeService.selectedTheme$.subscribe(theme => this.selectedTheme = theme);
+    this.subscriptions.add(
+      this.themeService.isDarkTheme$.subscribe(isDark => {
+        this.isDarkTheme = isDark;
+        this.cdr.detectChanges();
+      })
+    );
+
+    this.subscriptions.add(
+      this.themeService.selectedTheme$.subscribe(theme => {
+        this.selectedTheme = theme;
+        this.cdr.detectChanges();
+      })
+    );
+
+    this.subscriptions.add(
+      this.supabaseService.authState$.subscribe(isAuthenticated => {
+        this.isAuthenticated = isAuthenticated;
+        this.initializeMenuItems();
+        this.cdr.detectChanges();
+      })
+    );
+
+    // Initial check for auth status
+    this.checkAuthStatus();
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
+
+  async checkAuthStatus() {
+    const isAuthenticated = await this.supabaseService.isAuthenticated();
+    this.supabaseService.setAuthState(isAuthenticated);
   }
 
   initializeMenuItems() {
     this.items = [
-      {
-        label: 'Home',
-        icon: 'pi pi-fw pi-home',
-        routerLink: '/'
-      },
-      {
-        label: 'Domains',
-        icon: 'pi pi-fw pi-globe',
-        routerLink: '/domains'
-      },
-      {
+      // {
+      //   label: 'Home',
+      //   icon: 'pi pi-fw pi-home',
+      //   routerLink: '/'
+      // },
+    ];
+
+    if (this.isAuthenticated) {
+      this.items = [
+        {
+          label: 'Domains',
+          icon: 'pi pi-fw pi-globe',
+          routerLink: '/domains'
+        },
+        {
+          label: 'Add Domain',
+          icon: 'pi pi-fw pi-plus',
+          routerLink: '/add'
+        },
+        {
+          label: 'Reports',
+          icon: 'pi pi-fw pi-chart-line',
+          routerLink: '/notifications'
+        },
+        {
+          label: 'Notifications',
+          icon: 'pi pi-fw pi-bell',
+          routerLink: '/notifications'
+        }
+      ];
+    } else {
+      this.items.push({
         label: 'About',
         icon: 'pi pi-fw pi-info-circle',
         items: [
@@ -95,8 +159,13 @@ export class NavbarComponent implements OnInit {
             routerLink: '/about/pricing'
           },
         ],
-      },
-    ];
+      });
+      this.items.push({
+        label: 'Login',
+        icon: 'pi pi-fw pi-sign-in',
+        routerLink: '/login'
+      });
+    }
   }
 
   onDarkModeChange() {
@@ -118,5 +187,11 @@ export class NavbarComponent implements OnInit {
   toggleSettings(event: Event) {
     this.settingsVisible = !this.settingsVisible;
     event.preventDefault();
+  }
+
+  async signOut() {
+    await this.supabaseService.signOut();
+    // redirect to /login
+    window.location.href = '/login';
   }
 }
