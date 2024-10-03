@@ -3,14 +3,24 @@ import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { PrimeNgModule } from '../../prime-ng.module';
+import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import type DomainInfo from '../../../types/DomainInfo';
+
+interface NotificationOption {
+  label: string;
+  name: string;
+  description: string;
+  note?: string;
+  initial: boolean;
+}
 
 @Component({
   selector: 'app-add-domain',
   standalone: true,
   imports: [PrimeNgModule, ReactiveFormsModule, CommonModule],
+  providers: [ConfirmationService],
   templateUrl: './add.page.html',
   styleUrls: ['./add.page.scss']
 })
@@ -21,10 +31,34 @@ export default class AddDomainComponent implements OnInit {
   domainInfo: DomainInfo | null = null;
   tableData: { key: string; value: string }[] = [];
   errorMessage: string = '';
+  isLoading: boolean = false;
+
+  saveOptions: MenuItem[] = [
+    {
+      label: 'Save and Add New',
+      icon: 'pi pi-plus',
+      command: () => this.saveAndAddNew()
+    },
+    {
+      label: 'Discard',
+      icon: 'pi pi-trash',
+      command: () => this.confirmDiscard()
+    }
+  ];
+
+  notificationOptions: NotificationOption[] = [
+    { label: 'Domain Expiration', name: "domainExpiration", description: "Get notified when your domain name needs renewing", initial: true },
+    { label: 'SSL Expiration', name: "sslExpiration", description: "Get notified before your SSL cert expires", note: "Not recommended if you have automatic SSL", initial: false },
+    { label: 'DNS Change', name: "dnsChange", description: "Get notified when DNS records change (MX, TXT, NS)", initial: false },
+    { label: 'WHOIS Change', name: "whoisChange", description: "Get notified when domain registrant info changes", initial: false },
+    { label: 'IP Change', name: "ipChange", description: "Get notified when the target IP address (IPv4 & IPv6) is updated", initial: false }
+  ];
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    private confirmationService: ConfirmationService,
+    private messageService: MessageService,
   ) {}
 
   ngOnInit() {
@@ -32,35 +66,50 @@ export default class AddDomainComponent implements OnInit {
   }
 
   initializeForm() {
+    // Make the notification options dynamic
+    const notificationControls = this.notificationOptions.reduce((acc, option) => {
+      acc[option.name] = [option.initial];
+      return acc;
+    }, {} as {[key: string]: [boolean]});
+
     this.domainForm = this.fb.group({
-      domainName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/)]],
+      domainName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/)]],
       registrar: ['', Validators.required],
       expiryDate: ['', Validators.required],
       tags: [[], [this.tagsValidator()]],
       notes: ['', [Validators.maxLength(255), Validators.pattern(/^[a-zA-Z0-9\s.,!?'"()-]+$/)]],
+      notifications: this.fb.group(notificationControls)
     });
   }
 
   async onNextStep() {
     if (this.isProcessing) return;
     this.isProcessing = true;
+    this.isLoading = true;
     this.errorMessage = '';
 
-    if (this.activeIndex === 0 && this.domainForm.get('domainName')?.valid) {
+    const domainNameControl = this.domainForm.get('domainName');
+    if (this.activeIndex === 0 && domainNameControl && domainNameControl.valid) {
       try {
         await this.fetchDomainInfo();
-        if (this.activeIndex < 2) {
+      } catch (error) {
+        console.error('Error fetching domain info:', error);
+        this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Unable to auto-fill domain data' });
+        this.domainForm.patchValue({
+          registrar: '',
+          expiryDate: null
+        });
+      } finally {
+        if (this.activeIndex < 3) {
           this.activeIndex++;
         }
-      } catch (error) {
-        this.errorMessage = 'Failed to fetch domain information. Please try again.';
-        console.error('Error fetching domain info:', error);
       }
-    } else if (this.activeIndex < 2) {
+    } else if (this.activeIndex < 3) {
       this.activeIndex++;
     }
 
     this.isProcessing = false;
+    this.isLoading = false;
   }
 
   onPreviousStep() {
@@ -68,19 +117,54 @@ export default class AddDomainComponent implements OnInit {
       this.activeIndex--;
     }
   }
+  
 
   async fetchDomainInfo(): Promise<void> {
-    const domainName = this.domainForm.get('domainName')?.value;
-    this.domainInfo = await this.http.get<DomainInfo>(`/api/domain-info?domain=${domainName}`).toPromise();
-    if (this.domainInfo) {
-      this.domainForm.patchValue({
-        registrar: this.domainInfo.registrar.name,
-        expiryDate: new Date(this.domainInfo.dates.expiry)
-      });
-      this.prepareTableData();
-    } else {
-      throw new Error('No domain information received');
+    const domainNameControl = this.domainForm.get('domainName');
+    if (domainNameControl) {
+      const domainName = domainNameControl.value;
+      const fetchedDomainInfo = await this.http.get<DomainInfo>(`/api/domain-info?domain=${domainName}`).toPromise();
+      if (fetchedDomainInfo) {
+        this.domainInfo = fetchedDomainInfo;
+
+        if (!fetchedDomainInfo.domainName || fetchedDomainInfo.domainName	=== 'Unknown') {
+          throw new Error('Domain not found');
+        }
+
+        const expiration = this.domainInfo.dates.expiry && this.domainInfo.dates.expiry !== 'Unknown'
+          ? new Date(this.domainInfo.dates.expiry) : null;
+
+        const formUpdate: {[key: string]: any} = {
+          registrar: this.domainInfo.registrar.name,
+          expiryDate: expiration,
+        };
+        if (this.domainInfo.registrar.name && !expiration) {
+          this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Couldn\'t determine domain expiration date, please enter it manually' });
+        }
+        this.domainForm.patchValue(formUpdate);
+        this.prepareTableData();
+      } else {
+        throw new Error('Unable to fetch domain info');
+      }
     }
+  }
+
+  
+  saveAndAddNew() {
+    this.onSubmit();
+    // Reset the form and go back to the first step
+    this.domainForm.reset();
+    this.activeIndex = 0;
+  }
+
+  confirmDiscard() {
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to discard this domain? All entered information will be lost.',
+      accept: () => {
+        this.domainForm.reset();
+        this.activeIndex = 0;
+      }
+    });
   }
 
   tagsValidator(): ValidatorFn {
@@ -141,46 +225,58 @@ export default class AddDomainComponent implements OnInit {
   onSubmit() {
     if (this.domainForm.valid) {
       console.log('Form submitted:', this.domainForm.value);
-      // Here you would typically send the data to your backend
+      // TODO: Send data to database, then show either a success or error toast.
+      // Then redirect user back to the homepage, unless they want to add another domain.
     }
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Domain added successfully' });
   }
 
-  async onEnterKey(event: KeyboardEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    if (this.isProcessing) return;
-    
-    if (this.activeIndex < 2) {
-      await this.onNextStep();
-    } else {
-      this.onSubmit();
+  onEnterKey(event: Event) {
+    if (event instanceof KeyboardEvent) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (this.isProcessing) return;
+      
+      if (this.activeIndex < 2) {
+        this.onNextStep();
+      } else {
+        this.onSubmit();
+      }
     }
   }
 
   getTagsErrorMessage(): string {
-    const errors = this.domainForm.get('tags').errors;
-    if (errors) {
-      if (errors.maxTags) {
+    const tagsControl = this.domainForm.get('tags');
+    if (tagsControl && tagsControl.errors) {
+      if (tagsControl.errors['maxTags']) {
         return 'Maximum of 8 tags allowed.';
       }
-      if (errors.duplicateTags) {
+      if (tagsControl.errors['duplicateTags']) {
         return 'Duplicate tags are not allowed.';
       }
-      if (errors.invalidTags) {
-        return `Invalid tags: ${errors.invalidTags.join(', ')}. Tags can only contain letters and numbers.`;
+      if (tagsControl.errors['invalidTags']) {
+        return `Invalid tags: ${tagsControl.errors['invalidTags'].join(', ')}. Tags can only contain letters and numbers.`;
       }
     }
     return '';
   }
 
+  hasEnabledNotifications(): boolean {
+    const notificationsGroup = this.domainForm.get('notifications');
+    if (notificationsGroup) {
+      return Object.values(notificationsGroup.value).some(value => value === true);
+    }
+    return false;
+  }
+
   getNotesErrorMessage(): string {
-    const errors = this.domainForm.get('notes').errors;
-    if (errors) {
-      if (errors.maxlength) {
-        return `Notes cannot exceed 255 characters (currently ${errors.maxlength.actualLength}).`;
+    const notesControl = this.domainForm.get('notes');
+    if (notesControl && notesControl.errors) {
+      if (notesControl.errors['maxlength']) {
+        return `Notes cannot exceed 255 characters (currently ${notesControl.errors['maxlength'].actualLength}).`;
       }
-      if (errors.pattern) {
+      if (notesControl.errors['pattern']) {
         return 'Notes can only contain letters, numbers, and basic punctuation.';
       }
     }

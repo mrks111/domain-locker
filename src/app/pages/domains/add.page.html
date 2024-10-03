@@ -1,7 +1,7 @@
 <!-- src/app/pages/domains/add.page.html -->
 <div class="card add-domain-wrap">
   <h2>Add New Domain</h2>
-  <p-steps [model]="[{label: 'Domain Name'}, {label: 'Domain Details'}, {label: 'Confirm'}]" [activeIndex]="activeIndex"></p-steps>
+  <p-steps [model]="[{label: 'Domain Name'}, {label: 'Domain Details'}, {label: 'Notifications'}, {label: 'Confirm'}]" [activeIndex]="activeIndex"></p-steps>
   
   <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage"></p-message>
 
@@ -22,16 +22,34 @@
                 formControlName="domainName"
                 aria-describedby="Input field for domain name to add"
               >
-              <small class="p-error" *ngIf="domainForm.get('domainName').invalid && domainForm.get('domainName').touched">
+              <small class="p-error" *ngIf="domainForm.get('domainName')?.invalid && domainForm.get('domainName')?.touched">
                 Please enter a valid domain name.
               </small>
-              <small class="p-success text-green-400" *ngIf="!domainForm.get('domainName').invalid && domainForm.get('domainName').touched">
+              <small class="p-success text-green-400" *ngIf="!domainForm.get('domainName')?.invalid && domainForm.get('domainName')?.touched">
                 Looks good! Click Next to continue.
               </small>
             </div>
           </div>
-          <div class="button-wrap single">
-            <button pButton type="button" label="Next" (click)="onNextStep()" [disabled]="domainForm.get('domainName').invalid"></button>
+          <div class="button-wrap">
+            <div class="flex flex-col fit-content w-fit">
+              <p class="m-0 text-xs">Looking to import many domains?</p>
+              <a href="/domains/import">
+              <button pButton
+                [text]="true"
+                label="Bulk Add"
+                class="p-button-link text-xs w-fit p-1 mt-1"
+                icon="pi pi-file-import"
+                outlined="true"
+                link="true"
+                severity="secondary"></button>
+                </a>
+            </div>
+            <button pButton 
+              type="button" 
+              label="Next" 
+              (click)="onNextStep()" 
+              [disabled]="domainForm.get('domainName')?.invalid"
+              [loading]="isLoading"></button>
           </div>
         </div>
 
@@ -62,7 +80,7 @@
             </label>
             <div class="input-wrap">
               <p-chips id="tags" formControlName="tags" separator="," [addOnBlur]="true"></p-chips>
-              <small class="p-error" *ngIf="domainForm.get('tags').errors">{{ getTagsErrorMessage() }}</small>
+              <small class="p-error" *ngIf="domainForm.get('tags')?.errors">{{ getTagsErrorMessage() }}</small>
             </div>
           </div>
 
@@ -80,7 +98,7 @@
                 formControlName="notes"
                 class="w-full"
                 maxlength="255"></textarea>
-              <small class="p-error" *ngIf="domainForm.get('notes').errors">{{ getNotesErrorMessage() }}</small>
+              <small class="p-error" *ngIf="domainForm.get('notes')?.errors">{{ getNotesErrorMessage() }}</small>
             </div>
           </div>
           
@@ -123,19 +141,99 @@
           </div>
         </div>
 
-        <!-- Step 3: Confirm -->
+        <!-- Step 3: Notifications -->
         <div *ngSwitchCase="2">
-          <h3>Please confirm your domain details:</h3>
-          <p><strong>Domain Name:</strong> {{ domainForm.get('domainName')?.value }}</p>
-          <p><strong>Registrar:</strong> {{ domainForm.get('registrar')?.value }}</p>
-          <p><strong>Expiry Date:</strong> {{ domainForm.get('expiryDate')?.value | date:'mediumDate' }}</p>
-          <p><strong>Tags:</strong> {{ domainForm.get('tags')?.value?.join(', ') }}</p>
-          
+          <h3>Setup Notifications</h3>
+          <p class="mb-4 opacity-70 text-sm">
+            Choose the notifications you want to receive for this domain. You can always change these settings later.
+          </p>
+          <div formGroupName="notifications">
+            <div *ngFor="let option of notificationOptions" class="field">
+              <label [for]="option.name">
+                {{ option.label || option.name }}
+                <small>{{ option.description }}</small>
+                <small *ngIf="option.note" class="text-yellow-500">{{ option.note }}</small>
+              </label>
+              <div class="input-wrap flex justify-end">
+                <p-inputSwitch [formControlName]="option.name"></p-inputSwitch>
+              </div>
+            </div>
+          </div>
+
           <div class="button-wrap">
             <button pButton type="button" label="Previous" (click)="onPreviousStep()" class="p-button-secondary"></button>
-            <button pButton type="submit" label="Save"></button>
+            <button pButton type="button" label="Next" (click)="onNextStep()"></button>
           </div>
         </div>
+
+        <!-- Step 4: Confirm -->
+        <div *ngSwitchCase="3" class="space-y-6">
+          <h3 class="text-2xl font-semibold">Save</h3>
+          <div class="flex justify-center items-center flex-col mt-0">
+            <p class="mb-2 mt-0 text-lg">
+              {{ domainForm.get('domainName')?.value }} is ready to add!
+            </p>
+            <button pButton
+              type="button"
+              label="Save"
+              icon="pi pi-save"
+              (click)="onSubmit()"
+              class="p-button-primary text-lg px-8 py-2 w-fit" pStyleClass="text-lg"></button>
+          </div>
+          <p-divider />
+          <h3 class="text-2xl font-semibold mb-4">Review Domain Details</h3>
+          <div class="rounded-lg p-5 space-y-2" [ngStyle]="{backgroundColor:'var(--highlight-bg)', color: 'var(--highlight-text-color)'}">
+            <div class="grid grid-cols-2 gap-2 md:grid-cols-1 sm:grid-cols-1">
+              <div>
+                <p class="text-sm text-neutral-500 dark:text-neutral-400">Domain Name</p>
+                <p class="text-lg m-2 font-medium">{{ domainForm.get('domainName')?.value }}</p>
+              </div>
+              <div *ngIf="domainForm.get('registrar')?.value">
+                <p class="text-sm text-neutral-500 dark:text-neutral-400">Registrar</p>
+                <p class="text-lg m-2 font-medium">{{ domainForm.get('registrar')?.value }}</p>
+              </div>
+              <div *ngIf="domainForm.get('expiryDate')?.value">
+                <p class="text-sm text-neutral-500 dark:text-neutral-400">Expiry Date</p>
+                <p class="text-lg m-2 font-medium">{{ domainForm.get('expiryDate')?.value | date:'mediumDate' }}</p>
+              </div>
+            </div>
+
+            <div *ngIf="domainForm.get('tags')">
+              <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-2">Tags</p>
+              <div class="flex flex-wrap gap-2">
+                <span *ngFor="let tag of domainForm.get('tags')?.value" class="px-3 py-1 rounded-full text-sm" style="background: var(--surface-0);">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+
+            <div *ngIf="domainForm.get('notes')?.value">
+              <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-2">Notes</p>
+              <p class="text-base p-3 rounded" style="background: var(--surface-0);">{{ domainForm.get('notes')?.value }}</p>
+            </div>
+
+            <div>
+              <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-2">Notifications</p>
+              <ul class="list-disc list-inside space-y-1 m-2">
+                <ng-container *ngFor="let option of notificationOptions">
+                  <li *ngIf="domainForm.get('notifications')?.get(option.name)?.value">
+                    {{ option.name | titlecase }}
+                  </li>
+                </ng-container>
+              </ul>
+              <p *ngIf="!hasEnabledNotifications()" class="text-neutral-500 dark:text-neutral-400 italic">
+                No notifications enabled
+              </p>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center mt-6">
+            <button pButton type="button" label="Previous" (click)="onPreviousStep()" class="p-button-secondary"></button>
+            <p-splitButton label="Save" (onClick)="onSubmit()" [model]="saveOptions" styleClass="p-button-primary"></p-splitButton>
+          </div>
+        </div>
+
+        <p-confirmDialog header="Confirm" icon="pi pi-exclamation-triangle"></p-confirmDialog>
       </ng-container>
     </p-card>
   </form>
