@@ -77,3 +77,26 @@
     justify-content: flex-end;
   }
 }
+
+
+:host ::ng-deep {
+  .p-accordion {
+    margin-top: 1rem;
+    .p-accordion-header {
+      a {
+        background-color: var(--surface-100);
+        color: var(--text-color);
+        font-weight: 600;
+        
+        &:hover {
+          background-color: var(--surface-200);
+        }
+      }
+    }
+    
+    .p-accordion-content {
+      background-color: var(--surface-0);
+      color: var(--text-color);
+    }
+  }
+}

@@ -1,13 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { clientAuthGuard } from '../../guards/client-auth.guard';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { SupabaseService } from '../../services/supabase.service';
-
-export const routeMeta = {
-  canActivate: [clientAuthGuard]
-};
 
 @Component({
   standalone: true,

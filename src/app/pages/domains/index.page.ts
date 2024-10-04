@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { clientAuthGuard } from '../../guards/client-auth.guard';
+// import { clientAuthGuard } from '../../guards/client-auth.guard';
 
-export const routeMeta = {
-  canActivate: [clientAuthGuard]
-};
+// export const routeMeta = {
+//   canActivate: [clientAuthGuard]
+// };
 
 @Component({
   standalone: true,

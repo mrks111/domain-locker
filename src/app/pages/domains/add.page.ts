@@ -1,11 +1,12 @@
-// src/app/pages/domains/add.page.ts
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { catchError, throwError } from 'rxjs';
+
 import type DomainInfo from '../../../types/DomainInfo';
 
 interface NotificationOption {
@@ -25,15 +26,15 @@ interface NotificationOption {
   styleUrls: ['./add.page.scss']
 })
 export default class AddDomainComponent implements OnInit {
-  domainForm!: FormGroup;
-  activeIndex: number = 0;
-  isProcessing: boolean = false;
-  domainInfo: DomainInfo | null = null;
-  tableData: { key: string; value: string }[] = [];
-  errorMessage: string = '';
-  isLoading: boolean = false;
+  public domainForm!: FormGroup;
+  public activeIndex = 0;
+  public isProcessing = false;
+  public domainInfo: DomainInfo | null = null;
+  public tableData: { key: string; value: string }[] = [];
+  public errorMessage = '';
+  public isLoading = false;
 
-  saveOptions: MenuItem[] = [
+  public readonly saveOptions: MenuItem[] = [
     {
       label: 'Save and Add New',
       icon: 'pi pi-plus',
@@ -46,7 +47,7 @@ export default class AddDomainComponent implements OnInit {
     }
   ];
 
-  notificationOptions: NotificationOption[] = [
+  public readonly notificationOptions: NotificationOption[] = [
     { label: 'Domain Expiration', name: "domainExpiration", description: "Get notified when your domain name needs renewing", initial: true },
     { label: 'SSL Expiration', name: "sslExpiration", description: "Get notified before your SSL cert expires", note: "Not recommended if you have automatic SSL", initial: false },
     { label: 'DNS Change', name: "dnsChange", description: "Get notified when DNS records change (MX, TXT, NS)", initial: false },
@@ -61,16 +62,18 @@ export default class AddDomainComponent implements OnInit {
     private messageService: MessageService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.initializeForm();
   }
 
-  initializeForm() {
-    // Make the notification options dynamic
+  /**
+   * Initializes the form with default values and validators
+   */
+  private initializeForm(): void {
     const notificationControls = this.notificationOptions.reduce((acc, option) => {
       acc[option.name] = [option.initial];
       return acc;
-    }, {} as {[key: string]: [boolean]});
+    }, {} as Record<string, [boolean]>);
 
     this.domainForm = this.fb.group({
       domainName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/)]],
@@ -82,82 +85,143 @@ export default class AddDomainComponent implements OnInit {
     });
   }
 
-  async onNextStep() {
+  /**
+   * Handles the next step in the form process
+   */
+  public async onNextStep(): Promise<void> {
     if (this.isProcessing) return;
+
     this.isProcessing = true;
     this.isLoading = true;
     this.errorMessage = '';
 
-    const domainNameControl = this.domainForm.get('domainName');
-    if (this.activeIndex === 0 && domainNameControl && domainNameControl.valid) {
-      try {
+    try {
+      const domainNameControl = this.domainForm.get('domainName');
+      if (this.activeIndex === 0 && domainNameControl?.valid) {
         await this.fetchDomainInfo();
-      } catch (error) {
-        console.error('Error fetching domain info:', error);
-        this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Unable to auto-fill domain data' });
-        this.domainForm.patchValue({
-          registrar: '',
-          expiryDate: null
-        });
-      } finally {
-        if (this.activeIndex < 3) {
-          this.activeIndex++;
-        }
       }
-    } else if (this.activeIndex < 3) {
-      this.activeIndex++;
+      
+      if (this.activeIndex < 3) {
+        this.activeIndex++;
+      }
+    } catch (error) {
+      this.handleError(error);
+    } finally {
+      this.isProcessing = false;
+      this.isLoading = false;
     }
-
-    this.isProcessing = false;
-    this.isLoading = false;
   }
 
-  onPreviousStep() {
+  /**
+   * Handles the previous step in the form process
+   */
+  public onPreviousStep(): void {
     if (this.activeIndex > 0) {
       this.activeIndex--;
     }
   }
-  
 
-  async fetchDomainInfo(): Promise<void> {
-    const domainNameControl = this.domainForm.get('domainName');
-    if (domainNameControl) {
-      const domainName = domainNameControl.value;
-      const fetchedDomainInfo = await this.http.get<DomainInfo>(`/api/domain-info?domain=${domainName}`).toPromise();
-      if (fetchedDomainInfo) {
-        this.domainInfo = fetchedDomainInfo;
+  /**
+   * Fetches domain information from the API
+   */
+  private async fetchDomainInfo(): Promise<void> {
+    const domainName = this.domainForm.get('domainName')?.value;
+    if (!domainName) return;
 
-        if (!fetchedDomainInfo.domainName || fetchedDomainInfo.domainName	=== 'Unknown') {
-          throw new Error('Domain not found');
+    this.http.get<DomainInfo>(`/api/domain-info?domain=${domainName}`).pipe(
+      catchError(this.handleHttpError.bind(this))
+    ).subscribe({
+      next: (fetchedDomainInfo) => {
+        if (this.isDomainInfoValid(fetchedDomainInfo)) {
+          this.domainInfo = fetchedDomainInfo;
+          this.updateFormWithDomainInfo();
+          this.prepareTableData();
+        } else {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Warning',
+            detail: 'Domain information could not be found, you\'ll need to enter it manually'
+          });
+          throw new Error('Invalid domain information received');
         }
-
-        const expiration = this.domainInfo.dates.expiry && this.domainInfo.dates.expiry !== 'Unknown'
-          ? new Date(this.domainInfo.dates.expiry) : null;
-
-        const formUpdate: {[key: string]: any} = {
-          registrar: this.domainInfo.registrar.name,
-          expiryDate: expiration,
-        };
-        if (this.domainInfo.registrar.name && !expiration) {
-          this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Couldn\'t determine domain expiration date, please enter it manually' });
-        }
-        this.domainForm.patchValue(formUpdate);
-        this.prepareTableData();
-      } else {
-        throw new Error('Unable to fetch domain info');
+      },
+      error: (error) => {
+        this.handleError(error);
       }
+    });
+  }
+
+  /**
+   * Checks if the fetched domain info is valid
+   */
+  private isDomainInfoValid(info: DomainInfo): boolean {
+    return !!info && !!info.domainName && info.domainName !== 'Unknown';
+  }
+
+  /**
+   * Updates the form with fetched domain information
+   */
+  private updateFormWithDomainInfo(): void {
+    if (!this.domainInfo) return;
+
+    const expiration = this.domainInfo.dates.expiry && this.domainInfo.dates.expiry !== 'Unknown'
+      ? new Date(this.domainInfo.dates.expiry) : null;
+
+    this.domainForm.patchValue({
+      registrar: this.domainInfo.registrar.name,
+      expiryDate: expiration,
+    });
+
+    if (this.domainInfo.registrar.name && !expiration) {
+      this.messageService.add({ 
+        severity: 'warn', 
+        summary: 'Warning', 
+        detail: 'Couldn\'t determine domain expiration date, please enter it manually' 
+      });
     }
   }
 
-  
-  saveAndAddNew() {
+  /**
+   * Prepares table data for display
+   */
+  private prepareTableData(): void {
+    if (!this.domainInfo) return;
+
+    this.tableData = Object.entries(this.domainInfo).flatMap(([key, value]) => {
+      if (typeof value === 'object' && value !== null) {
+        return Object.entries(value).map(([subKey, subValue]) => ({
+          key: `${key} ${subKey}`,
+          value: Array.isArray(subValue) ? subValue.join(', ') : subValue?.toString() || ''
+        }));
+      }
+      return [{ key, value: value?.toString() || '' }];
+    }).filter(entry => entry.value && entry.value !== 'Unknown');
+  }
+
+  /**
+   * Handles form submission
+   */
+  public onSubmit(): void {
+    if (this.domainForm.valid) {
+      console.log('Form submitted:', this.domainForm.value);
+      // TODO: Send data to database
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Domain added successfully' });
+    }
+  }
+
+  /**
+   * Saves the current form and resets it for a new entry
+   */
+  public saveAndAddNew(): void {
     this.onSubmit();
-    // Reset the form and go back to the first step
     this.domainForm.reset();
     this.activeIndex = 0;
   }
 
-  confirmDiscard() {
+  /**
+   * Confirms discarding the current form
+   */
+  public confirmDiscard(): void {
     this.confirmationService.confirm({
       message: 'Are you sure you want to discard this domain? All entered information will be lost.',
       accept: () => {
@@ -167,8 +231,11 @@ export default class AddDomainComponent implements OnInit {
     });
   }
 
-  tagsValidator(): ValidatorFn {
-    return (control: AbstractControl): {[key: string]: any} | null => {
+  /**
+   * Validator for tags
+   */
+  private tagsValidator(): ValidatorFn {
+    return (control: AbstractControl): Record<string, any> | null => {
       const tags = control.value as string[];
       
       if (tags.length > 8) {
@@ -190,48 +257,10 @@ export default class AddDomainComponent implements OnInit {
     };
   }
 
-  prepareTableData() {
-    if (!this.domainInfo) return;
-
-    this.tableData = [
-      { key: 'Domain Name', value: this.domainInfo.domainName },
-      { key: 'Status', value: this.domainInfo.status.join(', ') },
-      { key: 'IPv4 Addresses', value: this.domainInfo.ipAddresses.ipv4.join(', ') },
-      { key: 'IPv6 Addresses', value: this.domainInfo.ipAddresses.ipv6.join(', ') },
-      { key: 'Updated Date', value: new Date(this.domainInfo.dates.updated).toLocaleString() },
-      { key: 'Creation Date', value: new Date(this.domainInfo.dates.creation).toLocaleString() },
-      { key: 'Registrar ID', value: this.domainInfo.registrar.id },
-      { key: 'Registrar URL', value: this.domainInfo.registrar.url },
-      { key: 'Registry Domain ID', value: this.domainInfo.registrar.registryDomainId },
-      { key: 'Registrant Country', value: this.domainInfo.registrant.country },
-      { key: 'Registrant State/Province', value: this.domainInfo.registrant.stateProvince },
-      { key: 'Abuse Email', value: this.domainInfo.abuse.email },
-      { key: 'Abuse Phone', value: this.domainInfo.abuse.phone },
-      { key: 'DNSSEC', value: this.domainInfo.dns.dnssec },
-      { key: 'Name Servers', value: this.domainInfo.dns.nameServers.join(', ') },
-      { key: 'MX Records', value: this.domainInfo.dns.mxRecords.join(', ') },
-      { key: 'TXT Records', value: this.domainInfo.dns.txtRecords.join(', ') },
-      { key: 'SSL Issuer', value: this.domainInfo.ssl.issuer },
-      { key: 'SSL Issuer Country', value: this.domainInfo.ssl.issuerCountry },
-      { key: 'SSL Valid From', value: new Date(this.domainInfo.ssl.validFrom).toLocaleString() },
-      { key: 'SSL Valid To', value: new Date(this.domainInfo.ssl.validTo).toLocaleString() },
-      { key: 'SSL Subject', value: this.domainInfo.ssl.subject },
-      { key: 'SSL Fingerprint', value: this.domainInfo.ssl.fingerprint },
-      { key: 'SSL Key Size', value: this.domainInfo.ssl.keySize.toString() },
-      { key: 'SSL Signature Algorithm', value: this.domainInfo.ssl.signatureAlgorithm }
-    ].filter(entry => entry.value && entry.value !== 'Unknown');
-  }
-
-  onSubmit() {
-    if (this.domainForm.valid) {
-      console.log('Form submitted:', this.domainForm.value);
-      // TODO: Send data to database, then show either a success or error toast.
-      // Then redirect user back to the homepage, unless they want to add another domain.
-    }
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Domain added successfully' });
-  }
-
-  onEnterKey(event: Event) {
+  /**
+   * Handles key press events
+   */
+  public onEnterKey(event: Event): void {
     if (event instanceof KeyboardEvent) {
       event.preventDefault();
       event.stopPropagation();
@@ -246,9 +275,12 @@ export default class AddDomainComponent implements OnInit {
     }
   }
 
-  getTagsErrorMessage(): string {
+  /**
+   * Gets error message for tags
+   */
+  public getTagsErrorMessage(): string {
     const tagsControl = this.domainForm.get('tags');
-    if (tagsControl && tagsControl.errors) {
+    if (tagsControl?.errors) {
       if (tagsControl.errors['maxTags']) {
         return 'Maximum of 8 tags allowed.';
       }
@@ -262,17 +294,20 @@ export default class AddDomainComponent implements OnInit {
     return '';
   }
 
-  hasEnabledNotifications(): boolean {
+  /**
+   * Checks if any notifications are enabled
+   */
+  public hasEnabledNotifications(): boolean {
     const notificationsGroup = this.domainForm.get('notifications');
-    if (notificationsGroup) {
-      return Object.values(notificationsGroup.value).some(value => value === true);
-    }
-    return false;
+    return notificationsGroup ? Object.values(notificationsGroup.value).some(value => value === true) : false;
   }
 
-  getNotesErrorMessage(): string {
+  /**
+   * Gets error message for notes
+   */
+  public getNotesErrorMessage(): string {
     const notesControl = this.domainForm.get('notes');
-    if (notesControl && notesControl.errors) {
+    if (notesControl?.errors) {
       if (notesControl.errors['maxlength']) {
         return `Notes cannot exceed 255 characters (currently ${notesControl.errors['maxlength'].actualLength}).`;
       }
@@ -281,5 +316,37 @@ export default class AddDomainComponent implements OnInit {
       }
     }
     return '';
+  }
+
+  /**
+   * Handles HTTP errors
+   */
+  private handleHttpError(error: HttpErrorResponse) {
+    let errorMessage = 'An unknown error occurred';
+    if (error.error instanceof ErrorEvent) {
+      // Client-side or network error
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      // Backend returned unsuccessful response code
+      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+    }
+    console.error(errorMessage);
+    return throwError(() => new Error(errorMessage));
+  }
+
+  /**
+   * Handles general errors
+   */
+  private handleError(error: any): void {
+    console.error('An error occurred:', error);
+    this.messageService.add({ 
+      severity: 'error', 
+      summary: 'Error', 
+      detail: 'Unable to process your request. Please try again.' 
+    });
+    this.domainForm.patchValue({
+      registrar: '',
+      expiryDate: null
+    });
   }
 }
