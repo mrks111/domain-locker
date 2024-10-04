@@ -114,13 +114,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   initializeMenuItems() {
-    this.items = [
-      // {
-      //   label: 'Home',
-      //   icon: 'pi pi-fw pi-home',
-      //   routerLink: '/'
-      // },
-    ];
+    this.items = [];
 
     if (this.isAuthenticated) {
       this.items = [
@@ -132,12 +126,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
         {
           label: 'Add Domain',
           icon: 'pi pi-fw pi-plus',
-          routerLink: '/add'
+          routerLink: '/domains/add'
         },
         {
           label: 'Reports',
           icon: 'pi pi-fw pi-chart-line',
           routerLink: '/notifications'
+        },
+        {
+          label: 'Data Export',
+          icon: 'pi pi-fw pi-file-export',
+          routerLink: '/export'
+        },
+        {
+          label: 'Change History',
+          icon: 'pi pi-fw pi-history',
+          routerLink: '/history'
         },
         {
           label: 'Notifications',

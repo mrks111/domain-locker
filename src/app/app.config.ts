@@ -5,6 +5,7 @@ import { provideFileRouter } from '@analogjs/router';
 import { withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import { provideContent, withMarkdownRenderer } from '@analogjs/content';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { ConfirmationService, MessageService } from 'primeng/api';
 // import { authInterceptor } from './interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
@@ -19,6 +20,8 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ anchorScrolling: 'enabled' }),
       withEnabledBlockingInitialNavigation()
     ),
+    ConfirmationService,
+    MessageService,
     // provideHttpClient(withInterceptors([authInterceptor])),
   ],
 };
