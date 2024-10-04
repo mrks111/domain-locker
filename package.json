@@ -39,6 +39,7 @@
     "prismjs": "^1.29.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "whois-json": "^2.0.4",
     "zone.js": "~0.14.3"
   },
   "devDependencies": {
