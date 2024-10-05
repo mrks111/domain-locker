@@ -6,8 +6,11 @@ import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { catchError, throwError } from 'rxjs';
+import DatabaseService from './../../services/database.service';
+
 
 import type DomainInfo from '../../../types/DomainInfo';
+import { Router } from '@angular/router';
 
 interface NotificationOption {
   label: string;
@@ -54,12 +57,13 @@ export default class AddDomainComponent implements OnInit {
     { label: 'WHOIS Change', name: "whoisChange", description: "Get notified when domain registrant info changes", initial: false },
     { label: 'IP Change', name: "ipChange", description: "Get notified when the target IP address (IPv4 & IPv6) is updated", initial: false }
   ];
-
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
+    private databaseService: DatabaseService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -200,12 +204,35 @@ export default class AddDomainComponent implements OnInit {
 
   /**
    * Handles form submission
-   */
-  public onSubmit(): void {
+   */  
+  async onSubmit() {
     if (this.domainForm.valid) {
-      console.log('Form submitted:', this.domainForm.value);
-      // TODO: Send data to database
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Domain added successfully' });
+      try {
+        const formValue = this.domainForm.value;
+        const domainData = {
+          domain: {
+            domainName: formValue.domainName,
+            registrar: formValue.registrar,
+            expiryDate: formValue.expiryDate,
+            notes: formValue.notes
+          },
+          ipAddresses: this.domainInfo?.ipAddresses.ipv4.map(ip => ({ ipAddress: ip, isIpv6: false }))
+            .concat(this.domainInfo?.ipAddresses.ipv6.map(ip => ({ ipAddress: ip, isIpv6: true }))) || [],
+          tags: formValue.tags,
+          notifications: Object.entries(formValue.notifications)
+            .filter(([_, isEnabled]) => isEnabled)
+            .map(([type, _]) => ({ type, isEnabled: true }))
+        };
+  
+        const savedDomain = await this.databaseService.saveDomain(domainData);
+  
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Domain ${savedDomain.domainName} added successfully` });
+        this.router.navigate(['/domains']);
+      } catch (error) {
+        this.handleError(error);
+      }
+    } else {
+      this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Please fill in all required fields correctly.' });
     }
   }
 

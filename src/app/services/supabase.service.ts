@@ -9,7 +9,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class SupabaseService {
 
-  private supabase: SupabaseClient;
+  public supabase: SupabaseClient;
   private authStateSubject = new BehaviorSubject<boolean>(false);
   authState$ = this.authStateSubject.asObservable();
   private userSubject = new BehaviorSubject<User | null>(null);
