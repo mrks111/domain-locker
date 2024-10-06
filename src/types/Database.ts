@@ -15,13 +15,31 @@ export interface Domain {
 
 export interface DbDomain {
   id: string;
-  user_id: string;
   domain_name: string;
   registrar: string;
-  expiry_date: Date;
+  expiry_date: string;
   notes: string;
-  created_at: Date;
-  updated_at: Date;
+  ip_addresses?: { ip_address: string; is_ipv6: boolean }[];
+  ssl_certificates?: {
+    issuer: string;
+    issuer_country: string;
+    subject: string;
+    valid_from: string;
+    valid_to: string;
+    fingerprint: string;
+    key_size: number;
+    signature_algorithm: string;
+  }[];
+  whois_info?: {
+    registrant_country: string;
+    registrant_state_province: string;
+    created_date: string;
+    updated_date: string;
+    registry_domain_id: string;
+    registrar_id: string;
+    registrar_url: string;
+  };
+  tags?: { name: string }[];
 }
 
 export interface IpAddress {
@@ -60,6 +78,8 @@ export abstract class DatabaseService {
   abstract updateDomain(id: string, domain: Partial<Domain>): Promise<Domain>;
   abstract deleteDomain(id: string): Promise<void>;
   abstract listDomains(userId: string): Observable<Domain[]>;
+  // abstract listFilteredDomains(page: number, pageSize: number, sortField: string, sortOrder: number, filters: any): Observable<{ domains: Domain[], totalRecords: number }>;
+  abstract listDomainNames(): Observable<string[]>;
 
   abstract addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'createdAt' | 'updatedAt'>): Promise<IpAddress>;
   abstract getIpAddresses(domainId: string): Promise<IpAddress[]>;

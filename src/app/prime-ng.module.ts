@@ -22,6 +22,7 @@ import { KeyFilterModule } from 'primeng/keyfilter';
 import { MenubarModule } from 'primeng/menubar';
 import { MenuModule } from 'primeng/menu';
 import { MessageModule } from 'primeng/message';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { OverlayModule } from 'primeng/overlay';
 import { PanelModule } from 'primeng/panel';
 import { PasswordModule } from 'primeng/password';
@@ -34,7 +35,9 @@ import { StepsModule } from 'primeng/steps';
 import { StyleClassModule } from 'primeng/styleclass';
 import { TableModule } from 'primeng/table';
 import { TabViewModule } from 'primeng/tabview';
+import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
   exports: [
@@ -61,6 +64,7 @@ import { ToastModule } from 'primeng/toast';
     MenubarModule,
     MenuModule,
     MessageModule,
+    MultiSelectModule,
     OverlayModule,
     PanelModule,
     PasswordModule,
@@ -73,7 +77,9 @@ import { ToastModule } from 'primeng/toast';
     StyleClassModule,
     TableModule,
     TabViewModule,
+    TagModule,
     ToastModule,
+    TooltipModule,
   ]
 })
 export class PrimeNgModule { }

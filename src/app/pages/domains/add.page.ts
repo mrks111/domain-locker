@@ -1,13 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { catchError, throwError } from 'rxjs';
+import { catchError, throwError, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import DatabaseService from './../../services/database.service';
-
 
 import type DomainInfo from '../../../types/DomainInfo';
 import { Router } from '@angular/router';
@@ -28,7 +28,7 @@ interface NotificationOption {
   templateUrl: './add.page.html',
   styleUrls: ['./add.page.scss']
 })
-export default class AddDomainComponent implements OnInit {
+export default class AddDomainComponent implements OnInit, OnDestroy {
   public domainForm!: FormGroup;
   public activeIndex = 0;
   public isProcessing = false;
@@ -36,6 +36,9 @@ export default class AddDomainComponent implements OnInit {
   public tableData: { key: string; value: string }[] = [];
   public errorMessage = '';
   public isLoading = false;
+  private destroy$ = new Subject<void>();
+  private existingDomains: string[] = [];
+  public showDomainError = false;
 
   public readonly saveOptions: MenuItem[] = [
     {
@@ -57,6 +60,7 @@ export default class AddDomainComponent implements OnInit {
     { label: 'WHOIS Change', name: "whoisChange", description: "Get notified when domain registrant info changes", initial: false },
     { label: 'IP Change', name: "ipChange", description: "Get notified when the target IP address (IPv4 & IPv6) is updated", initial: false }
   ];
+
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
@@ -68,11 +72,15 @@ export default class AddDomainComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
+    this.fetchExistingDomains();
+    this.setupDomainValidation();
   }
 
-  /**
-   * Initializes the form with default values and validators
-   */
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private initializeForm(): void {
     const notificationControls = this.notificationOptions.reduce((acc, option) => {
       acc[option.name] = [option.initial];
@@ -80,18 +88,72 @@ export default class AddDomainComponent implements OnInit {
     }, {} as Record<string, [boolean]>);
 
     this.domainForm = this.fb.group({
-      domainName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/)]],
+      domainName: ['', [
+        Validators.required,
+        Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/),
+        this.domainExistsValidator()
+      ]],
       registrar: ['', Validators.required],
       expiryDate: ['', Validators.required],
       tags: [[], [this.tagsValidator()]],
       notes: ['', [Validators.maxLength(255), Validators.pattern(/^[a-zA-Z0-9\s.,!?'"()-]+$/)]],
       notifications: this.fb.group(notificationControls)
     });
+
+    // Revalidate domainName when existingDomains is updated
+    this.domainForm.get('domainName')?.valueChanges.pipe(
+      takeUntil(this.destroy$)
+    );
   }
 
-  /**
-   * Handles the next step in the form process
-   */
+  private setupDomainValidation(): void {
+    const domainControl = this.domainForm.get('domainName');
+    if (domainControl) {
+      domainControl.valueChanges.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      ).subscribe(() => {
+        if (domainControl.valid) {
+          this.showDomainError = false;
+        } else if (domainControl.touched) {
+          this.showDomainError = true;
+        }
+      });
+      domainControl.statusChanges.pipe(
+        takeUntil(this.destroy$)
+      ).subscribe(() => {
+        this.showDomainError = domainControl.touched && domainControl.invalid;
+      });
+    }
+  }
+  
+
+  private fetchExistingDomains(): void {
+    this.databaseService.listDomainNames().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (domains) => {
+        this.existingDomains = domains;
+        this.domainForm.get('domainName')?.updateValueAndValidity();
+      },
+      error: (error) => {
+        console.error('Failed to fetch existing domains:', error);
+        this.existingDomains = [];
+      }
+    });
+  }
+
+  private domainExistsValidator(): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      const domain = control.value?.toLowerCase();
+      if (domain && this.existingDomains.includes(domain)) {
+        return { 'domainExists': true };
+      }
+      return null;
+    };
+  }
+
   public async onNextStep(): Promise<void> {
     if (this.isProcessing) return;
 
@@ -302,6 +364,20 @@ export default class AddDomainComponent implements OnInit {
     }
   }
 
+  public getDomainErrorMessage(): string {
+    const domainControl = this.domainForm.get('domainName');
+    if (domainControl?.errors?.['domainExists']) {
+      return 'This domain has already been added.';
+    }
+    if (domainControl?.errors?.['required']) {
+      return 'Domain name is required.';
+    }
+    if (domainControl?.errors?.['pattern']) {
+      return 'Please enter a valid domain name.';
+    }
+    return '';
+  }
+
   /**
    * Gets error message for tags
    */
@@ -351,10 +427,8 @@ export default class AddDomainComponent implements OnInit {
   private handleHttpError(error: HttpErrorResponse) {
     let errorMessage = 'An unknown error occurred';
     if (error.error instanceof ErrorEvent) {
-      // Client-side or network error
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      // Backend returned unsuccessful response code
       errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
     }
     console.error(errorMessage);

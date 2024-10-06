@@ -1,0 +1,67 @@
+
+<h1>Domains</h1>
+
+<div class="flex gap-2 justify-between align-items-center">
+  
+  <div class="flex gap-2 justify-between align-items-center">
+    <span class="p-input-icon-left">
+      <i class="pi pi-search"></i>
+      <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Global Search" />
+    </span>
+    <p-multiSelect [options]="columns" [(ngModel)]="visibleColumns" optionLabel="header"
+                  selectedItemsLabel="{0} columns selected" [style]="{minWidth: '200px'}"
+                  placeholder="Choose Columns"></p-multiSelect>
+  </div>
+
+
+   <a pButton routerLink="/domains/add" class="p-button-primary no-underline my-2 flex gap-2 w-fit">
+    <i class="pi pi-plus"></i>
+    Add Domain
+  </a>
+</div>
+
+<p-table #dt [value]="domains" [columns]="visibleColumns" [paginator]="true" [rows]="10"
+         [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]"
+         [globalFilterFields]="['domain_name', 'registrar', 'notes']"
+         [sortMode]="'multiple'" [resizableColumns]="true" styleClass="p-datatable-striped"
+         [loading]="loading" [tableStyle]="{ 'min-width': '50rem' }">
+
+  
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngFor="let col of visibleColumns" [pSortableColumn]="col.field" [frozen]="col.frozen" pResizableColumn style="width: 10rem;">
+        {{col.header}}
+        <p-sortIcon [field]="col.field"></p-sortIcon>
+      </th>
+    </tr>
+  </ng-template>
+  
+  <ng-template pTemplate="body" let-domain>
+    <tr>
+      <td *ngFor="let col of visibleColumns" [frozenColumn]="col.frozen">
+        <ng-container [ngSwitch]="col.field">
+          <ng-container *ngSwitchCase="'notes'">
+            <span [pTooltip]="domain.notes">{{truncateNotes(domain.notes)}}</span>
+          </ng-container>
+          <ng-container *ngSwitchCase="'expiry_date'">
+            {{domain.expiry_date | date:'mediumDate'}}
+            <p-tag 
+              [value]="getRemainingDaysStyle(domain.expiry_date)"
+              [severity]="getExpirySeverity(domain.expiry_date)"
+              styleClass="ml-2 w-20"
+            ></p-tag>
+          </ng-container>
+          <ng-container *ngSwitchCase="'tags'">
+            {{(domain.tags || []).join(', ')}}
+            <!-- <p-tag 
+              [value]="getRemainingDaysStyle(domain.expiry_date)"
+              [severity]="getExpirySeverity(domain.expiry_date)"
+              styleClass="ml-2 w-20"
+            ></p-tag> -->
+          </ng-container>
+          <ng-container *ngSwitchDefault>{{domain[col.field]}}</ng-container>
+        </ng-container>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

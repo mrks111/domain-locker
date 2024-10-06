@@ -3,8 +3,7 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { DatabaseService, DbDomain, Domain, IpAddress, Notification, Tag, SaveDomainData } from '../../types/Database';
-import { Observable, from } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { from, map, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +31,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
   async saveDomain(data: SaveDomainData): Promise<Domain> {
     const { domain, ipAddresses, tags, notifications } = data;
 
+    console.log(data);
+  
     const dbDomain: Partial<DbDomain> = {
       domain_name: domain.domainName,
       registrar: domain.registrar,
@@ -39,21 +40,22 @@ export default class SupabaseDatabaseService extends DatabaseService {
       notes: domain.notes,
       user_id: await this.supabase.getCurrentUser().then(user => user?.id)
     };
-
+  
     const { data: insertedDomain, error: domainError } = await this.supabase.supabase
       .from('domains')
       .insert(dbDomain)
-      .single();
-
+      .select()
+      .single() as { data: DbDomain, error: any };
+  
     if (domainError) throw domainError;
     if (!insertedDomain) throw new Error('Failed to insert domain');
-
+  
     await Promise.all([
       this.saveIpAddresses(insertedDomain.id, ipAddresses),
       this.saveTags(insertedDomain.id, tags),
       this.saveNotifications(insertedDomain.id, notifications)
     ]);
-
+  
     return this.mapDbDomainToDomain(insertedDomain);
   }
 
@@ -73,25 +75,41 @@ export default class SupabaseDatabaseService extends DatabaseService {
     if (error) throw error;
   }
 
-  private async saveTags(domainId: string, tags: string[]): Promise<void> {
-    if (tags.length === 0) return;
+private async saveTags(domainId: string, tags: string[]): Promise<void> {
+  if (tags.length === 0) return;
 
-    for (const tag of tags) {
-      const { data: savedTag, error: tagError } = await this.supabase.supabase
+  for (const tag of tags) {
+    const { data: savedTag, error: tagError } = await this.supabase.supabase
+      .from('tags')
+      .insert({ name: tag })
+      .select('id')
+      .single();
+
+    if (tagError && tagError.code !== '23505') throw tagError;
+    let tagId: string;
+
+    // Get ID of tag (either new or existing)
+    if (savedTag) {
+      tagId = savedTag.id;
+    } else {
+      const { data: existingTag, error: fetchError } = await this.supabase.supabase
         .from('tags')
-        .insert({ name: tag })
+        .select('id')
+        .eq('name', tag)
         .single();
-
-      if (tagError && tagError.code !== '23505') throw tagError;
-
-      const tagId = savedTag?.id ?? (tagError?.details as string);
-      const { error: linkError } = await this.supabase.supabase
-        .from('domain_tags')
-        .insert({ domain_id: domainId, tag_id: tagId });
-
-      if (linkError) throw linkError;
+      if (fetchError) throw fetchError;
+      if (!existingTag) throw new Error(`Failed to insert or fetch tag: ${tag}`);
+      tagId = existingTag.id;
     }
+
+    // Link tag to domain
+    const { error: linkError } = await this.supabase.supabase
+      .from('domain_tags')
+      .insert({ domain_id: domainId, tag_id: tagId });
+
+    if (linkError) throw linkError;
   }
+}
 
   private async saveNotifications(domainId: string, notifications: { type: string; isEnabled: boolean }[]): Promise<void> {
     if (notifications.length === 0) return;
@@ -122,6 +140,41 @@ export default class SupabaseDatabaseService extends DatabaseService {
     };
   }
 
+  override listDomainNames(): Observable<string[]> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select('domain_name')
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return (data || []).map(d => d.domain_name.toLowerCase());
+      })
+    );
+  }
+
+  override listDomains(): Observable<Domain[]> {
+    return new Observable(observer => {
+      this.supabase.supabase
+        .from('domains')
+        .select(`
+          *,
+          ip_addresses (ip_address, is_ipv6),
+          ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
+          whois_info (registrant_country, registrant_state_province, created_date, updated_date, registry_domain_id, registrar_id, registrar_url),
+          domain_tags (tags (name))
+        `)
+        .then(({ data, error }) => {
+          if (error) {
+            observer.error(error);
+          } else {
+            observer.next(data as Domain[]);
+            observer.complete();
+          }
+        });
+    });
+  }
+  
+
   override getDomain(id: string): Promise<Domain | null> {
     throw new Error('Method not implemented.');
   }
@@ -129,9 +182,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
     throw new Error('Method not implemented.');
   }
   override deleteDomain(id: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  override listDomains(userId: string): Observable<Domain[]> {
     throw new Error('Method not implemented.');
   }
   override addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'createdAt' | 'updatedAt'>): Promise<IpAddress> {

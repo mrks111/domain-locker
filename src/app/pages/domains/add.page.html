@@ -23,7 +23,7 @@
                 aria-describedby="Input field for domain name to add"
               >
               <small class="p-error" *ngIf="domainForm.get('domainName')?.invalid && domainForm.get('domainName')?.touched">
-                Please enter a valid domain name.
+                {{ getDomainErrorMessage() || 'Please enter a valid domain name.' }}
               </small>
               <small class="p-success text-green-400" *ngIf="!domainForm.get('domainName')?.invalid && domainForm.get('domainName')?.touched">
                 Looks good! Click Next to continue.

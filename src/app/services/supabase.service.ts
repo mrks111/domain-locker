@@ -142,9 +142,10 @@ export class SupabaseService {
 
   async deleteAccount(): Promise<void> {
     // TODO: Implement account deletion logic
-    const { error } = await this.supabase.auth.admin.deleteUser(
-      (await this.getCurrentUser()).id
-    );
-    if (error) throw error;
+    const currentUser = await this.getCurrentUser();
+    if (currentUser) {
+      const { error } = await this.supabase.auth.admin.deleteUser(currentUser.id);
+      if (error) throw error;
+    }
   }
 }
