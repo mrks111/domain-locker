@@ -1,0 +1,21 @@
+<div class="p-card bg-surface-card text-default p-4 mb-4 shadow-md border-radius-custom">
+  <h2 class="text-primary">{{ domain.domainName }}</h2>
+  <p><strong>Registrar:</strong> {{ domain.registrar }}</p>
+  <p><strong>Expiry Date:</strong> {{ domain.expiryDate | date: 'mediumDate' }}</p>
+
+  <div *ngIf="domain.ipAddresses?.length">
+    <strong>IP Addresses:</strong>
+    <ul>
+      <li *ngFor="let ip of domain.ipAddresses">{{ ip.ipAddress }} ({{ ip.isIpv6 ? 'IPv6' : 'IPv4' }})</li>
+    </ul>
+  </div>
+
+  <div *ngIf="domain.tags?.length">
+    <strong>Tags:</strong>
+    <p-tag *ngFor="let tag of domain.tags" [value]="tag" class="mr-1"></p-tag>
+  </div>
+
+  <div *ngIf="domain.notes">
+    <strong>Notes:</strong> <span>{{ domain.notes }}</span>
+  </div>
+</div>
