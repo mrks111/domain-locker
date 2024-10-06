@@ -29,10 +29,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
 
   async saveDomain(data: SaveDomainData): Promise<Domain> {
-    const { domain, ipAddresses, tags, notifications } = data;
-
-    console.log(data);
-  
+    const { domain, ipAddresses, tags, notifications, dns, ssl, whois } = data;
+    
     const dbDomain: Partial<DbDomain> = {
       domain_name: domain.domainName,
       registrar: domain.registrar,
@@ -49,15 +47,23 @@ export default class SupabaseDatabaseService extends DatabaseService {
   
     if (domainError) throw domainError;
     if (!insertedDomain) throw new Error('Failed to insert domain');
+
+    console.log('Data to Insert', data);
+    console.log('Inserted domain:', insertedDomain);
   
+    // Save IP Addresses, Tags, Notifications
     await Promise.all([
       this.saveIpAddresses(insertedDomain.id, ipAddresses),
       this.saveTags(insertedDomain.id, tags),
-      this.saveNotifications(insertedDomain.id, notifications)
+      this.saveNotifications(insertedDomain.id, notifications),
+      this.saveDnsRecords(insertedDomain.id, dns),
+      this.saveSslInfo(insertedDomain.id, ssl),
+      this.saveWhoisInfo(insertedDomain.id, whois)
     ]);
   
     return this.mapDbDomainToDomain(insertedDomain);
   }
+  
 
   private async saveIpAddresses(domainId: string, ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'createdAt' | 'updatedAt'>[]): Promise<void> {
     if (ipAddresses.length === 0) return;
@@ -110,6 +116,70 @@ private async saveTags(domainId: string, tags: string[]): Promise<void> {
     if (linkError) throw linkError;
   }
 }
+
+private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Promise<void> {
+  if (!dns) return;
+  const dnsRecords: { domain_id: string; record_type: string; record_value: string }[] = [];
+  if (dns.mxRecords) {
+    dns.mxRecords.forEach((record) => {
+      dnsRecords.push({ domain_id: domainId, record_type: 'MX', record_value: record });
+    });
+  }
+  if (dns.txtRecords) {
+    dns.txtRecords.forEach((record) => {
+      dnsRecords.push({ domain_id: domainId, record_type: 'TXT', record_value: record });
+    });
+  }
+  if (dns.nameServers) {
+    dns.nameServers.forEach((record) => {
+      dnsRecords.push({ domain_id: domainId, record_type: 'NS', record_value: record });
+    });
+  }
+  const { error } = await this.supabase.supabase.from('dns_records').insert(dnsRecords);
+  if (error) throw error;
+}
+
+  private async saveSslInfo(domainId: string, ssl: any): Promise<void> {
+    if (!ssl) return;
+  
+    const sslData = {
+      domain_id: domainId,
+      issuer: ssl.issuer,
+      issuer_country: ssl.issuerCountry,
+      subject: ssl.subject,
+      valid_from: new Date(ssl.validFrom),
+      valid_to: new Date(ssl.validTo),
+      fingerprint: ssl.fingerprint,
+      key_size: ssl.keySize,
+      signature_algorithm: ssl.signatureAlgorithm
+    };
+  
+    const { error } = await this.supabase.supabase
+      .from('ssl_certificates')
+      .insert(sslData);
+  
+    if (error) throw error;
+  }
+
+  private async saveWhoisInfo(domainId: string, registrant: any): Promise<void> {
+    if (!registrant) return;
+  
+    const whoisData = {
+      domain_id: domainId,
+      registrant_country: registrant.country,
+      registrant_state_province: registrant.stateProvince,
+      registry_domain_id: registrant.registryDomainId,
+      registrar_id: registrant.id,
+      registrar_url: registrant.url
+    };
+  
+    const { error } = await this.supabase.supabase
+      .from('whois_info')
+      .insert(whoisData);
+  
+    if (error) throw error;
+  }
+  
 
   private async saveNotifications(domainId: string, notifications: { type: string; isEnabled: boolean }[]): Promise<void> {
     if (notifications.length === 0) return;
@@ -167,7 +237,11 @@ private async saveTags(domainId: string, tags: string[]): Promise<void> {
           if (error) {
             observer.error(error);
           } else {
-            observer.next(data as Domain[]);
+            const formattedDomains = data.map(domain => ({
+              ...domain,
+              domain_tags: domain.domain_tags?.map((tagItem: { tags: { name: string } }) => tagItem.tags.name) || []
+            }));
+            observer.next(formattedDomains as Domain[]);
             observer.complete();
           }
         });

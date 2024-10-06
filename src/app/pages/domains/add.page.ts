@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { catchError, throwError, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import DatabaseService from './../../services/database.service';
+import { SaveDomainData } from '../../../types/Database';
 
 import type DomainInfo from '../../../types/DomainInfo';
 import { Router } from '@angular/router';
@@ -271,19 +272,22 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     if (this.domainForm.valid) {
       try {
         const formValue = this.domainForm.value;
-        const domainData = {
+        const domainData: SaveDomainData = {
           domain: {
             domainName: formValue.domainName,
             registrar: formValue.registrar,
             expiryDate: formValue.expiryDate,
-            notes: formValue.notes
+            notes: formValue.notes,
           },
           ipAddresses: this.domainInfo?.ipAddresses.ipv4.map(ip => ({ ipAddress: ip, isIpv6: false }))
             .concat(this.domainInfo?.ipAddresses.ipv6.map(ip => ({ ipAddress: ip, isIpv6: true }))) || [],
           tags: formValue.tags,
           notifications: Object.entries(formValue.notifications)
             .filter(([_, isEnabled]) => isEnabled)
-            .map(([type, _]) => ({ type, isEnabled: true }))
+            .map(([type, _]) => ({ type, isEnabled: true })),
+          whois: this.domainInfo?.registrant,
+          dns: this.domainInfo?.dns,
+          ssl: this.domainInfo?.ssl,
         };
   
         const savedDomain = await this.databaseService.saveDomain(domainData);

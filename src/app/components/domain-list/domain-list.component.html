@@ -20,16 +20,24 @@
   </a>
 </div>
 
-<p-table #dt [value]="domains" [columns]="visibleColumns" [paginator]="true" [rows]="10"
-         [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]"
-         [globalFilterFields]="['domain_name', 'registrar', 'notes']"
-         [sortMode]="'multiple'" [resizableColumns]="true" styleClass="p-datatable-striped"
-         [loading]="loading" [tableStyle]="{ 'min-width': '50rem' }">
-
+<p-table #dt
+  [value]="domains"
+  [columns]="visibleColumns"
+  [paginator]="true"
+  [rows]="10"
+  [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10,25,50]"
+  [globalFilterFields]="['domain_name', 'registrar', 'notes']"
+  [sortMode]="'multiple'"
+  [resizableColumns]="true"
+  styleClass="p-datatable-striped"
+  [loading]="loading"
+  [frozenColumns]="['domain_name']"
+  [tableStyle]="{ 'min-width': '50rem' }">
   
   <ng-template pTemplate="header">
     <tr>
-      <th *ngFor="let col of visibleColumns" [pSortableColumn]="col.field" [frozen]="col.frozen" pResizableColumn style="width: 10rem;">
+      <th *ngFor="let col of visibleColumns" [pSortableColumn]="col.field" pResizableColumn style="width: 10rem;">
         {{col.header}}
         <p-sortIcon [field]="col.field"></p-sortIcon>
       </th>
@@ -38,10 +46,13 @@
   
   <ng-template pTemplate="body" let-domain>
     <tr>
-      <td *ngFor="let col of visibleColumns" [frozenColumn]="col.frozen">
+      <td *ngFor="let col of visibleColumns">
         <ng-container [ngSwitch]="col.field">
           <ng-container *ngSwitchCase="'notes'">
             <span [pTooltip]="domain.notes">{{truncateNotes(domain.notes)}}</span>
+          </ng-container>
+          <ng-container *ngSwitchCase="'domain_name'">
+            <a class="font-bold no-underline text-default" [routerLink]="['/domains', domain.id]">{{domain.domain_name}}</a>
           </ng-container>
           <ng-container *ngSwitchCase="'expiry_date'">
             {{domain.expiry_date | date:'mediumDate'}}
@@ -52,12 +63,9 @@
             ></p-tag>
           </ng-container>
           <ng-container *ngSwitchCase="'tags'">
-            {{(domain.tags || []).join(', ')}}
-            <!-- <p-tag 
-              [value]="getRemainingDaysStyle(domain.expiry_date)"
-              [severity]="getExpirySeverity(domain.expiry_date)"
-              styleClass="ml-2 w-20"
-            ></p-tag> -->
+            <span *ngFor="let tag of domain.domain_tags || []" class="mx-1">
+              <p-tag value="{{tag}}" severity="secondary" [rounded]="true" styleClass="px-2" />
+            </span>
           </ng-container>
           <ng-container *ngSwitchDefault>{{domain[col.field]}}</ng-container>
         </ng-container>

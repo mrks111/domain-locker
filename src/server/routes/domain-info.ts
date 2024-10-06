@@ -127,7 +127,9 @@ const getSslCertificateDetails = (domain: string): Promise<Partial<PeerCertifica
 
 // Helper to convert domain status
 const makeStatusArray = (status: string | undefined): string[] => {
-  return status ? status.split(' ').filter((s) => !s.includes('https://icann.org/epp#')) : [];
+  return status
+    ? Array.from(new Set([...status.matchAll(/([a-zA-Z]+Prohibited)/g)].map((match) => match[1])))
+    : [];
 };
 
 export default defineEventHandler(async (event) => {
