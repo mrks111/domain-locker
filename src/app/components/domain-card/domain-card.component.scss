@@ -1,0 +1,18 @@
+
+.domain-card {
+  .edit-button-container {
+    display: none;
+  }
+  &:hover {
+    .edit-button-container {
+      display: flex;
+    }
+  } 
+}
+
+.custom-pannel {
+  ::ng-deep .p-panel-header, ::ng-deep .p-toggleable-content .p-panel-content  {
+    padding: 0;
+    border: none;
+  }
+}

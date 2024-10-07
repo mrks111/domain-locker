@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { DomainCardComponent } from '../../../components/domain-card/domain-card.component';
 import { PrimeNgModule } from '../../../prime-ng.module';
 import DatabaseService from '../../../services/database.service';
-import { Domain } from '../../../../types/Database';
+import { DbDomain } from '../../../../types/Database';
 
 @Component({
   standalone: true,
@@ -12,7 +12,7 @@ import { Domain } from '../../../../types/Database';
   templateUrl: './index.page.html',
 })
 export default class DomainAllPageComponent implements OnInit {
-  domains: Domain[] = [];
+  domains: DbDomain[] = [];
   loading: boolean = true;
 
   constructor(private databaseService: DatabaseService) {}
@@ -27,6 +27,7 @@ export default class DomainAllPageComponent implements OnInit {
       next: (domains) => {
         this.domains = domains;
         this.loading = false;
+        console.log(domains);
       },
       error: (error) => {
         console.error('Error fetching domains:', error);
