@@ -1,0 +1,77 @@
+// src/app/components/domain-favicon/domain-favicon.component.ts
+
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
+
+@Component({
+  selector: 'app-domain-favicon',
+  standalone: true,
+  imports: [CommonModule, NgOptimizedImage],
+  template: `
+    <ng-container *ngIf="!faviconLoaded">
+      <i class="pi" [ngClass]="{'pi-spin': isSpinning, 'pi-globe': true}" [style.font-size.px]="size"></i>
+    </ng-container>
+    <img 
+      *ngIf="faviconLoaded !== false"
+      [ngSrc]="'https://favicone.com/' + domain + '?s=' + size"
+      [width]="size" 
+      [height]="size"
+      (load)="onFaviconLoad()"
+      (error)="onFaviconError()"
+      [alt]="domain + ' favicon'"
+      [class]="styleClass || 'rounded-sm'"
+    />
+  `,
+  styles: [`
+    :host {
+      display: inline-block;
+      width: var(--favicon-size, 24px);
+      height: var(--favicon-size, 24px);
+      line-height: 0;
+    }
+    i, img {
+      vertical-align: middle;
+    }
+  `]
+})
+export class DomainFaviconComponent implements OnInit, OnDestroy {
+  @Input() domain!: string;
+  @Input() size: number = 24;
+  @Input() styleClass: string = '';
+
+  faviconLoaded: boolean | undefined;
+  isSpinning: boolean = true;
+  private timeoutId: any;
+
+  ngOnInit() {
+    this.faviconLoaded = undefined;
+    this.startSpinningTimeout();
+  }
+
+  ngOnDestroy() {
+    this.clearSpinningTimeout();
+  }
+
+  private startSpinningTimeout() {
+    this.timeoutId = setTimeout(() => {
+      this.isSpinning = false;
+    }, 1000);
+  }
+
+  private clearSpinningTimeout() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+    }
+  }
+
+  onFaviconLoad() {
+    this.clearSpinningTimeout();
+    this.faviconLoaded = true;
+  }
+
+  onFaviconError() {
+    this.clearSpinningTimeout();
+    this.faviconLoaded = false;
+    this.isSpinning = false;
+  }
+}
