@@ -4,33 +4,7 @@ import dns from 'dns';
 import tls from 'tls';
 import { PeerCertificate } from 'tls';
 import type DomainInfo from '../../types/DomainInfo';
-
-// Types for the data we're going to return
-interface WhoisData {
-  domainName?: string;
-  registrarRegistrationExpirationDate?: string;
-  updatedDate?: string;
-  creationDate?: string;
-  registrarName?: string;
-  registrar?: string;
-  registrarIanaId?: string;
-  registrarUrl?: string;
-  registryDomainId?: string;
-  registrantName?: string;
-  registrantOrganization?: string;
-  registrantStreet?: string;
-  registrantCity?: string;
-  registrantCountry?: string;
-  registrantStateProvince?: string;
-  registrantPostalCode?: string;
-  abuseContactEmail?: string;
-  registrarAbuseContactEmail?: string;
-  abuseContactPhone?: string;
-  registrarAbuseContactPhone?: string;
-  domainStatus?: string;
-  dnssec?: string;
-  nameServers?: string;
-}
+import type { WhoisData, HostData } from '../../types/DomainInfo';
 
 // Helper function to handle potential failures in asynchronous operations
 const safeExecute = async <T>(fn: () => Promise<T>, errorMsg: string, errors: string[]): Promise<T | null> => {
@@ -107,6 +81,24 @@ const getTxtRecords = async (domain: string): Promise<string[]> => {
   });
 };
 
+// Function to fetch IP info from ip-api.com
+const getIpApiInfo = async (ip: string): Promise<HostInfo | null> => {
+  const apiUrl = `http://ip-api.com/json/${ip}?fields=12249`;
+  try {
+    const response = await fetch(apiUrl);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.regionName) data.region = data.regionName; 
+      return data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
 // Utility function to get SSL certificate details
 const getSslCertificateDetails = (domain: string): Promise<Partial<PeerCertificate>> => {
   return new Promise((resolve, reject) => {
@@ -132,6 +124,7 @@ const makeStatusArray = (status: string | undefined): string[] => {
     : [];
 };
 
+// Main event handler for the API
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const domain = query['domain'] as string;
@@ -151,6 +144,10 @@ export default defineEventHandler(async (event) => {
   const txtRecords = await safeExecute(() => getTxtRecords(domain), 'Failed to fetch TXT records', errors);
   const nameServers = await safeExecute(() => getNameServers(domain), 'Failed to fetch name servers', errors);
   const sslInfo = await safeExecute(() => getSslCertificateDetails(domain), 'Failed to fetch SSL certificate details', errors);
+  let hostInfo: HostData | null = null;
+  if (ipv4Addresses && ipv4Addresses.length > 0) {
+    hostInfo = await safeExecute(() => getIpApiInfo(ipv4Addresses[0]), 'Failed to fetch IP information', errors);
+  }
 
   // If WHOIS data is missing, return an error early
   if (!whoisData) {
@@ -158,7 +155,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const domainInfo: DomainInfo = {
-    error: errors.length ? errors.join(', ') : undefined,
     domainName: whoisData.domainName || dunno,
     status: makeStatusArray(whoisData.domainStatus),
     ipAddresses: {
@@ -205,6 +201,7 @@ export default defineEventHandler(async (event) => {
       keySize: sslInfo?.bits || 0,
       signatureAlgorithm: sslInfo?.asn1Curve || dunno,
     },
+    host: hostInfo,
   };
 
   return domainInfo;
