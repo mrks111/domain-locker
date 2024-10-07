@@ -49,7 +49,7 @@
       <td *ngFor="let col of visibleColumns">
         <ng-container [ngSwitch]="col.field">
           <ng-container *ngSwitchCase="'notes'">
-            <span [pTooltip]="domain.notes">{{truncateNotes(domain.notes)}}</span>
+            <span [pTooltip]="domain.notes">{{domainUtils.truncateNotes(domain.notes)}}</span>
           </ng-container>
           <ng-container *ngSwitchCase="'domain_name'">
             <a class="font-bold no-underline text-default" [routerLink]="['/domains', domain.id]">{{domain.domain_name}}</a>
@@ -57,8 +57,8 @@
           <ng-container *ngSwitchCase="'expiry_date'">
             {{domain.expiry_date | date:'mediumDate'}}
             <p-tag 
-              [value]="getRemainingDaysStyle(domain.expiry_date)"
-              [severity]="getExpirySeverity(domain.expiry_date)"
+              [value]="domainUtils.getRemainingDaysText(domain.expiry_date)"
+              [severity]="domainUtils.getExpirySeverity(domain.expiry_date)"
               styleClass="ml-2 w-20"
             ></p-tag>
           </ng-container>

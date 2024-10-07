@@ -288,7 +288,15 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
           whois: this.domainInfo?.registrant,
           dns: this.domainInfo?.dns,
           ssl: this.domainInfo?.ssl,
+          host: this.domainInfo?.host,
+          registrar: this.domainInfo?.registrar
         };
+
+        console.log('Domain Info to save: ', this.domainInfo);
+
+        if (formValue.registrar) {
+          domainData.domain.registrar = formValue.registrar;
+        }
   
         const savedDomain = await this.databaseService.saveDomain(domainData);
   

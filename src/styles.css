@@ -121,3 +121,37 @@ h1 {
   color: var(--text-color);
 }
 
+.text-surface-0 {
+  color: var(--surface-0);
+}
+.text-surface-50 {
+  color: var(--surface-50);
+}
+.text-surface-100 {
+  color: var(--surface-100);
+}
+.text-surface-200 {
+  color: var(--surface-200);
+}
+.text-surface-300 {
+  color: var(--surface-300);
+}
+.text-surface-400 {
+  color: var(--surface-400);
+}
+.text-surface-500 {
+  color: var(--surface-500);
+}
+.text-surface-600 {
+  color: var(--surface-600);
+}
+.text-surface-700 {
+  color: var(--surface-700);
+}
+.text-surface-800 {
+  color: var(--surface-800);
+}
+.text-surface-900 {
+  color: var(--surface-900);
+}
+

@@ -8,26 +8,27 @@ interface Timestamps {
   updated_at: string;
 }
 
-// Domain Interface
-export interface Domain extends Timestamps {
-  id: string;
-  userId: string;
-  domainName: string;
-  registrar: string;
-  expiryDate: Date;
-  notes: string;
-}
+// // Domain Interface
+// export interface Domain extends Timestamps {
+//   id: string;
+//   userId: string;
+//   domainName: string;
+//   registrar: string;
+//   expiryDate: Date;
+//   notes: string;
+//   createdAt: Date;
+//   updatedAt: Date;
+// }
 
 // Database Domain Interface
 export interface DbDomain extends Timestamps {
   id: string;
   user_id: string;
   domain_name: string;
-  registrar: string;
   expiry_date: Date;
   notes: string;
   ip_addresses?: { ip_address: string; is_ipv6: boolean }[];
-  ssl_certificates?: {
+  ssl?: {
     issuer: string;
     issuer_country: string;
     subject: string;
@@ -36,17 +37,19 @@ export interface DbDomain extends Timestamps {
     fingerprint: string;
     key_size: number;
     signature_algorithm: string;
-  }[];
-  whois_info?: {
-    registrant_country: string;
-    registrant_state_province: string;
-    created_date: string;
-    updated_date: string;
-    registry_domain_id: string;
-    registrar_id: string;
-    registrar_url: string;
   };
-  tags?: { name: string }[];
+  whois?: {
+    name: string;
+    organization: string;
+    country: string;
+    street: string;
+    city: string;
+    state: string;
+    postal_code: string;
+  };
+  tags?: string[];
+  host?: Host;
+  registrar?: Registrar;
 }
 
 // IP Address Interface
@@ -71,9 +74,27 @@ export interface Notification extends Timestamps {
   isEnabled: boolean;
 }
 
+export interface Registrar {
+  name: string;
+  url: string;
+  id: string;
+}
+
+export interface Host {
+  query: string;
+  lat: number;
+  lon: number;
+  isp: string;
+  org: string;
+  asNumber: string;
+  city: string;
+  region: string;
+  country: string;
+}
+
 // SaveDomainData Interface
 export interface SaveDomainData {
-  domain: Omit<Domain, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+  domain: Omit<DbDomain, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
   ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'createdAt' | 'updatedAt'>[];
   tags: string[];
   notifications: { type: string; isEnabled: boolean }[];
@@ -92,9 +113,6 @@ export interface SaveDomainData {
     organization: string;
     country: string;
     stateProvince: string;
-    registryDomainId: string;
-    registrarId: string;
-    registrarUrl: string;
   };
   dns?: {
     dnssec: string;
@@ -102,15 +120,17 @@ export interface SaveDomainData {
     mxRecords: string[];
     txtRecords: string[];
   };
+  registrar?: Registrar;
+  host?: Host;
 }
 
 // Abstract Database Service Interface
 export abstract class DatabaseService {
-  abstract saveDomain(data: SaveDomainData): Promise<Domain>;
-  abstract getDomain(id: string): Promise<Domain | null>;
-  abstract updateDomain(id: string, domain: Partial<Domain>): Promise<Domain>;
+  abstract saveDomain(data: SaveDomainData): Promise<DbDomain>;
+  abstract getDomain(id: string): Promise<DbDomain | null>;
+  abstract updateDomain(id: string, domain: Partial<DbDomain>): Promise<DbDomain>;
   abstract deleteDomain(id: string): Promise<void>;
-  abstract listDomains(userId: string): Observable<Domain[]>;
+  abstract listDomains(userId: string): Observable<DbDomain[]>;
   abstract listDomainNames(): Observable<string[]>;
   abstract addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'createdAt' | 'updatedAt'>): Promise<IpAddress>;
   abstract getIpAddresses(domainId: string): Promise<IpAddress[]>;

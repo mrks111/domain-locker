@@ -2,7 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { DatabaseService, DbDomain, Domain, IpAddress, Notification, Tag, SaveDomainData } from '../../types/Database';
+import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '../../types/Database';
 import { from, map, Observable } from 'rxjs';
 
 @Injectable({
@@ -28,12 +28,11 @@ export default class SupabaseDatabaseService extends DatabaseService {
     return !!data;
   }
 
-  async saveDomain(data: SaveDomainData): Promise<Domain> {
-    const { domain, ipAddresses, tags, notifications, dns, ssl, whois } = data;
-    
+  async saveDomain(data: SaveDomainData): Promise<DbDomain> {
+    const { domain, ipAddresses, tags, notifications, dns, ssl, whois, registrar, host } = data;
+  
     const dbDomain: Partial<DbDomain> = {
       domain_name: domain.domainName,
-      registrar: domain.registrar,
       expiry_date: domain.expiryDate,
       notes: domain.notes,
       user_id: await this.supabase.getCurrentUser().then(user => user?.id)
@@ -47,21 +46,37 @@ export default class SupabaseDatabaseService extends DatabaseService {
   
     if (domainError) throw domainError;
     if (!insertedDomain) throw new Error('Failed to insert domain');
-
-    console.log('Data to Insert', data);
-    console.log('Inserted domain:', insertedDomain);
   
-    // Save IP Addresses, Tags, Notifications
+    // Save related data
     await Promise.all([
       this.saveIpAddresses(insertedDomain.id, ipAddresses),
       this.saveTags(insertedDomain.id, tags),
       this.saveNotifications(insertedDomain.id, notifications),
       this.saveDnsRecords(insertedDomain.id, dns),
       this.saveSslInfo(insertedDomain.id, ssl),
-      this.saveWhoisInfo(insertedDomain.id, whois)
+      this.saveWhoisInfo(insertedDomain.id, whois),
+      this.saveRegistrar(insertedDomain.id, registrar),
+      this.saveHost(insertedDomain.id, host)
     ]);
   
-    return this.mapDbDomainToDomain(insertedDomain);
+    // Fetch the complete domain data including related information
+    const { data: completeDomain, error: fetchError } = await this.supabase.supabase
+      .from('domains')
+      .select(`
+        *,
+        registrars (name, url),
+        domain_hosts (
+          hosts (
+            ip, lat, lon, isp, org, as_number, city, region, country
+          )
+        )
+      `)
+      .eq('id', insertedDomain.id)
+      .single();
+  
+    if (fetchError) throw fetchError;
+    if (!completeDomain) throw new Error('Failed to fetch complete domain data');
+    return completeDomain;
   }
   
 
@@ -161,16 +176,18 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
     if (error) throw error;
   }
 
-  private async saveWhoisInfo(domainId: string, registrant: any): Promise<void> {
-    if (!registrant) return;
-  
+  private async saveWhoisInfo(domainId: string, whois: any): Promise<void> {
+    if (!whois) return;
+
     const whoisData = {
       domain_id: domainId,
-      registrant_country: registrant.country,
-      registrant_state_province: registrant.stateProvince,
-      registry_domain_id: registrant.registryDomainId,
-      registrar_id: registrant.id,
-      registrar_url: registrant.url
+      name: whois.name,
+      organization: whois.organization,
+      country: whois.country,
+      street: whois.street,
+      city: whois.city,
+      state: whois.stateProvince,
+      postal_code: whois.postalCode,
     };
   
     const { error } = await this.supabase.supabase
@@ -178,6 +195,88 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
       .insert(whoisData);
   
     if (error) throw error;
+  }
+
+  private async saveRegistrar(domainId: string, registrar: Omit<Registrar, 'id'>): Promise<void> {
+    if (!registrar.name) return;
+  
+    // Check if the registrar already exists
+    const { data: existingRegistrar, error: fetchError } = await this.supabase.supabase
+      .from('registrars')
+      .select('id')
+      .eq('name', registrar.name)
+      .single();
+  
+    if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+    let registrarId: string;
+    if (existingRegistrar) {
+      registrarId = existingRegistrar.id;
+    } else {
+      // Insert new registrar
+      const { data: newRegistrar, error: insertError } = await this.supabase.supabase
+        .from('registrars')
+        .insert({ name: registrar.name, url: registrar.url })
+        .select('id')
+        .single();
+  
+      if (insertError) throw insertError;
+      if (!newRegistrar) throw new Error('Failed to insert registrar');
+  
+      registrarId = newRegistrar.id;
+    }
+    const { error: updateError } = await this.supabase.supabase
+      .from('domains')
+      .update({ registrar_id: registrarId })
+      .eq('id', domainId);
+  
+    if (updateError) throw updateError;
+  }
+
+  private async saveHost(domainId: string, host: Host): Promise<void> {
+    console.log('About to save host: ', host)
+    if (!host.query) return;
+  
+    // Check if the host already exists
+    const { data: existingHost, error: fetchError } = await this.supabase.supabase
+      .from('hosts')
+      .select('id')
+      .eq('ip', host.query)
+      .single();
+  
+    if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+  
+    let hostId: string;
+  
+    if (existingHost) {
+      hostId = existingHost.id;
+    } else {
+      // Insert new host
+      const { data: newHost, error: insertError } = await this.supabase.supabase
+        .from('hosts')
+        .insert({
+          ip: host.query,
+          lat: host.lat,
+          lon: host.lon,
+          isp: host.isp,
+          org: host.org,
+          as_number: host.asNumber,
+          city: host.city,
+          region: host.region,
+          country: host.country
+        })
+        .select('id')
+        .single();
+      if (insertError) throw insertError;
+      if (!newHost) throw new Error('Failed to insert host');
+      hostId = newHost.id;
+    }
+  
+    // Link the host to the domain
+    const { error: linkError } = await this.supabase.supabase
+      .from('domain_hosts')
+      .insert({ domain_id: domainId, host_id: hostId });
+  
+    if (linkError) throw linkError;
   }
   
 
@@ -197,18 +296,18 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
     if (error) throw error;
   }
 
-  private mapDbDomainToDomain(dbDomain: DbDomain): Domain {
-    return {
-      id: dbDomain.id,
-      userId: dbDomain.user_id,
-      domainName: dbDomain.domain_name,
-      registrar: dbDomain.registrar,
-      expiryDate: new Date(dbDomain.expiry_date),
-      notes: dbDomain.notes,
-      createdAt: new Date(dbDomain.created_at),
-      updatedAt: new Date(dbDomain.updated_at)
-    };
-  }
+  // private mapDbDomainToDomain(dbDomain: DbDomain): Domain {
+  //   return {
+  //     id: dbDomain.id,
+  //     userId: dbDomain.user_id,
+  //     domainName: dbDomain.domain_name,
+  //     registrar: dbDomain.registrar,
+  //     expiryDate: new Date(dbDomain.expiry_date),
+  //     notes: dbDomain.notes,
+  //     createdAt: new Date(dbDomain.created_at),
+  //     updatedAt: new Date(dbDomain.updated_at)
+  //   };
+  // }
 
   override listDomainNames(): Observable<string[]> {
     return from(this.supabase.supabase
@@ -222,16 +321,22 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
     );
   }
 
-  override listDomains(): Observable<Domain[]> {
+  override listDomains(): Observable<DbDomain[]> {
     return new Observable(observer => {
       this.supabase.supabase
         .from('domains')
         .select(`
           *,
+          registrars (name, url),
           ip_addresses (ip_address, is_ipv6),
           ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
-          whois_info (registrant_country, registrant_state_province, created_date, updated_date, registry_domain_id, registrar_id, registrar_url),
-          domain_tags (tags (name))
+          whois_info (name, organization, country, street, city, state, postal_code),
+          domain_tags (tags (name)),
+          domain_hosts (
+            hosts (
+              ip, lat, lon, isp, org, as_number, city, region, country
+            )
+          )
         `)
         .then(({ data, error }) => {
           if (error) {
@@ -239,9 +344,12 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
           } else {
             const formattedDomains = data.map(domain => ({
               ...domain,
-              domain_tags: domain.domain_tags?.map((tagItem: { tags: { name: string } }) => tagItem.tags.name) || []
+              tags: domain.domain_tags?.map((tagItem: { tags: { name: string } }) => tagItem.tags.name) || [],
+              ssl: (domain.ssl_certificates && domain.ssl_certificates.length) ? domain.ssl_certificates[0] : null,
+              whois: domain.whois_info,
+              registrar: domain.registrars,
             }));
-            observer.next(formattedDomains as Domain[]);
+            observer.next(formattedDomains as DbDomain[]);
             observer.complete();
           }
         });
