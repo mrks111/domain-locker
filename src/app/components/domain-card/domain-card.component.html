@@ -11,7 +11,7 @@
   </div>
 
   <!-- Domain Name -->
-  <h2 class="m-0">
+  <h2 *ngIf="isVisible('domainName')" class="m-0">
     <app-domain-favicon [domain]="domain.domain_name" [size]="24" class="mr-2"></app-domain-favicon>
     <span class="text-primary">{{ domainUtils.splitDomain(domain.domain_name).domain }}</span>
     <span class="text-default">.</span>
@@ -20,11 +20,12 @@
   
   <!-- Core Info: Registrar and Expiry -->
   <div class="flex justify-between align-items-center">
-    <p *ngIf="domain.registrar"
+    <p *ngIf="domain.registrar && isVisible('registrar')"
       class="m-0 truncate max-w-xs"
       [pTooltip]="'Registrar: ' + domain.registrar"
     >{{ domain.registrar.name }}</p>
     <p-tag
+      *ngIf="domain.expiry_date && isVisible('expiryDate')"
       [pTooltip]="domain.expiry_date ? 'Expires on ' + (domain.expiry_date | date:'mediumDate') : 'Unknown Expiry Date'"
       [value]="domainUtils.getRemainingDaysText(domain.expiry_date)"
       [severity]="domainUtils.getExpirySeverity(domain.expiry_date)"
@@ -33,13 +34,13 @@
   </div>
 
   <!-- Tags -->
-  <div *ngIf="domain.tags?.length">
+  <div *ngIf="domain.tags?.length && isVisible('tags')">
     <p-tag *ngFor="let tag of domain.tags" [value]="tag" styleClass="bg-highlight rounded-2xl text-highlight px-2  py-1 mr-1"></p-tag>
   </div>
 
 
   <!-- IP address list -->
-  <p-panel *ngIf="domain.ip_addresses?.length" [toggleable]="true" class="custom-pannel">
+  <p-panel *ngIf="domain.ip_addresses?.length && isVisible('ipAddresses')" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">
       <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">IP Addresses</h4>
     </ng-template>
@@ -51,7 +52,7 @@
   </p-panel>
 
    <!-- SSL Info -->
-  <p-panel *ngIf="domain.ssl" [toggleable]="true" class="custom-pannel">
+  <p-panel *ngIf="domain.ssl && isVisible('sslCertificate')" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">
       <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">SSL Certificate</h4>
     </ng-template>
@@ -83,7 +84,7 @@
   </p-panel>
 
   <!-- Who Is Info -->
-  <p-panel *ngIf="domain.whois" [toggleable]="true" class="custom-pannel">
+  <p-panel *ngIf="domain.whois && isVisible('whoisRecord')" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">
       <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">WHOIS Records</h4>
     </ng-template>
@@ -108,7 +109,7 @@
   </p-panel>
 
   <!-- Host Data -->
-   <p-panel *ngIf="domain.host" [toggleable]="true" class="custom-pannel">
+   <p-panel *ngIf="domain.host && isVisible('hostInfo')" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">
       <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">Hosts</h4>
     </ng-template>
@@ -130,7 +131,7 @@
   </p-panel>
 
   <!-- DNS Records -->
-  <p-panel *ngIf="domain.dns" [toggleable]="true" class="custom-pannel">
+  <p-panel *ngIf="domain.dns && isVisible('dnsRecords')" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">
       <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">DNS Records</h4>
     </ng-template>
@@ -160,7 +161,7 @@
   </p-panel>
 
   <!-- Notes -->
-  <div *ngIf="domain.notes" class="bg-highlight rounded text-highlight p-2">
+  <div *ngIf="domain.notes && isVisible('notes')" class="bg-highlight rounded text-highlight p-2">
     <span>{{ domain.notes }}</span>
   </div>
 
