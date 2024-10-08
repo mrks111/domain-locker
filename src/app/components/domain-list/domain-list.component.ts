@@ -47,6 +47,9 @@ export class DomainListComponent implements OnInit {
       (domains) => {
         console.log('Fetched domains:', domains);
         this.domains = domains;
+        // this.domains.map((domain) => {
+        //   domain.registrar = domain.registrar?.name;
+        // });
         this.loading = false;
       },
       (error) => {

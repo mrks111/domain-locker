@@ -336,18 +336,26 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
             hosts (
               ip, lat, lon, isp, org, as_number, city, region, country
             )
-          )
+          ),
+          dns_records (record_type, record_value)
         `)
         .then(({ data, error }) => {
           if (error) {
             observer.error(error);
           } else {
+            console.log(data);
             const formattedDomains = data.map(domain => ({
               ...domain,
               tags: domain.domain_tags?.map((tagItem: { tags: { name: string } }) => tagItem.tags.name) || [],
               ssl: (domain.ssl_certificates && domain.ssl_certificates.length) ? domain.ssl_certificates[0] : null,
               whois: domain.whois_info,
               registrar: domain.registrars,
+              host: domain.domain_hosts && domain.domain_hosts.length > 0 ? domain.domain_hosts[0].hosts : null,
+              dns: domain.dns_records ? {
+                mxRecords: domain.dns_records.filter(record => record.record_type === 'MX').map(record => record.record_value),
+                txtRecords: domain.dns_records.filter(record => record.record_type === 'TXT').map(record => record.record_value),
+                nameServers: domain.dns_records.filter(record => record.record_type === 'NS').map(record => record.record_value)
+              } : null
             }));
             observer.next(formattedDomains as DbDomain[]);
             observer.complete();

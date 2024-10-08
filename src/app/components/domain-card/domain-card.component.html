@@ -39,7 +39,7 @@
 
 
   <!-- IP address list -->
-  <p-panel [toggleable]="true" *ngIf="domain.ip_addresses?.length" class="custom-pannel">
+  <p-panel *ngIf="domain.ip_addresses?.length" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">
       <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">IP Addresses</h4>
     </ng-template>
@@ -51,7 +51,7 @@
   </p-panel>
 
    <!-- SSL Info -->
-  <p-panel [toggleable]="true" *ngIf="domain.ssl" class="custom-pannel">
+  <p-panel *ngIf="domain.ssl" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">
       <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">SSL Certificate</h4>
     </ng-template>
@@ -83,7 +83,7 @@
   </p-panel>
 
   <!-- Who Is Info -->
-  <p-panel [toggleable]="true" *ngIf="domain.whois" class="custom-pannel">
+  <p-panel *ngIf="domain.whois" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">
       <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">WHOIS Records</h4>
     </ng-template>
@@ -104,6 +104,58 @@
       <p class="m-0 text-xs">
         <strong class="font-semibold">Country:</strong> {{ domain.whois.country }}
       </p>
+    </div>
+  </p-panel>
+
+  <!-- Host Data -->
+   <p-panel *ngIf="domain.host" [toggleable]="true" class="custom-pannel">
+    <ng-template pTemplate="header">
+      <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">Hosts</h4>
+    </ng-template>
+    
+    <div class="flex flex-col gap-1">
+      <p class="m-0 text-xs">
+        <strong class="font-semibold">ISP:</strong> {{ domain.host.isp }}
+      </p>
+      <p class="m-0 text-xs">
+        <strong class="font-semibold">Org:</strong> {{ domain.host.org }}
+      </p>
+      <p class="m-0 text-xs">
+        <strong class="font-semibold">AS Ref:</strong> {{ domain.host.asNumber }}
+      </p>
+      <p class="m-0 text-xs">
+        <strong class="font-semibold">Address:</strong> {{ domain.host.city }}, {{ domain.host.region }}, {{ domain.host.country }}
+      </p>
+    </div>
+  </p-panel>
+
+  <!-- DNS Records -->
+  <p-panel *ngIf="domain.dns" [toggleable]="true" class="custom-pannel">
+    <ng-template pTemplate="header">
+      <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">DNS Records</h4>
+    </ng-template>
+    <div class="flex flex-col gap-2">
+      <p *ngIf="domain.dns.dnssec" class="m-0 text-xs">
+        <strong class="font-semibold">DNSSEC:</strong> {{ domain.dns.dnssec }}
+      </p>
+      <div *ngIf="domain.dns.nameServers" class="m-0 text-xs">
+        <strong class="font-semibold">Name Servers:</strong>
+        <ul class="list-none p-0 m-0">
+          <li *ngFor="let ns of domain.dns.nameServers" class="font-mono text-xs truncate">{{ ns }}</li>
+        </ul>
+      </div>
+      <div *ngIf="domain.dns.mxRecords" class="m-0 text-xs">
+        <strong class="font-semibold">MX Records:</strong>
+        <ul class="list-none p-0 m-0">
+          <li *ngFor="let mx of domain.dns.mxRecords" class="font-mono text-xs truncate">{{ mx }}</li>
+        </ul>
+      </div>
+      <div *ngIf="domain.dns.txtRecords" class="m-0 text-xs">
+        <strong class="font-semibold">TXT Records:</strong>
+        <ul class="list-none p-0 m-0">
+          <li *ngFor="let txt of domain.dns.txtRecords" class="font-mono text-xs truncate">{{ txt }}</li>
+        </ul>
+      </div>
     </div>
   </p-panel>
 

@@ -14,5 +14,20 @@
   ::ng-deep .p-panel-header, ::ng-deep .p-toggleable-content .p-panel-content  {
     padding: 0;
     border: none;
+    plusicon, minusicon {
+      display: none;
+    }
+  }
+  ::ng-deep .p-panel-header-icon {
+    &::before {
+      font-family: 'PrimeIcons';
+      content: '\e902';
+      transition:cubic-bezier(1, 0, 0, 1) 0.2s;
+    }
+  }
+  ::ng-deep .p-panel-expanded {
+    .p-panel-header-icon::before {
+      transform: rotate(180deg);
+    }
   }
 }

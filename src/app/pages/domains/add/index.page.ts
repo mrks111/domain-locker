@@ -10,7 +10,7 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import DatabaseService from '../../../services/database.service';
 import { SaveDomainData } from '../../../../types/Database';
 
-import type DomainInfo from '../../../../types/DomainInfo';
+import type { DomainInfo } from '../../../../types/DomainInfo';
 import { Router } from '@angular/router';
 
 interface NotificationOption {
@@ -199,8 +199,9 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
       catchError(this.handleHttpError.bind(this))
     ).subscribe({
       next: (fetchedDomainInfo) => {
-        if (this.isDomainInfoValid(fetchedDomainInfo)) {
-          this.domainInfo = fetchedDomainInfo;
+        const domainInfo = fetchedDomainInfo.domainInfo;
+        if (this.isDomainInfoValid(domainInfo)) {
+          this.domainInfo = domainInfo;
           this.updateFormWithDomainInfo();
           this.prepareTableData();
         } else {
@@ -285,7 +286,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
           notifications: Object.entries(formValue.notifications)
             .filter(([_, isEnabled]) => isEnabled)
             .map(([type, _]) => ({ type, isEnabled: true })),
-          whois: this.domainInfo?.registrant,
+          whois: this.domainInfo?.whois,
           dns: this.domainInfo?.dns,
           ssl: this.domainInfo?.ssl,
           host: this.domainInfo?.host,

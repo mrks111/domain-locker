@@ -3,8 +3,9 @@ import whois from 'whois-json';
 import dns from 'dns';
 import tls from 'tls';
 import { PeerCertificate } from 'tls';
-import type DomainInfo from '../../types/DomainInfo';
+import type { DomainInfo } from '../../types/DomainInfo';
 import type { WhoisData, HostData } from '../../types/DomainInfo';
+import { Contact, Host } from 'src/types/common';
 
 // Helper function to handle potential failures in asynchronous operations
 const safeExecute = async <T>(fn: () => Promise<T>, errorMsg: string, errors: string[]): Promise<T | null> => {
@@ -16,12 +17,30 @@ const safeExecute = async <T>(fn: () => Promise<T>, errorMsg: string, errors: st
   }
 };
 
+const getWhoisData = async (domain: string): Promise<any | null> => {
+  return new Promise((resolve) => {
+    whois(domain)
+      .then((data: any) => {
+        if (data && typeof data === 'object') {
+          resolve(data as Contact);
+        } else {
+          console.error('Invalid WHOIS data received:', data);
+          resolve(null);
+        }
+      })
+      .catch((err: any) => {
+        console.error('Error fetching WHOIS data:', err);
+        resolve(null);
+      });
+  });
+};
+
 // Utility function to get IPv4 addresses
 const getIpAddress = async (domain: string): Promise<string[]> => {
   return new Promise((resolve) => {
     dns.resolve4(domain, (err: any, addresses: string[] | PromiseLike<string[]>) => {
       if (err) {
-        resolve([]); // return empty array on error to handle gracefully
+        resolve([]);
       } else {
         resolve(addresses);
       }
@@ -81,14 +100,13 @@ const getTxtRecords = async (domain: string): Promise<string[]> => {
   });
 };
 
-// Function to fetch IP info from ip-api.com
-const getIpApiInfo = async (ip: string): Promise<HostInfo | null> => {
+const getHostData = async (ip: string): Promise<Host | null> => {
   const apiUrl = `http://ip-api.com/json/${ip}?fields=12249`;
   try {
     const response = await fetch(apiUrl);
     if (response.ok) {
       const data = await response.json();
-      if (data.regionName) data.region = data.regionName; 
+      if (data.regionName) data.region = data.regionName;
       return data;
     } else {
       return null;
@@ -134,75 +152,81 @@ export default defineEventHandler(async (event) => {
   }
 
   const errors: string[] = [];
-  const dunno = 'Unknown'; // Text to return when no value found.
+  const dunno = 'Unknown';
 
-  // Fetch WHOIS data and make all DNS and SSL checks concurrently using safeExecute
-  const whoisData = await safeExecute(() => whois(domain) as Promise<WhoisData>, 'Failed to fetch WHOIS data', errors);
-  const ipv4Addresses = await safeExecute(() => getIpAddress(domain), 'Failed to fetch IPv4 addresses', errors);
-  const ipv6Addresses = await safeExecute(() => getIpv6Address(domain), 'Failed to fetch IPv6 addresses', errors);
-  const mxRecords = await safeExecute(() => getMxRecords(domain), 'Failed to fetch MX records', errors);
-  const txtRecords = await safeExecute(() => getTxtRecords(domain), 'Failed to fetch TXT records', errors);
-  const nameServers = await safeExecute(() => getNameServers(domain), 'Failed to fetch name servers', errors);
-  const sslInfo = await safeExecute(() => getSslCertificateDetails(domain), 'Failed to fetch SSL certificate details', errors);
-  let hostInfo: HostData | null = null;
-  if (ipv4Addresses && ipv4Addresses.length > 0) {
-    hostInfo = await safeExecute(() => getIpApiInfo(ipv4Addresses[0]), 'Failed to fetch IP information', errors);
+  try {
+    const whoisData = await getWhoisData(domain);
+    if (!whoisData) {
+      return { error: 'Failed to fetch WHOIS data' };
+    }
+
+    // Fetch other data concurrently
+    const [ipv4Addresses, ipv6Addresses, mxRecords, txtRecords, nameServers, sslInfo] = await Promise.all([
+      safeExecute(() => getIpAddress(domain), 'Failed to fetch IPv4 addresses', errors),
+      safeExecute(() => getIpv6Address(domain), 'Failed to fetch IPv6 addresses', errors),
+      safeExecute(() => getMxRecords(domain), 'Failed to fetch MX records', errors),
+      safeExecute(() => getTxtRecords(domain), 'Failed to fetch TXT records', errors),
+      safeExecute(() => getNameServers(domain), 'Failed to fetch name servers', errors),
+      safeExecute(() => getSslCertificateDetails(domain), 'Failed to fetch SSL certificate details', errors)
+    ]);
+
+    let hostInfo: HostData | null = null;
+    if (ipv4Addresses && ipv4Addresses.length > 0) {
+      hostInfo = await safeExecute(() => getHostData(ipv4Addresses[0]), 'Failed to fetch IP information', errors);
+    }
+
+    const domainInfo: DomainInfo = {
+      domainName: whoisData.domainName || dunno,
+      status: makeStatusArray(whoisData.domainStatus),
+      ipAddresses: {
+        ipv4: ipv4Addresses || [],
+        ipv6: ipv6Addresses || [],
+      },
+      dates: {
+        expiry: whoisData.registrarRegistrationExpirationDate || dunno,
+        updated: whoisData.updatedDate || dunno,
+        creation: whoisData.creationDate || dunno,
+      },
+      registrar: {
+        name: whoisData.registrarName || whoisData.registrar || dunno,
+        id: whoisData.registrarIanaId || dunno,
+        url: whoisData.registrarUrl || dunno,
+        registryDomainId: whoisData.registryDomainId || dunno,
+      },
+      whois: {
+        name: whoisData.registrantName || dunno,
+        organization: whoisData.registrantOrganization || dunno,
+        street: whoisData.registrantStreet || dunno,
+        city: whoisData.registrantCity || dunno,
+        country: whoisData.registrantCountry || dunno,
+        stateProvince: whoisData.registrantStateProvince || dunno,
+        postalCode: whoisData.registrantPostalCode || dunno,
+      },
+      abuse: {
+        email: whoisData.abuseContactEmail || whoisData.registrarAbuseContactEmail || dunno,
+        phone: whoisData.abuseContactPhone || whoisData.registrarAbuseContactPhone || dunno,
+      },
+      dns: {
+        dnssec: whoisData.dnssec || dunno,
+        nameServers: nameServers || [],
+        mxRecords: mxRecords || [],
+        txtRecords: txtRecords || [],
+      },
+      ssl: {
+        issuer: sslInfo?.issuer?.O || dunno,
+        issuerCountry: sslInfo?.issuer?.C || dunno,
+        validFrom: sslInfo?.valid_from || dunno,
+        validTo: sslInfo?.valid_to || dunno,
+        subject: sslInfo?.subject?.CN || dunno,
+        fingerprint: sslInfo?.fingerprint || dunno,
+        keySize: sslInfo?.bits || 0,
+        signatureAlgorithm: sslInfo?.asn1Curve || dunno,
+      },
+      host: hostInfo,
+    };
+    return { domainInfo, errors: errors.length > 0 ? errors : undefined };
+  } catch (error) {
+    console.error('Error processing domain information:', error);
+    return { error: 'An unexpected error occurred while processing domain information' };
   }
-
-  // If WHOIS data is missing, return an error early
-  if (!whoisData) {
-    return { error: 'Domain not found' };
-  }
-
-  const domainInfo: DomainInfo = {
-    domainName: whoisData.domainName || dunno,
-    status: makeStatusArray(whoisData.domainStatus),
-    ipAddresses: {
-      ipv4: ipv4Addresses || [],
-      ipv6: ipv6Addresses || [],
-    },
-    dates: {
-      expiry: whoisData.registrarRegistrationExpirationDate || dunno,
-      updated: whoisData.updatedDate || dunno,
-      creation: whoisData.creationDate || dunno,
-    },
-    registrar: {
-      name: whoisData.registrarName || whoisData.registrar || dunno,
-      id: whoisData.registrarIanaId || dunno,
-      url: whoisData.registrarUrl || dunno,
-      registryDomainId: whoisData.registryDomainId || dunno,
-    },
-    registrant: {
-      name: whoisData.registrantName || dunno,
-      organization: whoisData.registrantOrganization || dunno,
-      street: whoisData.registrantStreet || dunno,
-      city: whoisData.registrantCity || dunno,
-      country: whoisData.registrantCountry || dunno,
-      stateProvince: whoisData.registrantStateProvince || dunno,
-      postalCode: whoisData.registrantPostalCode || dunno,
-    },
-    abuse: {
-      email: whoisData.abuseContactEmail || whoisData.registrarAbuseContactEmail || dunno,
-      phone: whoisData.abuseContactPhone || whoisData.registrarAbuseContactPhone || dunno,
-    },
-    dns: {
-      dnssec: whoisData.dnssec || dunno,
-      nameServers: nameServers || [],
-      mxRecords: mxRecords || [],
-      txtRecords: txtRecords || [],
-    },
-    ssl: {
-      issuer: sslInfo?.issuer?.O || dunno,
-      issuerCountry: sslInfo?.issuer?.C || dunno,
-      validFrom: sslInfo?.valid_from || dunno,
-      validTo: sslInfo?.valid_to || dunno,
-      subject: sslInfo?.subject?.CN || dunno,
-      fingerprint: sslInfo?.fingerprint || dunno,
-      keySize: sslInfo?.bits || 0,
-      signatureAlgorithm: sslInfo?.asn1Curve || dunno,
-    },
-    host: hostInfo,
-  };
-
-  return domainInfo;
 });
