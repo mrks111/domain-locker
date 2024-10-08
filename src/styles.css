@@ -155,3 +155,37 @@ h1 {
   color: var(--surface-900);
 }
 
+.bg-surface-0 {
+  background-color: var(--surface-0);
+}
+.bg-surface-50 {
+  background-color: var(--surface-50);
+}
+.bg-surface-100 {
+  background-color: var(--surface-100);
+}
+.bg-surface-200 {
+  background-color: var(--surface-200);
+}
+.bg-surface-300 {
+  background-color: var(--surface-300);
+}
+.bg-surface-400 {
+  background-color: var(--surface-400);
+}
+.bg-surface-500 {
+  background-color: var(--surface-500);
+}
+.bg-surface-600 {
+  background-color: var(--surface-600);
+}
+.bg-surface-700 {
+  background-color: var(--surface-700);
+}
+.bg-surface-800 {
+  background-color: var(--surface-800);
+}
+.bg-surface-900 {
+  background-color: var(--surface-900);
+}
+

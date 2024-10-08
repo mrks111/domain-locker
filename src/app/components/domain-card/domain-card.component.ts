@@ -1,4 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { MenuItem } from 'primeng/api';
+
 import { DbDomain } from '../../../types/Database';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { NgFor, DatePipe, CommonModule } from '@angular/common';
@@ -14,13 +16,29 @@ import { type FieldOption } from '../domain-filters/domain-filters.component';
   styleUrls: ['./domain-card.component.scss'],
   imports: [PrimeNgModule, NgFor, DatePipe, CommonModule, DomainFaviconComponent]
 })
-export class DomainCardComponent {
+export class DomainCardComponent implements OnInit {
   @Input() domain!: DbDomain;
   @Input() visibleFields: FieldOption[] = [];
+  contextMenuItems: MenuItem[] | undefined;
 
   constructor(public domainUtils: DomainUtils) {}
 
   isVisible(field: string): boolean {
     return this.visibleFields.some(option => option.value === field);
+  }
+
+  ngOnInit() {
+    this.contextMenuItems = [
+      { label: 'View', icon: 'pi pi-external-link' },  
+      { label: 'Edit', icon: 'pi pi-pencil' },
+      { label: 'Delete', icon: 'pi pi-trash' },
+      // { label: 'Advanced',
+      //   icon: 'pi pi-file-edit',
+      //   items: [
+      //     { label: 'Copy', icon: 'pi pi-copy' },
+      //     { label: 'Cut', icon: '' },
+      //   ]
+      // },
+    ];
   }
 }

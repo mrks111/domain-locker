@@ -9,10 +9,14 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ChipModule } from 'primeng/chip';
 import { ChipsModule } from 'primeng/chips';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
 import { DividerModule } from 'primeng/divider';
 import { FieldsetModule } from 'primeng/fieldset';
+import { FloatLabelModule } from 'primeng/floatlabel';
 import { FormsModule } from '@angular/forms';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { InplaceModule } from 'primeng/inplace';
 import { InputOtpModule } from 'primeng/inputotp';
 import { InputSwitchModule } from 'primeng/inputswitch';
@@ -51,10 +55,14 @@ import { TooltipModule } from 'primeng/tooltip';
     ChipModule,
     ChipsModule,
     ConfirmDialogModule,
+    ContextMenuModule,
     DialogModule,
     DividerModule,
     FieldsetModule,
+    FloatLabelModule,
     FormsModule,
+    IconFieldModule,
+    InputIconModule,
     InplaceModule,
     InputOtpModule,
     InputSwitchModule,

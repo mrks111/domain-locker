@@ -1,4 +1,6 @@
-<div class="domain-card p-card bg-surface-card text-default px-4 py-2 mb-4 shadow-md border-radius-custom h-full flex flex-col gap-4 relative">
+<div #domainCard
+  aria-haspopup="true" 
+  class="domain-card p-card bg-surface-card text-default px-4 py-2 mb-4 shadow-md border-radius-custom h-full flex flex-col gap-4 relative">
   
   <!-- Action buttons - visible only on hover -->
   <div class="edit-button-container absolute top-2 right-2 gap-2 align-items-center">
@@ -22,7 +24,7 @@
   <div class="flex justify-between align-items-center">
     <p *ngIf="domain.registrar && isVisible('registrar')"
       class="m-0 truncate max-w-xs"
-      [pTooltip]="'Registrar: ' + domain.registrar"
+      [pTooltip]="'Registrar: ' + domain.registrar.name"
     >{{ domain.registrar.name }}</p>
     <p-tag
       *ngIf="domain.expiry_date && isVisible('expiryDate')"
@@ -161,8 +163,10 @@
   </p-panel>
 
   <!-- Notes -->
-  <div *ngIf="domain.notes && isVisible('notes')" class="bg-highlight rounded text-highlight p-2">
+  <div *ngIf="domain.notes && isVisible('notes')" class="bg-surface-100 rounded p-2">
     <span>{{ domain.notes }}</span>
   </div>
-
 </div>
+
+<!-- Context Menu -->
+<p-contextMenu [target]="domainCard" [model]="contextMenuItems" />

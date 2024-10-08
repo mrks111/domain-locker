@@ -1,7 +1,8 @@
 import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MultiSelectModule } from 'primeng/multiselect';
+import { PrimeNgModule } from '../../prime-ng.module';
+
 
 export interface FieldOption {
   label: string;
@@ -11,18 +12,8 @@ export interface FieldOption {
 @Component({
   selector: 'app-field-visibility-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, MultiSelectModule],
-  template: `
-    <p-multiSelect
-      [options]="fieldOptions"
-      [(ngModel)]="selectedFields"
-      (onChange)="onSelectionChange()"
-      optionLabel="label"
-      selectedItemsLabel="{0} fields selected"
-      [style]="{minWidth: '200px'}"
-      placeholder="Choose visible fields"
-    ></p-multiSelect>
-  `,
+  imports: [CommonModule, FormsModule, PrimeNgModule],
+  templateUrl: 'domain-filters.component.html',
 })
 export class FieldVisibilityFilterComponent implements OnInit {
   @Input() fieldOptions: FieldOption[] = [

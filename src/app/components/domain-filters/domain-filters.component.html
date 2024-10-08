@@ -1,0 +1,43 @@
+<div class="flex-col md:flex-row flex gap-2 justify-between align-items-center flex-wrap mt-2 mb-4">
+  <div class="flex-col sm:flex-row flex gap-2 justify-between align-items-center">
+    <!-- Search Input -->
+    <div class="flex flex-col gap-1 ">
+      <label for="global-search" class="text-xs text-surface-400">Filter</label>
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" placeholder="Search" />
+      </span>
+    </div>
+    <!-- Field Select Dropdown -->
+    <div class="flex flex-col gap-1">
+      <label for="field-filters" class="text-xs text-surface-400">Fields</label>
+      <p-multiSelect
+        id="field-filters"
+        [options]="fieldOptions"
+        [(ngModel)]="selectedFields"
+        (onChange)="onSelectionChange()"
+        optionLabel="label"
+        selectedItemsLabel="{0} fields selected"
+        [style]="{minWidth: '200px'}"
+        placeholder="Choose visible fields"
+      ></p-multiSelect>
+    </div>
+    <!-- Layout Toggle -->
+    <div class="flex flex-col gap-1">
+      <label for="field-filters" class="text-xs text-surface-400">Layout</label>
+      <p-selectButton 
+        [options]="[{ label: 'Grid', value: true, icon: 'pi pi-th-large'}, { label: 'List', value: false, icon: 'pi pi-bars'}]" 
+        optionLabel="label" 
+        optionValue="value">
+        <ng-template let-option pTemplate>
+          <i [class]="option.icon"></i>
+        </ng-template>
+      </p-selectButton>
+    </div>
+  </div>
+  <!-- Add Domain Button -->
+  <a pButton routerLink="/domains/add" class="p-button-primary no-underline m-0 mt-4 flex gap-2 w-fit">
+    <i class="pi pi-plus"></i>
+    Add Domain
+  </a>
+</div>
