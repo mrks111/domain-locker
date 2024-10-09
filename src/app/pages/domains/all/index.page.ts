@@ -24,7 +24,22 @@ export default class DomainAllPageComponent implements OnInit {
   searchTerm: string = '';
   private fuse!: Fuse<DbDomain>;
 
-  constructor(private databaseService: DatabaseService, private messageService: MessageService,) {}
+  allColumns = [
+    { field: 'domain_name', header: 'Domain', width: 200 },
+    { field: 'registrar', header: 'Registrar', width: 150 },
+    { field: 'expiry_date', header: 'Expiry', width: 120 },
+    { field: 'tags', header: 'Tags', width: 150 },
+    { field: 'notes', header: 'Notes', width: 200 },
+    { field: 'ip_addresses', header: 'IP Addresses', width: 150 },
+    { field: 'ssl', header: 'SSL', width: 200 },
+    { field: 'whois', header: 'WHOIS', width: 200 },
+    { field: 'host', header: 'Host Info', width: 200 },
+    { field: 'dns', header: 'DNS Records', width: 200 }
+  ];
+
+  visibleColumns: any[] = [];
+
+  constructor(private databaseService: DatabaseService, private messageService: MessageService) {}
 
   ngOnInit() {
     this.loadDomains();
@@ -54,6 +69,40 @@ export default class DomainAllPageComponent implements OnInit {
 
   onVisibilityChange(selectedFields: FieldOption[]) {
     this.visibleFields = selectedFields;
+    this.updateVisibleColumns();
+  }
+
+  updateVisibleColumns() {
+    // Ensure 'domain_name' is always included
+    const domainNameField = { value: 'domainName', label: 'Domain Name' };
+    const fieldsToShow = this.visibleFields.some(f => f.value === 'domainName') 
+      ? this.visibleFields 
+      : [domainNameField, ...this.visibleFields];
+
+    this.visibleColumns = this.allColumns.filter(column => 
+      fieldsToShow.some(field => this.mapFieldToColumn(field.value) === column.field)
+    );
+
+    // Ensure 'domain_name' is the first column
+    this.visibleColumns.sort((a, b) => 
+      a.field === 'domain_name' ? -1 : b.field === 'domain_name' ? 1 : 0
+    );
+  }
+
+  mapFieldToColumn(fieldValue: string): string {
+    const fieldToColumnMap: { [key: string]: string } = {
+      'domainName': 'domain_name',
+      'registrar': 'registrar',
+      'expiryDate': 'expiry_date',
+      'tags': 'tags',
+      'notes': 'notes',
+      'ipAddresses': 'ip_addresses',
+      'sslCertificate': 'ssl',
+      'whoisRecord': 'whois',
+      'hostInfo': 'host',
+      'dnsRecords': 'dns'
+    };
+    return fieldToColumnMap[fieldValue] || fieldValue;
   }
 
   onSearchChange(searchTerm: string) {

@@ -1,73 +1,59 @@
-
-<h1>Domains</h1>
-
-<div class="flex gap-2 justify-between align-items-center">
-  
-  <div class="flex gap-2 justify-between align-items-center">
-    <span class="p-input-icon-left">
-      <i class="pi pi-search"></i>
-      <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Global Search" />
-    </span>
-    <p-multiSelect [options]="columns" [(ngModel)]="visibleColumns" optionLabel="header"
-                  selectedItemsLabel="{0} columns selected" [style]="{minWidth: '200px'}"
-                  placeholder="Choose Columns"></p-multiSelect>
-  </div>
-
-
-   <a pButton routerLink="/domains/add" class="p-button-primary no-underline my-2 flex gap-2 w-fit">
-    <i class="pi pi-plus"></i>
-    Add Domain
-  </a>
-</div>
-
-<p-table #dt
-  [value]="domains"
+<p-table [value]="domains"
   [columns]="visibleColumns"
-  [paginator]="true"
+  [scrollable]="true"
+  [loading]="loading"
+  styleClass="p-datatable-sm"
+  [resizableColumns]="true"
+  [sortMode]="'multiple'"
   [rows]="10"
   [showCurrentPageReport]="true"
   [rowsPerPageOptions]="[10,25,50]"
-  [globalFilterFields]="['domain_name', 'registrar', 'notes']"
-  [sortMode]="'multiple'"
-  [resizableColumns]="true"
-  styleClass="p-datatable-striped"
-  [loading]="loading"
-  [frozenColumns]="['domain_name']"
-  [tableStyle]="{ 'min-width': '50rem' }">
-  
-  <ng-template pTemplate="header">
+>
+  <ng-template pTemplate="header" let-columns>
     <tr>
-      <th *ngFor="let col of visibleColumns" [pSortableColumn]="col.field" pResizableColumn style="width: 10rem;">
+      <th *ngFor="let col of columns" [pSortableColumn]="col.field" [style.width.px]="col.width">
         {{col.header}}
         <p-sortIcon [field]="col.field"></p-sortIcon>
       </th>
     </tr>
   </ng-template>
-  
-  <ng-template pTemplate="body" let-domain>
+  <ng-template pTemplate="body" let-domain let-columns="columns">
     <tr>
-      <td *ngFor="let col of visibleColumns">
+      <td *ngFor="let col of columns">
         <ng-container [ngSwitch]="col.field">
-          <ng-container *ngSwitchCase="'notes'">
-            <span [pTooltip]="domain.notes">{{domainUtils.truncateNotes(domain.notes)}}</span>
-          </ng-container>
-          <ng-container *ngSwitchCase="'domain_name'">
-            <a class="font-bold no-underline text-default" [routerLink]="['/domains', domain.id]">{{domain.domain_name}}</a>
-          </ng-container>
-          <ng-container *ngSwitchCase="'expiry_date'">
+          <span *ngSwitchCase="'domain_name'">{{domain.domain_name}}</span>
+          <span *ngSwitchCase="'registrar'">{{domain.registrar?.name}}</span>
+          <span *ngSwitchCase="'expiry_date'">
             {{domain.expiry_date | date:'mediumDate'}}
             <p-tag 
               [value]="domainUtils.getRemainingDaysText(domain.expiry_date)"
               [severity]="domainUtils.getExpirySeverity(domain.expiry_date)"
               styleClass="ml-2 w-20"
             ></p-tag>
+          </span>
+          <span *ngSwitchCase="'tags'">
+            <p-tag *ngFor="let tag of domain.tags" [value]="tag" styleClass="mr-1"></p-tag>
+          </span>
+          <ng-container *ngSwitchCase="'notes'">
+            <span [pTooltip]="domain.notes">{{domainUtils.truncateNotes(domain.notes)}}</span>
           </ng-container>
-          <ng-container *ngSwitchCase="'tags'">
-            <span *ngFor="let tag of domain.domain_tags || []" class="mx-1">
-              <p-tag value="{{tag}}" severity="secondary" [rounded]="true" styleClass="px-2" />
-            </span>
-          </ng-container>
-          <ng-container *ngSwitchDefault>{{domain[col.field]}}</ng-container>
+          <span *ngSwitchCase="'ip_addresses'">
+            <ng-container *ngFor="let ip of domain.ip_addresses">
+              {{ip.ip_address}} ({{ip.is_ipv6 ? 'IPv6' : 'IPv4'}})<br>
+            </ng-container>
+          </span>
+          <span *ngSwitchCase="'ssl'">
+            {{domain.ssl?.issuer}}<br>
+            Valid until: {{domain.ssl?.valid_to | date:'shortDate'}}
+          </span>
+          <span *ngSwitchCase="'whois'">{{domain.whois?.name}}</span>
+          <span *ngSwitchCase="'host'">{{domain.host?.isp}}</span>
+          <span *ngSwitchCase="'dns'">
+            <ng-container *ngIf="domain.dns?.nameServers">
+              NS: {{domain.dns.nameServers[0]}}
+            </ng-container>
+          </span>
+          <span *ngSwitchDefault>{{domain[col.field]}}</span>
         </ng-container>
       </td>
     </tr>
