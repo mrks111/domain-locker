@@ -5,7 +5,7 @@
       <label for="global-search" class="text-xs text-surface-400">Filter</label>
       <span class="p-input-icon-left">
         <i class="pi pi-search"></i>
-        <input pInputText type="text" placeholder="Search" />
+        <input pInputText (input)="onSearch($event)" type="text" placeholder="Search" />
       </span>
     </div>
     <!-- Field Select Dropdown -->
@@ -26,7 +26,8 @@
     <div class="flex flex-col gap-1">
       <label for="field-filters" class="text-xs text-surface-400">Layout</label>
       <p-selectButton 
-        [options]="[{ label: 'Grid', value: true, icon: 'pi pi-th-large'}, { label: 'List', value: false, icon: 'pi pi-bars'}]" 
+        [options]="[{ label: 'Grid', value: 'grid', icon: 'pi pi-th-large'}, { label: 'List', value: 'list', icon: 'pi pi-bars'}]" 
+        (onChange)="onLayoutChange($event.value)"
         optionLabel="label" 
         optionValue="value">
         <ng-template let-option pTemplate>

@@ -14,6 +14,7 @@ export interface FieldOption {
   standalone: true,
   imports: [CommonModule, FormsModule, PrimeNgModule],
   templateUrl: 'domain-filters.component.html',
+  styleUrls: ['domain-filters.component.scss'],
 })
 export class FieldVisibilityFilterComponent implements OnInit {
   @Input() fieldOptions: FieldOption[] = [
@@ -31,6 +32,8 @@ export class FieldVisibilityFilterComponent implements OnInit {
 
   @Input() defaultSelectedFields: string[] = ['domainName', 'registrar', 'expiryDate', 'tags', 'notes'];
   @Output() visibilityChange = new EventEmitter<FieldOption[]>();
+  @Output() searchChange = new EventEmitter<string>();
+  @Output() layoutChange = new EventEmitter<boolean>();
 
   selectedFields: FieldOption[] = [];
 
@@ -50,5 +53,14 @@ export class FieldVisibilityFilterComponent implements OnInit {
       this.initializeSelectedFields();
     }
     this.visibilityChange.emit(this.selectedFields);
+  }
+
+  onSearch(event: Event) {
+    const searchTerm = (event.target as HTMLInputElement).value;
+    this.searchChange.emit(searchTerm);
+  }
+
+  onLayoutChange(event: { newValue: string }) {
+    this.layoutChange.emit(event.newValue === 'grid');
   }
 }
