@@ -33,7 +33,7 @@ export default class DomainAllPageComponent implements OnInit {
   loading: boolean = true;
   visibleFields: FieldOption[] = [];
   searchTerm: string = '';
-  private fuse: Fuse<DbDomain>;
+  private fuse!: Fuse<DbDomain>;
 
   constructor(private databaseService: DatabaseService) {}
 
