@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PrimeNgModule } from '../../prime-ng.module';
 
-
 export interface FieldOption {
   label: string;
   value: string;
@@ -36,6 +35,12 @@ export class FieldVisibilityFilterComponent implements OnInit {
   @Output() layoutChange = new EventEmitter<boolean>();
 
   selectedFields: FieldOption[] = [];
+  selectedLayout: boolean = true;
+
+  layoutOptions = [
+    { label: 'Grid', value: true, icon: 'pi pi-th-large' },
+    { label: 'List', value: false, icon: 'pi pi-bars' }
+  ];
 
   ngOnInit() {
     this.initializeSelectedFields();
@@ -60,7 +65,7 @@ export class FieldVisibilityFilterComponent implements OnInit {
     this.searchChange.emit(searchTerm);
   }
 
-  onLayoutChange(event: { newValue: string }) {
-    this.layoutChange.emit(event.newValue === 'grid');
+  onLayoutChange(event: boolean) {
+    this.layoutChange.emit(event === null ? true : event);
   }
 }

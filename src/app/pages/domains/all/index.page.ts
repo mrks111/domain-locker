@@ -2,40 +2,29 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Fuse from 'fuse.js';
 import { DomainCardComponent } from '../../../components/domain-card/domain-card.component';
+import { DomainListComponent } from '../../../components/domain-list/domain-list.component';
 import { PrimeNgModule } from '../../../prime-ng.module';
 import DatabaseService from '../../../services/database.service';
 import { DbDomain } from '../../../../types/Database';
 import { FieldVisibilityFilterComponent, type FieldOption } from '../../../components/domain-filters/domain-filters.component';
+import { MessageService } from 'primeng/api';
 
 @Component({
   standalone: true,
   selector: 'domain-all-page',
-  imports: [DomainCardComponent, PrimeNgModule, CommonModule, FieldVisibilityFilterComponent],
-  template: `
-    <div class="mb-4">
-      <app-field-visibility-filter
-      (visibilityChange)="onVisibilityChange($event)"
-      (searchChange)="onSearchChange($event)"
-    />
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <app-domain-card
-        *ngFor="let domain of filteredDomains || domains"
-        [domain]="domain"
-        [visibleFields]="visibleFields"
-      ></app-domain-card>
-    </div>
-  `,
+  imports: [DomainCardComponent, DomainListComponent, PrimeNgModule, CommonModule, FieldVisibilityFilterComponent],
+  templateUrl: './index.page.html',
 })
 export default class DomainAllPageComponent implements OnInit {
   domains: DbDomain[] = [];
   filteredDomains: DbDomain[] = [];
   loading: boolean = true;
+  isGridLayout: boolean = true;
   visibleFields: FieldOption[] = [];
   searchTerm: string = '';
   private fuse!: Fuse<DbDomain>;
 
-  constructor(private databaseService: DatabaseService) {}
+  constructor(private databaseService: DatabaseService, private messageService: MessageService,) {}
 
   ngOnInit() {
     this.loadDomains();
@@ -49,21 +38,18 @@ export default class DomainAllPageComponent implements OnInit {
         this.domains = domains;
         this.filteredDomains = domains;
         this.loading = false;
-        console.log(domains);
       },
       error: (error) => {
         console.error('Error fetching domains:', error);
         this.loading = false;
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: 'Couldn\'t fetch domains from database' 
+        });
+
       }
     });
-  }
-
-  initializeFuse() {
-    const options = {
-      keys: ['domain_name', 'registrar.name', 'tags', 'notes', 'ip_addresses.ip_address'],
-      threshold: 0.3
-    };
-    this.fuse = new Fuse(this.domains, options);
   }
 
   onVisibilityChange(selectedFields: FieldOption[]) {
@@ -75,6 +61,17 @@ export default class DomainAllPageComponent implements OnInit {
     this.filterDomains();
   }
 
+  onLayoutChange(isGrid: boolean) {
+    this.isGridLayout = isGrid;
+  }
+
+  initializeFuse() {
+    const options = {
+      keys: ['domain_name', 'registrar.name', 'tags', 'notes', 'ip_addresses.ip_address'],
+      threshold: 0.3
+    };
+    this.fuse = new Fuse(this.domains, options);
+  }
 
   filterDomains() {
     if (!this.searchTerm) {

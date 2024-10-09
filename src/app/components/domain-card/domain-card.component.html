@@ -24,7 +24,7 @@
   <div class="flex justify-between align-items-center">
     <p *ngIf="domain.registrar && isVisible('registrar')"
       class="m-0 truncate max-w-xs"
-      [pTooltip]="'Registrar: ' + domain.registrar.name"
+      [pTooltip]="'Registrar: ' + domain.registrar.name + ' (' + domain.registrar.id + ')'"
     >{{ domain.registrar.name }}</p>
     <p-tag
       *ngIf="domain.expiry_date && isVisible('expiryDate')"

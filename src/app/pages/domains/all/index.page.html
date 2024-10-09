@@ -1,7 +1,23 @@
-<div class="p-4">
-  <p-progressSpinner *ngIf="loading"></p-progressSpinner>
-  <div *ngIf="!loading && domains.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <app-domain-card *ngFor="let domain of domains" [domain]="domain"></app-domain-card>
-  </div>
-  <p *ngIf="!loading && !domains.length">No domains available.</p>
+<div class="mb-4">
+  <app-field-visibility-filter
+  (visibilityChange)="onVisibilityChange($event)"
+  (searchChange)="onSearchChange($event)"
+  (layoutChange)="onLayoutChange($event)"
+/>
 </div>
+
+<ng-container *ngIf="isGridLayout; else tableLayout">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <app-domain-card
+      *ngFor="let domain of filteredDomains || domains"
+      [domain]="domain"
+      [visibleFields]="visibleFields"
+    ></app-domain-card>
+  </div>
+</ng-container>
+<ng-template #tableLayout>
+  <app-domain-list
+    [domains]="filteredDomains"
+    [loading]="loading"
+  ></app-domain-list>
+</ng-template>
