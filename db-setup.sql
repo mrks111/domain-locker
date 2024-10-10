@@ -7,6 +7,8 @@ CREATE TABLE domains (
   user_id UUID NOT NULL,
   domain_name TEXT NOT NULL,
   expiry_date DATE,
+  registration_date DATE,
+  updated_date DATE,
   notes TEXT,
   registrar_id UUID REFERENCES registrars(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

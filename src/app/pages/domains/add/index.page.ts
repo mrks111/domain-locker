@@ -12,6 +12,7 @@ import { SaveDomainData } from '../../../../types/Database';
 
 import type { DomainInfo } from '../../../../types/DomainInfo';
 import { Router } from '@angular/router';
+import { Registrar } from '@/types/common';
 
 interface NotificationOption {
   label: string;  
@@ -266,6 +267,10 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     }).filter(entry => entry.value && entry.value !== 'Unknown');
   }
 
+  private makeDateOrUndefined(date: string | undefined): Date | undefined {
+    return date ? new Date(date) : undefined;
+  }
+
   /**
    * Handles form submission
    */  
@@ -275,9 +280,11 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
         const formValue = this.domainForm.value;
         const domainData: SaveDomainData = {
           domain: {
-            domainName: formValue.domainName,
+            domain_name: formValue.domainName,
+            registration_date: this.makeDateOrUndefined(this.domainInfo?.dates.creation),
+            updated_date: this.makeDateOrUndefined(this.domainInfo?.dates.updated),
             registrar: formValue.registrar,
-            expiryDate: formValue.expiryDate,
+            expiry_date: formValue.expiryDate,
             notes: formValue.notes,
           },
           ipAddresses: this.domainInfo?.ipAddresses.ipv4.map(ip => ({ ipAddress: ip, isIpv6: false }))
@@ -290,7 +297,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
           dns: this.domainInfo?.dns,
           ssl: this.domainInfo?.ssl,
           host: this.domainInfo?.host,
-          registrar: this.domainInfo?.registrar
+          registrar: this.domainInfo?.registrar as Registrar,
         };
 
         console.log('Domain Info to save: ', this.domainInfo);

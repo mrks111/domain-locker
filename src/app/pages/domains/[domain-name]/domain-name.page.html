@@ -33,7 +33,7 @@
         </div>
       </ng-template>
 
-      <p>{{ domain.registrar?.name }}</p>
+      <p>{{ domain.registrar.name }}</p>
       <p *ngIf="domain.registrar?.url">
         <a [href]="domain.registrar.url" target="_blank" rel="noopener noreferrer">{{ domain.registrar.url }}</a>
       </p>
@@ -45,20 +45,26 @@
           <dl-icon icon="dates" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
         </div>
       </ng-template>
-      <ng-container *ngIf="domain.expiry_date">
+      <div *ngIf="domain.expiry_date" class="row">
         <h5>Expiry</h5>
         <p class="m-0">
           {{ domain.expiry_date | date:'mediumDate' }}
-          <p-tag
+          <p-tag class="float-right opacity-70"
             [value]="domainUtils.getRemainingDaysText(domain.expiry_date)"
             [severity]="domainUtils.getExpirySeverity(domain.expiry_date)"
           ></p-tag>
         </p>
-      </ng-container>
-      <ng-container *ngIf="domain.registration_date">
+      </div>
+      
+      <div *ngIf="domain.registration_date" class="row">
         <h5>Registration</h5>
         <p class="m-0">{{ domain.registration_date | date:'mediumDate' }}</p>
-      </ng-container>
+      </div>
+
+      <div *ngIf="domain.updated_date" class="row">
+        <h5>Updated</h5>
+        <p class="m-0">{{ domain.updated_date | date:'mediumDate' }}</p>
+      </div>
     </p-card>
 
     <!-- IP Addresses -->

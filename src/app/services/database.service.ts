@@ -52,6 +52,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
     const dbDomain: Partial<DbDomain> = {
       domain_name: domain.domain_name,
       expiry_date: domain.expiry_date,
+      registration_date: domain.registration_date,
+      updated_date: domain.updated_date,
       notes: domain.notes,
       user_id: await this.supabase.getCurrentUser().then(user => user?.id)
     };

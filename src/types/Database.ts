@@ -6,6 +6,8 @@ export interface DbDomain extends Timestamps {
   user_id: string;
   domain_name: string;
   expiry_date: Date;
+  registration_date?: Date;
+  updated_date?: Date;
   notes: string;
   ip_addresses?: { ip_address: string; is_ipv6: boolean }[];
   ssl?: Ssl;
@@ -43,7 +45,7 @@ export interface SaveDomainData {
   ssl?: Ssl;
   whois?: Contact;
   dns?: Dns;
-  registrar?: Registrar;
+  registrar: Registrar;
   host?: Host;
 }
 
