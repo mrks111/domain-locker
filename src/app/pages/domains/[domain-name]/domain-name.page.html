@@ -1,0 +1,257 @@
+<div *ngIf="domain; else loading" class="domain-details p-4 flex flex-col gap-1">
+  <div class="flex gap-2 justify-between align-items-center flex-wrap mb-4">
+    <h1 class="text-3xl flex items-center">
+      <app-domain-favicon [domain]="domain.domain_name" [size]="32" class="mr-3"></app-domain-favicon>
+      <span class="text-primary">{{ domainUtils.splitDomain(domain.domain_name).domain }}</span>
+      <span class="text-default">.</span>
+      <span class="text-secondary">{{ domainUtils.splitDomain(domain.domain_name).tld }}</span>
+    </h1>
+    <div class="flex">
+      <a pButton
+        [href]="'https://'+domain.domain_name"
+        target="_blank"
+        class="p-button-secondary no-underline m-0 flex gap-2 w-fit" >
+        <i class="pi pi-external-link"></i>
+        Visit
+      </a>
+      <a pButton
+        routerLink="/domains/add"
+        class="p-button-primary no-underline m-0 flex gap-2 w-fit ml-2">
+        <i class="pi pi-pencil"></i>
+        Edit
+      </a>
+    </div>
+  </div>
+  
+  <div class="masonry sm:masonry-sm md:masonry-md lg:masonry-lg xl:masonry-xl">
+
+    <p-card *ngIf="domain.registrar">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Registrar</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70 mr-2">
+          <dl-icon icon="registrar" viewBox="0 0 640 512" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+
+      <p>{{ domain.registrar?.name }}</p>
+      <p *ngIf="domain.registrar?.url">
+        <a [href]="domain.registrar.url" target="_blank" rel="noopener noreferrer">{{ domain.registrar.url }}</a>
+      </p>
+    </p-card>
+    <p-card *ngIf="domain.expiry_date || domain.registration_date">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Dates</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="dates" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <ng-container *ngIf="domain.expiry_date">
+        <h5>Expiry</h5>
+        <p class="m-0">
+          {{ domain.expiry_date | date:'mediumDate' }}
+          <p-tag
+            [value]="domainUtils.getRemainingDaysText(domain.expiry_date)"
+            [severity]="domainUtils.getExpirySeverity(domain.expiry_date)"
+          ></p-tag>
+        </p>
+      </ng-container>
+      <ng-container *ngIf="domain.registration_date">
+        <h5>Registration</h5>
+        <p class="m-0">{{ domain.registration_date | date:'mediumDate' }}</p>
+      </ng-container>
+    </p-card>
+
+    <!-- IP Addresses -->
+    <p-card *ngIf="domain.ip_addresses?.length" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">IP Addresses</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="ips" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <div class="row">
+        <h5>IPv4</h5>
+        <ul class="list-none p-0 m-0">
+          <li *ngFor="let ip of filterIpAddresses(domain.ip_addresses, false)" class="mb-2">
+            {{ ip.ip_address }}
+          </li>
+        </ul>
+      </div>
+      <div class="row">
+        <h5>IPv6</h5>
+        <ul class="list-none p-0 m-0">
+          <li *ngFor="let ip of filterIpAddresses(domain.ip_addresses, true)" class="mb-2">
+            {{ ip.ip_address }}
+          </li>
+        </ul>
+      </div>
+    </p-card>
+
+    <!-- SSL Certificate -->
+    <p-card *ngIf="domain.ssl" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">SSL Certificate</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="ssl" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+    
+      <div>
+        <div class="row" *ngIf="domain.ssl.issuer">
+          <h5>Issuer</h5>
+          <p>{{ domain.ssl.issuer }}</p>
+        </div>
+        <div class="row" *ngIf="domain.ssl.issuer_country">
+          <h5>Issuer Country</h5>
+          <p>{{ domain.ssl.issuer_country }}</p>
+        </div>
+        <div class="row" *ngIf="domain.ssl.subject">
+          <h5>Subject</h5>
+          <p>{{ domain.ssl.subject }}</p>
+        </div>
+        <div class="row" *ngIf="domain.ssl.valid_from">
+          <h5>Valid From</h5>
+          <p>{{ domain.ssl.valid_from | date:'mediumDate' }}</p>
+        </div>
+        <div class="row" *ngIf="domain.ssl.valid_to">
+          <h5>Valid To</h5>
+          <p>{{ domain.ssl.valid_to | date:'mediumDate' }}</p>
+        </div>
+        <div class="row" *ngIf="domain.ssl.key_size">
+          <h5>Key Size</h5>
+          <p>{{ domain.ssl.key_size }}</p>
+        </div>
+        <div class="row" *ngIf="domain.ssl.signature_algorithm">
+          <h5>Signature Algorithm</h5>
+          <p>{{ domain.ssl.signature_algorithm }}</p>
+        </div>
+        <div class="row" *ngIf="domain.ssl.fingerprint">
+          <h5>Fingerprint</h5>  
+          <p class="truncate">{{ domain.ssl.fingerprint }}</p>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- WHOIS Information -->
+    <p-card *ngIf="domain.whois" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Whois Records</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70 mr-2">
+          <dl-icon icon="whois" viewBox="0 0 640 512" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <div>
+        <div class="row" *ngIf="domain.whois.name">
+          <h5>Name</h5>
+          <p>{{ domain.whois.name }}</p>
+        </div>
+        <div class="row" *ngIf="domain.whois.organization">
+          <h5>Organization</h5>
+          <p>{{ domain.whois.organization }}</p>
+        </div>
+        <div class="row" *ngIf="domain.whois.street || domain.whois.city || domain.whois.state || domain.whois.postal_code">
+          <h5>Address</h5>
+          <p>
+            {{ domain.whois.street }},
+            {{ domain.whois.city }},
+            {{ domain.whois.state }}
+            {{ domain.whois.postal_code }}
+          </p>
+        </div>
+        <div class="row" *ngIf="domain.whois.country">
+          <h5>Country</h5>
+          <p>{{ domain.whois.country }}</p>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Host Information -->
+    <p-card *ngIf="domain.host" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Host</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="host" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <div>
+        <div class="row" *ngIf="domain.host.isp">
+          <h5>ISP</h5>
+          <p>{{ domain.host.isp }}</p>
+        </div>
+        <div class="row" *ngIf="domain.host.org">
+          <h5>Organization</h5>
+          <p>{{ domain.host.org }}</p>
+        </div>
+        <div *ngIf="domain.host.asNumber" class="row">
+          <h5>AS Number</h5>
+          <p>{{ domain.host.asNumber }}</p>
+        </div>
+        <div class="row" *ngIf="domain.host.city || domain.host.region || domain.host.country">
+          <h5>Address</h5>
+          <p>{{ domain.host.city }}, {{ domain.host.region }}, {{ domain.host.country }}</p>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- DNS Records -->
+    <p-card *ngIf="domain.dns" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">DNS Records</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70 mr-2">
+          <dl-icon icon="dns" viewBox="0 0 640 512" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <p-tabView [scrollable]="true" styleClass="mt-4">
+        <p-tabPanel header="Name Servers" *ngIf="domain.dns.nameServers?.length">
+          <ul class="list-none p-0 m-0">
+            <li *ngFor="let ns of domain.dns.nameServers" class="mb-2 truncate">{{ ns }}</li>
+          </ul>
+        </p-tabPanel>
+        <p-tabPanel header="MX Records" *ngIf="domain.dns.mxRecords?.length">
+          <ul class="list-none p-0 m-0">
+            <li *ngFor="let mx of domain.dns.mxRecords" class="mb-2 truncate">{{ mx }}</li>
+          </ul>
+        </p-tabPanel>
+        <p-tabPanel header="TXT Records" *ngIf="domain.dns.txtRecords?.length">
+          <ul class="list-none p-0 m-0">
+            <li *ngFor="let txt of domain.dns.txtRecords" class="mb-2 truncate">{{ txt }}</li>
+          </ul>
+        </p-tabPanel>
+      </p-tabView>
+      <p *ngIf="domain.dns.dnssec"><strong>DNSSEC:</strong> {{ domain.dns.dnssec }}</p>
+    </p-card>
+
+    <!-- Notes -->
+    <p-card *ngIf="domain.notes" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Notes</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="notes" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <p>{{ domain.notes }}</p>
+    </p-card>
+
+    <!-- Tags -->
+    <p-card *ngIf="domain.tags?.length" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Tags</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="tags" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <div class="row mt-4">
+        <p-tag *ngFor="let tag of domain.tags" [value]="tag" styleClass="mr-2 mb-2"></p-tag>
+      </div>
+    </p-card>
+  </div>
+
+</div>
+
+<ng-template #loading>
+  <div class="flex justify-center items-center h-64">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+</ng-template>
+
+<p-messages></p-messages>

@@ -1,0 +1,59 @@
+
+::ng-deep .p-card {
+  margin-bottom: 1.5rem;
+  break-inside: avoid !important;
+}
+
+::ng-deep .p-card-content {
+  padding-top: 0;
+}
+
+::ng-deep .p-card-header {
+  padding: 20px 0 0 20px;
+  position: relative;
+}
+::ng-deep .p-card-body {
+  padding: 0 20px 20px 20px;
+}
+
+.row {
+  h5 {
+    color: var(--surface-400);
+    margin: 1rem 0 0.25rem 0;
+  }
+  p {
+    margin: 0;
+  }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    @variants responsive {
+        .masonry {
+            column-gap: 1.5rem;
+            column-count: 1;
+        }
+        .masonry-sm {
+            column-gap: 1.5rem;
+            column-count: 1;
+        }
+        .masonry-md {
+            column-gap: 1.5rem;
+            column-count: 2;
+        }
+        .masonry-lg {
+            column-gap: 1.5rem;
+            column-count: 3;
+        }
+        .masonry-xl {
+            column-gap: 1.5rem;
+            column-count: 4;
+        }
+        .break-inside {
+            break-inside: avoid;
+        }
+    }
+}
