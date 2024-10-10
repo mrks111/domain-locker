@@ -1,16 +1,28 @@
-// src/app/services/supabase-database.service.ts
-
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '../../types/Database';
-import { catchError, from, map, Observable, throwError } from 'rxjs';
+import { catchError, from, map, Observable, throwError, retry } from 'rxjs';
+import { PostgrestError } from '@supabase/supabase-js';
+
+class DatabaseError extends Error {
+  constructor(message: string, public originalError: any) {
+    super(message);
+    this.name = 'DatabaseError';
+  }
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export default class SupabaseDatabaseService extends DatabaseService {
+
   constructor(private supabase: SupabaseService) {
     super();
+  }
+
+  private handleError(error: any): Observable<never> {
+    console.error('An error occurred:', error);
+    return throwError(() => new Error('An error occurred while processing your request.'));
   }
 
   async domainExists(userId: string, domainName: string): Promise<boolean> {
@@ -28,12 +40,18 @@ export default class SupabaseDatabaseService extends DatabaseService {
     return !!data;
   }
 
-  async saveDomain(data: SaveDomainData): Promise<DbDomain> {
+  saveDomain(data: SaveDomainData): Observable<DbDomain> {
+    return from(this.saveDomainInternal(data)).pipe(
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  private async saveDomainInternal(data: SaveDomainData): Promise<DbDomain> {
     const { domain, ipAddresses, tags, notifications, dns, ssl, whois, registrar, host } = data;
   
     const dbDomain: Partial<DbDomain> = {
-      domain_name: domain.domainName,
-      expiry_date: domain.expiryDate,
+      domain_name: domain.domain_name,
+      expiry_date: domain.expiry_date,
       notes: domain.notes,
       user_id: await this.supabase.getCurrentUser().then(user => user?.id)
     };
@@ -42,12 +60,11 @@ export default class SupabaseDatabaseService extends DatabaseService {
       .from('domains')
       .insert(dbDomain)
       .select()
-      .single() as { data: DbDomain, error: any };
+      .single();
   
     if (domainError) throw domainError;
     if (!insertedDomain) throw new Error('Failed to insert domain');
   
-    // Save related data
     await Promise.all([
       this.saveIpAddresses(insertedDomain.id, ipAddresses),
       this.saveTags(insertedDomain.id, tags),
@@ -59,28 +76,39 @@ export default class SupabaseDatabaseService extends DatabaseService {
       this.saveHost(insertedDomain.id, host)
     ]);
   
-    // Fetch the complete domain data including related information
-    const { data: completeDomain, error: fetchError } = await this.supabase.supabase
-      .from('domains')
-      .select(`
-        *,
-        registrars (name, url),
-        domain_hosts (
-          hosts (
-            ip, lat, lon, isp, org, as_number, city, region, country
-          )
-        )
-      `)
-      .eq('id', insertedDomain.id)
-      .single();
-  
-    if (fetchError) throw fetchError;
-    if (!completeDomain) throw new Error('Failed to fetch complete domain data');
-    return completeDomain;
+    return this.getDomainById(insertedDomain.id);
   }
-  
 
-  private async saveIpAddresses(domainId: string, ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'createdAt' | 'updatedAt'>[]): Promise<void> {
+  private async getDomainById(id: string): Promise<DbDomain> {
+    const { data, error } = await this.supabase.supabase
+      .from('domains')
+      .select(this.getFullDomainQuery())
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    if (!data) throw new Error('Failed to fetch complete domain data');
+    return this.formatDomainData(data);
+  }
+
+  private getFullDomainQuery(): string {
+    return `
+      *,
+      registrars (name, url),
+      ip_addresses (ip_address, is_ipv6),
+      ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
+      whois_info (name, organization, country, street, city, state, postal_code),
+      domain_tags (tags (name)),
+      domain_hosts (
+        hosts (
+          ip, lat, lon, isp, org, as_number, city, region, country
+        )
+      ),
+      dns_records (record_type, record_value)
+    `;
+  }
+
+  private async saveIpAddresses(domainId: string, ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'created_at' | 'updated_at'>[]): Promise<void> {
     if (ipAddresses.length === 0) return;
 
     const dbIpAddresses = ipAddresses.map(ip => ({
@@ -96,65 +124,60 @@ export default class SupabaseDatabaseService extends DatabaseService {
     if (error) throw error;
   }
 
-private async saveTags(domainId: string, tags: string[]): Promise<void> {
-  if (tags.length === 0) return;
+  private async saveTags(domainId: string, tags: string[]): Promise<void> {
+    if (tags.length === 0) return;
 
-  for (const tag of tags) {
-    const { data: savedTag, error: tagError } = await this.supabase.supabase
-      .from('tags')
-      .insert({ name: tag })
-      .select('id')
-      .single();
-
-    if (tagError && tagError.code !== '23505') throw tagError;
-    let tagId: string;
-
-    // Get ID of tag (either new or existing)
-    if (savedTag) {
-      tagId = savedTag.id;
-    } else {
-      const { data: existingTag, error: fetchError } = await this.supabase.supabase
+    for (const tag of tags) {
+      const { data: savedTag, error: tagError } = await this.supabase.supabase
         .from('tags')
+        .insert({ name: tag })
         .select('id')
-        .eq('name', tag)
         .single();
-      if (fetchError) throw fetchError;
-      if (!existingTag) throw new Error(`Failed to insert or fetch tag: ${tag}`);
-      tagId = existingTag.id;
+
+      if (tagError && tagError.code !== '23505') throw tagError;
+      let tagId: string;
+
+      if (savedTag) {
+        tagId = savedTag.id;
+      } else {
+        const { data: existingTag, error: fetchError } = await this.supabase.supabase
+          .from('tags')
+          .select('id')
+          .eq('name', tag)
+          .single();
+        if (fetchError) throw fetchError;
+        if (!existingTag) throw new Error(`Failed to insert or fetch tag: ${tag}`);
+        tagId = existingTag.id;
+      }
+
+      const { error: linkError } = await this.supabase.supabase
+        .from('domain_tags')
+        .insert({ domain_id: domainId, tag_id: tagId });
+
+      if (linkError) throw linkError;
     }
-
-    // Link tag to domain
-    const { error: linkError } = await this.supabase.supabase
-      .from('domain_tags')
-      .insert({ domain_id: domainId, tag_id: tagId });
-
-    if (linkError) throw linkError;
   }
-}
 
-private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Promise<void> {
-  if (!dns) return;
-  const dnsRecords: { domain_id: string; record_type: string; record_value: string }[] = [];
-  if (dns.mxRecords) {
-    dns.mxRecords.forEach((record) => {
-      dnsRecords.push({ domain_id: domainId, record_type: 'MX', record_value: record });
+  private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Promise<void> {
+    if (!dns) return;
+    const dnsRecords: { domain_id: string; record_type: string; record_value: string }[] = [];
+    
+    const recordTypes = ['mxRecords', 'txtRecords', 'nameServers'] as const;
+    const typeMap = { mxRecords: 'MX', txtRecords: 'TXT', nameServers: 'NS' };
+
+    recordTypes.forEach(type => {
+      dns[type]?.forEach(record => {
+        dnsRecords.push({ domain_id: domainId, record_type: typeMap[type], record_value: record });
+      });
     });
-  }
-  if (dns.txtRecords) {
-    dns.txtRecords.forEach((record) => {
-      dnsRecords.push({ domain_id: domainId, record_type: 'TXT', record_value: record });
-    });
-  }
-  if (dns.nameServers) {
-    dns.nameServers.forEach((record) => {
-      dnsRecords.push({ domain_id: domainId, record_type: 'NS', record_value: record });
-    });
-  }
-  const { error } = await this.supabase.supabase.from('dns_records').insert(dnsRecords);
-  if (error) throw error;
-}
 
-  private async saveSslInfo(domainId: string, ssl: any): Promise<void> {
+    if (dnsRecords.length > 0) {
+      const { error } = await this.supabase.supabase.from('dns_records').insert(dnsRecords);
+      if (error) throw error;
+    }
+  }
+
+  private async saveSslInfo(domainId: string, ssl: SaveDomainData['ssl']): Promise<void> {
     if (!ssl) return;
   
     const sslData = {
@@ -176,7 +199,7 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
     if (error) throw error;
   }
 
-  private async saveWhoisInfo(domainId: string, whois: any): Promise<void> {
+  private async saveWhoisInfo(domainId: string, whois: SaveDomainData['whois']): Promise<void> {
     if (!whois) return;
 
     const whoisData = {
@@ -198,9 +221,8 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
   }
 
   private async saveRegistrar(domainId: string, registrar: Omit<Registrar, 'id'>): Promise<void> {
-    if (!registrar.name) return;
+    if (!registrar?.name) return;
   
-    // Check if the registrar already exists
     const { data: existingRegistrar, error: fetchError } = await this.supabase.supabase
       .from('registrars')
       .select('id')
@@ -209,13 +231,13 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
   
     if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
     let registrarId: string;
+
     if (existingRegistrar) {
       registrarId = existingRegistrar.id;
     } else {
-      // Insert new registrar
       const { data: newRegistrar, error: insertError } = await this.supabase.supabase
         .from('registrars')
-        .insert({ name: registrar.name, url: registrar.url })
+        .insert({ name: registrar['name'], url: registrar['url'] })
         .select('id')
         .single();
   
@@ -224,6 +246,7 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
   
       registrarId = newRegistrar.id;
     }
+
     const { error: updateError } = await this.supabase.supabase
       .from('domains')
       .update({ registrar_id: registrarId })
@@ -233,10 +256,8 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
   }
 
   private async saveHost(domainId: string, host: Host): Promise<void> {
-    console.log('About to save host: ', host)
-    if (!host.query) return;
+    if (!host?.query) return;
   
-    // Check if the host already exists
     const { data: existingHost, error: fetchError } = await this.supabase.supabase
       .from('hosts')
       .select('id')
@@ -250,7 +271,6 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
     if (existingHost) {
       hostId = existingHost.id;
     } else {
-      // Insert new host
       const { data: newHost, error: insertError } = await this.supabase.supabase
         .from('hosts')
         .insert({
@@ -271,14 +291,12 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
       hostId = newHost.id;
     }
   
-    // Link the host to the domain
     const { error: linkError } = await this.supabase.supabase
       .from('domain_hosts')
       .insert({ domain_id: domainId, host_id: hostId });
   
     if (linkError) throw linkError;
   }
-  
 
   private async saveNotifications(domainId: string, notifications: { type: string; isEnabled: boolean }[]): Promise<void> {
     if (notifications.length === 0) return;
@@ -296,23 +314,10 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
     if (error) throw error;
   }
 
-  override getDomain(domainName: string): Observable<DbDomain> {
+  getDomain(domainName: string): Observable<DbDomain> {
     return from(this.supabase.supabase
       .from('domains')
-      .select(`
-        *,
-        registrars (name, url),
-        ip_addresses (ip_address, is_ipv6),
-        ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
-        whois_info (name, organization, country, street, city, state, postal_code),
-        domain_tags (tags (name)),
-        domain_hosts (
-          hosts (
-            ip, lat, lon, isp, org, as_number, city, region, country
-          )
-        ),
-        dns_records (record_type, record_value)
-      `)
+      .select(this.getFullDomainQuery())
       .eq('domain_name', domainName)
       .single()
     ).pipe(
@@ -321,10 +326,8 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
         if (!data) throw new Error('Domain not found');
         return this.formatDomainData(data);
       }),
-      catchError((error) => {
-        console.error('Error fetching domain:', error);
-        return throwError(() => new Error('Failed to fetch domain details'));
-      })
+      retry(3),
+      catchError(error => this.handleError(error))
     );
   }
 
@@ -344,7 +347,7 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
     };
   }
 
-  override listDomainNames(): Observable<string[]> {
+  listDomainNames(): Observable<string[]> {
     return from(this.supabase.supabase
       .from('domains')
       .select('domain_name')
@@ -352,90 +355,209 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
       map(({ data, error }) => {
         if (error) throw error;
         return (data || []).map(d => d.domain_name.toLowerCase());
-      })
+      }),
+      retry(3),
+      catchError(error => this.handleError(error))
     );
   }
 
-  override listDomains(): Observable<DbDomain[]> {
-    return new Observable(observer => {
-      this.supabase.supabase
-        .from('domains')
-        .select(`
-          *,
-          registrars (name, url),
-          ip_addresses (ip_address, is_ipv6),
-          ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
-          whois_info (name, organization, country, street, city, state, postal_code),
-          domain_tags (tags (name)),
-          domain_hosts (
-            hosts (
-              ip, lat, lon, isp, org, as_number, city, region, country
-            )
-          ),
-          dns_records (record_type, record_value)
-        `)
-        .then(({ data, error }) => {
-          if (error) {
-            observer.error(error);
-          } else {
-            console.log(data);
-            const formattedDomains = data.map(domain => ({
-              ...domain,
-              tags: domain.domain_tags?.map((tagItem: { tags: { name: string } }) => tagItem.tags.name) || [],
-              ssl: (domain.ssl_certificates && domain.ssl_certificates.length) ? domain.ssl_certificates[0] : null,
-              whois: domain.whois_info,
-              registrar: domain.registrars,
-              host: domain.domain_hosts && domain.domain_hosts.length > 0 ? domain.domain_hosts[0].hosts : null,
-              dns: domain.dns_records ? {
-                mxRecords: domain.dns_records.filter(record => record.record_type === 'MX').map(record => record.record_value),
-                txtRecords: domain.dns_records.filter(record => record.record_type === 'TXT').map(record => record.record_value),
-                nameServers: domain.dns_records.filter(record => record.record_type === 'NS').map(record => record.record_value)
-              } : null
-            }));
-            observer.next(formattedDomains as DbDomain[]);
-            observer.complete();
-          }
-        });
-    });
+  listDomains(): Observable<DbDomain[]> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select(this.getFullDomainQuery())
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(domain => this.formatDomainData(domain));
+      }),
+      retry(3),
+      catchError(error => this.handleError(error))
+    );
   }
-  
-  override updateDomain(id: string, domain: Partial<Domain>): Promise<Domain> {
-    throw new Error('Method not implemented.');
+
+  updateDomain(id: string, domain: Partial<DbDomain>): Observable<DbDomain> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .update(domain)
+      .eq('id', id)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('Domain not found');
+        return this.formatDomainData(data);
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override deleteDomain(id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  deleteDomain(id: string): Observable<void> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .delete()
+      .eq('id', id)
+    ).pipe(
+      map(({ error }) => {
+        if (error) throw error;
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'createdAt' | 'updatedAt'>): Promise<IpAddress> {
-    throw new Error('Method not implemented.');
+
+  addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'created_at' | 'updated_at'>): Observable<IpAddress> {
+    return from(this.supabase.supabase
+      .from('ip_addresses')
+      .insert(ipAddress)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('Failed to add IP address');
+        return data as IpAddress;
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override getIpAddresses(domainId: string): Promise<IpAddress[]> {
-    throw new Error('Method not implemented.');
+
+  getIpAddresses(domainId: string): Observable<IpAddress[]> {
+    return from(this.supabase.supabase
+      .from('ip_addresses')
+      .select('*')
+      .eq('domain_id', domainId)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as IpAddress[];
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override updateIpAddress(id: string, ipAddress: Partial<IpAddress>): Promise<IpAddress> {
-    throw new Error('Method not implemented.');
+
+  updateIpAddress(id: string, ipAddress: Partial<IpAddress>): Observable<IpAddress> {
+    return from(this.supabase.supabase
+      .from('ip_addresses')
+      .update(ipAddress)
+      .eq('id', id)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('IP address not found');
+        return data as IpAddress;
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override deleteIpAddress(id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  deleteIpAddress(id: string): Observable<void> {
+    return from(this.supabase.supabase
+      .from('ip_addresses')
+      .delete()
+      .eq('id', id)
+    ).pipe(
+      map(({ error }) => {
+        if (error) throw error;
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override addTag(tag: Omit<Tag, 'id'>): Promise<Tag> {
-    throw new Error('Method not implemented.');
+
+  addTag(tag: Omit<Tag, 'id'>): Observable<Tag> {
+    return from(this.supabase.supabase
+      .from('tags')
+      .insert(tag)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('Failed to add tag');
+        return data as Tag;
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override getTags(): Promise<Tag[]> {
-    throw new Error('Method not implemented.');
+
+  getTags(): Observable<Tag[]> {
+    return from(this.supabase.supabase
+      .from('tags')
+      .select('*')
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as Tag[];
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override deleteTag(id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  deleteTag(id: string): Observable<void> {
+    return from(this.supabase.supabase
+      .from('tags')
+      .delete()
+      .eq('id', id)
+    ).pipe(
+      map(({ error }) => {
+        if (error) throw error;
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override addNotification(notification: Omit<Notification, 'id' | 'createdAt' | 'updatedAt'>): Promise<Notification> {
-    throw new Error('Method not implemented.');
+
+  addNotification(notification: Omit<Notification, 'id' | 'created_at' | 'updated_at'>): Observable<Notification> {
+    return from(this.supabase.supabase
+      .from('notifications')
+      .insert(notification)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('Failed to add notification');
+        return data as Notification;
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override getNotifications(domainId: string): Promise<Notification[]> {
-    throw new Error('Method not implemented.');
+
+  getNotifications(domainId: string): Observable<Notification[]> {
+    return from(this.supabase.supabase
+      .from('notifications')
+      .select('*')
+      .eq('domain_id', domainId)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as Notification[];
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override updateNotification(id: string, notification: Partial<Notification>): Promise<Notification> {
-    throw new Error('Method not implemented.');
+
+  updateNotification(id: string, notification: Partial<Notification>): Observable<Notification> {
+    return from(this.supabase.supabase
+      .from('notifications')
+      .update(notification)
+      .eq('id', id)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('Notification not found');
+        return data as Notification;
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
-  override deleteNotification(id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  deleteNotification(id: string): Observable<void> {
+    return from(this.supabase.supabase
+      .from('notifications')
+      .delete()
+      .eq('id', id)
+    ).pipe(
+      map(({ error }) => {
+        if (error) throw error;
+      }),
+      catchError(error => this.handleError(error))
+    );
   }
 }
