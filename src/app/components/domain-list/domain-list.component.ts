@@ -1,14 +1,16 @@
 import { Component, Input } from '@angular/core';
-import { DbDomain } from '../../../types/Database';
+import { DbDomain } from '@/types/Database';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { NgFor, NgSwitch, NgSwitchCase, DatePipe, CommonModule } from '@angular/common';
-import { DomainUtils } from '../../services/domain-utils.service';
+import { DomainFaviconComponent } from '@components/misc/favicon.component';
+import { DomainUtils } from '@services/domain-utils.service';
 
 @Component({
   standalone: true,
   selector: 'app-domain-list',
   templateUrl: 'domain-list.component.html',
-  imports: [PrimeNgModule, NgFor, NgSwitch, NgSwitchCase, DatePipe, CommonModule]
+  styleUrl: 'domain-list.component.scss',
+  imports: [PrimeNgModule, NgFor, NgSwitch, NgSwitchCase, DatePipe, CommonModule, DomainFaviconComponent]
 })
 export class DomainListComponent {
   @Input() domains: DbDomain[] = [];

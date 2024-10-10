@@ -1,6 +1,7 @@
 import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomainFaviconComponent } from '../../components/misc/favicon.component';
 import { PrimeNgModule } from '../../prime-ng.module';
 
 export interface FieldOption {
@@ -11,7 +12,7 @@ export interface FieldOption {
 @Component({
   selector: 'app-field-visibility-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, PrimeNgModule],
+  imports: [CommonModule, FormsModule, PrimeNgModule, DomainFaviconComponent],
   templateUrl: 'domain-filters.component.html',
   styleUrls: ['domain-filters.component.scss'],
 })
@@ -46,7 +47,7 @@ export class FieldVisibilityFilterComponent implements OnInit {
     this.initializeSelectedFields();
   }
 
-  initializeSelectedFields() {
+  public initializeSelectedFields() {
     this.selectedFields = this.fieldOptions.filter(option => 
       this.defaultSelectedFields.includes(option.value)
     );

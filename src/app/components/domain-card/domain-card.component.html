@@ -14,10 +14,12 @@
 
   <!-- Domain Name -->
   <h2 *ngIf="isVisible('domainName')" class="m-0">
-    <app-domain-favicon [domain]="domain.domain_name" [size]="24" class="mr-2"></app-domain-favicon>
-    <span class="text-primary">{{ domainUtils.splitDomain(domain.domain_name).domain }}</span>
-    <span class="text-default">.</span>
-    <span class="text-secondary">{{ domainUtils.splitDomain(domain.domain_name).tld }}</span>
+    <a [href]="'/domains/'+domain.domain_name" class="no-underline text-default">
+      <app-domain-favicon [domain]="domain.domain_name" [size]="24" class="mr-2"></app-domain-favicon>
+      <span class="text-primary">{{ domainUtils.splitDomain(domain.domain_name).domain }}</span>
+      <span class="text-default">.</span>
+      <span class="text-secondary">{{ domainUtils.splitDomain(domain.domain_name).tld }}</span>
+    </a>
   </h2>
   
   <!-- Core Info: Registrar and Expiry -->

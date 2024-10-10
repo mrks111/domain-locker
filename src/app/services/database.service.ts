@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '../../types/Database';
-import { from, map, Observable } from 'rxjs';
+import { catchError, from, map, Observable, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -296,18 +296,53 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
     if (error) throw error;
   }
 
-  // private mapDbDomainToDomain(dbDomain: DbDomain): Domain {
-  //   return {
-  //     id: dbDomain.id,
-  //     userId: dbDomain.user_id,
-  //     domainName: dbDomain.domain_name,
-  //     registrar: dbDomain.registrar,
-  //     expiryDate: new Date(dbDomain.expiry_date),
-  //     notes: dbDomain.notes,
-  //     createdAt: new Date(dbDomain.created_at),
-  //     updatedAt: new Date(dbDomain.updated_at)
-  //   };
-  // }
+  override getDomain(domainName: string): Observable<DbDomain> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select(`
+        *,
+        registrars (name, url),
+        ip_addresses (ip_address, is_ipv6),
+        ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
+        whois_info (name, organization, country, street, city, state, postal_code),
+        domain_tags (tags (name)),
+        domain_hosts (
+          hosts (
+            ip, lat, lon, isp, org, as_number, city, region, country
+          )
+        ),
+        dns_records (record_type, record_value)
+      `)
+      .eq('domain_name', domainName)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('Domain not found');
+        return this.formatDomainData(data);
+      }),
+      catchError((error) => {
+        console.error('Error fetching domain:', error);
+        return throwError(() => new Error('Failed to fetch domain details'));
+      })
+    );
+  }
+
+  private formatDomainData(data: any): DbDomain {
+    return {
+      ...data,
+      tags: data.domain_tags?.map((tagItem: { tags: { name: string } }) => tagItem.tags.name) || [],
+      ssl: (data.ssl_certificates && data.ssl_certificates.length) ? data.ssl_certificates[0] : null,
+      whois: data.whois_info,
+      registrar: data.registrars,
+      host: data.domain_hosts && data.domain_hosts.length > 0 ? data.domain_hosts[0].hosts : null,
+      dns: {
+        mxRecords: data.dns_records.filter((record: any) => record.record_type === 'MX').map((record: any) => record.record_value),
+        txtRecords: data.dns_records.filter((record: any) => record.record_type === 'TXT').map((record: any) => record.record_value),
+        nameServers: data.dns_records.filter((record: any) => record.record_type === 'NS').map((record: any) => record.record_value)
+      }
+    };
+  }
 
   override listDomainNames(): Observable<string[]> {
     return from(this.supabase.supabase
@@ -364,10 +399,6 @@ private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Prom
     });
   }
   
-
-  override getDomain(id: string): Promise<Domain | null> {
-    throw new Error('Method not implemented.');
-  }
   override updateDomain(id: string, domain: Partial<Domain>): Promise<Domain> {
     throw new Error('Method not implemented.');
   }

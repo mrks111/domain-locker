@@ -1,6 +1,6 @@
 <!-- src/app/components/navbar/navbar.component.html -->
 <div class="custom-menubar flex justify-between items-center py-2 px-4">
-  <button pButton icon="pi pi-bars" (click)="toggleSidebar()" class="p-button-text p-button-rounded mr-2 lg:hidden"></button>
+  <button pButton icon="pi pi-bars" (click)="toggleSidebar()" class="p-button-text p-button-rounded mr-2 sm:hidden"></button>
   <a href="/" class="flex items-center no-underline">
     <svg width="42px" height="42px" viewBox="0 0 16 16" fill="var(--primary, red)" xmlns="http://www.w3.org/2000/svg">
       <path fill-rule="evenodd" clip-rule="evenodd"
@@ -11,7 +11,7 @@
 
     <span class="text-xl font-bold ml-2 text-primary">Domain Locker</span>
   </a>
-  <div class="hidden lg:flex lg:items-center">
+  <div class="hidden sm:flex sm:items-center">
     <p-menubar [model]="items" [styleClass]="'bg-transparent border-none p-0'"></p-menubar>
     <button #settingsButton pButton icon="pi pi-cog" (click)="toggleSettings($event)"
             class="p-button-rounded p-button-text ml-2"></button>

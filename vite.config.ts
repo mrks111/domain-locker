@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import analog from '@analogjs/platform';
 import { defineConfig, loadEnv } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig( ({ mode }) => {
 
@@ -23,6 +24,17 @@ export default defineConfig( ({ mode }) => {
       sourcemap: mode === 'development' ? 'inline' : false,
       outDir: 'dist/client',
       assetsDir: 'assets',
+    },
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, './src'),
+        '@components': resolve(__dirname, './src/app/components'),
+        '@services': resolve(__dirname, './src/app/services'),
+        '@typings': resolve(__dirname, './src/types'),
+        '@guards': resolve(__dirname, './src/guards'),
+        '@pages': resolve(__dirname, './src/pages'),
+        '@styles': resolve(__dirname, './src/styles'),
+      }
     },
     plugins: [
       analog({

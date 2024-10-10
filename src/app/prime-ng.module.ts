@@ -26,6 +26,7 @@ import { KeyFilterModule } from 'primeng/keyfilter';
 import { MenubarModule } from 'primeng/menubar';
 import { MenuModule } from 'primeng/menu';
 import { MessageModule } from 'primeng/message';
+import { MessagesModule } from 'primeng/messages';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { OverlayModule } from 'primeng/overlay';
 import { PanelModule } from 'primeng/panel';
@@ -72,6 +73,7 @@ import { TooltipModule } from 'primeng/tooltip';
     MenubarModule,
     MenuModule,
     MessageModule,
+    MessagesModule,
     MultiSelectModule,
     OverlayModule,
     PanelModule,

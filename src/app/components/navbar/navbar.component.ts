@@ -121,33 +121,33 @@ export class NavbarComponent implements OnInit, OnDestroy {
         {
           label: 'Domains',
           icon: 'pi pi-fw pi-globe',
-          routerLink: '/domains'
+          routerLink: '/domains',
         },
         {
           label: 'Add Domain',
           icon: 'pi pi-fw pi-plus',
           routerLink: '/domains/add'
         },
-        {
-          label: 'Reports',
-          icon: 'pi pi-fw pi-chart-line',
-          routerLink: '/notifications'
-        },
-        {
-          label: 'Data Export',
-          icon: 'pi pi-fw pi-file-export',
-          routerLink: '/export'
-        },
-        {
-          label: 'Change History',
-          icon: 'pi pi-fw pi-history',
-          routerLink: '/history'
-        },
-        {
-          label: 'Notifications',
-          icon: 'pi pi-fw pi-bell',
-          routerLink: '/notifications'
-        }
+        // {
+        //   label: 'Reports',
+        //   icon: 'pi pi-fw pi-chart-line',
+        //   routerLink: '/notifications'
+        // },
+        // {
+        //   label: 'Data Export',
+        //   icon: 'pi pi-fw pi-file-export',
+        //   routerLink: '/export'
+        // },
+        // {
+        //   label: 'Change History',
+        //   icon: 'pi pi-fw pi-history',
+        //   routerLink: '/history'
+        // },
+        // {
+        //   label: 'Notifications',
+        //   icon: 'pi pi-fw pi-bell',
+        //   routerLink: '/notifications'
+        // }
       ];
     } else {
       this.items.push({

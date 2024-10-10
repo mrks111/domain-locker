@@ -48,8 +48,8 @@ export interface SaveDomainData {
 }
 
 export abstract class DatabaseService {
-  abstract saveDomain(data: SaveDomainData): Promise<DbDomain>;
-  abstract getDomain(id: string): Promise<DbDomain | null>;
+  abstract saveDomain(data: SaveDomainData): Observable<DbDomain>;
+  abstract getDomain(domainName: string): Observable<DbDomain>;
   abstract updateDomain(id: string, domain: Partial<DbDomain>): Promise<DbDomain>;
   abstract deleteDomain(id: string): Promise<void>;
   abstract listDomains(userId: string): Observable<DbDomain[]>;
