@@ -333,18 +333,31 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
+  private extractTags(data: any): string[] {
+    if (Array.isArray(data.domain_tags)) {
+      // Handle the case for /domains page
+      return data.domain_tags
+        .filter((tagItem: any) => tagItem.tags && tagItem.tags.name)
+        .map((tagItem: any) => tagItem.tags.name);
+    } else if (data.tags) {
+      // Handle the case for /tags/[tag-name] page
+      return [data.tags];
+    }
+    return [];
+  }
+
   private formatDomainData(data: any): DbDomain {
     return {
       ...data,
-      tags: data.domain_tags?.map((tagItem: { tags: { name: string } }) => tagItem.tags.name) || [],
+      tags: this.extractTags(data),
       ssl: (data.ssl_certificates && data.ssl_certificates.length) ? data.ssl_certificates[0] : null,
       whois: data.whois_info,
       registrar: data.registrars,
       host: data.domain_hosts && data.domain_hosts.length > 0 ? data.domain_hosts[0].hosts : null,
       dns: {
-        mxRecords: data.dns_records.filter((record: any) => record.record_type === 'MX').map((record: any) => record.record_value),
-        txtRecords: data.dns_records.filter((record: any) => record.record_type === 'TXT').map((record: any) => record.record_value),
-        nameServers: data.dns_records.filter((record: any) => record.record_type === 'NS').map((record: any) => record.record_value)
+        mxRecords: data.dns_records?.filter((record: any) => record.record_type === 'MX').map((record: any) => record.record_value) || [],
+        txtRecords: data.dns_records?.filter((record: any) => record.record_type === 'TXT').map((record: any) => record.record_value) || [],
+        nameServers: data.dns_records?.filter((record: any) => record.record_type === 'NS').map((record: any) => record.record_value) || []
       }
     };
   }
@@ -558,6 +571,55 @@ export default class SupabaseDatabaseService extends DatabaseService {
     ).pipe(
       map(({ error }) => {
         if (error) throw error;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  getDomainCountsByTag(): Observable<Record<string, number>> {
+    return from(this.supabase.supabase
+      .from('domain_tags')
+      .select('tags(name), domain_id', { count: 'exact' })
+      .select('domain_id')
+      .select('tags(name)')
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        const counts: Record<string, number> = {};
+        data.forEach((item: any) => {
+          const tagName = item.tags.name;
+          counts[tagName] = (counts[tagName] || 0) + 1;
+        });
+        return counts;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  getDomainsByTag(tagName: string): Observable<DbDomain[]> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select(`
+        *,
+        registrars (name, url),
+        ip_addresses (ip_address, is_ipv6),
+        ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
+        whois_info (name, organization, country, street, city, state, postal_code),
+        domain_hosts (
+          hosts (
+            ip, lat, lon, isp, org, as_number, city, region, country
+          )
+        ),
+        dns_records (record_type, record_value),
+        domain_tags!inner (
+          tags!inner (name)
+        )
+      `)
+      .eq('domain_tags.tags.name', tagName)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(domain => this.formatDomainData(domain));
       }),
       catchError(error => this.handleError(error))
     );

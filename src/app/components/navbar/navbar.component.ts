@@ -124,6 +124,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
           routerLink: '/domains',
         },
         {
+          label: 'Tags',
+          icon: 'pi pi-fw pi-tag',
+          routerLink: '/tags',
+        },
+        {
           label: 'Add Domain',
           icon: 'pi pi-fw pi-plus',
           routerLink: '/domains/add'
