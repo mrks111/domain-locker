@@ -217,3 +217,70 @@ CREATE INDEX idx_dns_records_domain_id ON dns_records(domain_id);
 CREATE INDEX idx_ssl_certificates_domain_id ON ssl_certificates(domain_id);
 CREATE INDEX idx_ip_addresses_domain_id ON ip_addresses(domain_id);
 CREATE INDEX idx_notifications_domain_id ON notifications(domain_id);
+
+-- Function to get hosts with domain counts
+CREATE OR REPLACE FUNCTION get_hosts_with_domain_counts()
+RETURNS TABLE (
+  host_id uuid,
+  ip inet,
+  lat numeric,
+  lon numeric,
+  isp text,
+  org text,
+  as_number text,
+  city text,
+  region text,
+  country text,
+  domain_count bigint
+) AS $$
+BEGIN
+  RETURN QUERY
+  WITH user_domains AS (
+    SELECT d.id AS domain_id FROM domains d WHERE d.user_id = auth.uid()
+  )
+  SELECT 
+    h.id AS host_id,
+    h.ip,
+    h.lat,
+    h.lon,
+    h.isp,
+    h.org,
+    h.as_number,
+    h.city,
+    h.region,
+    h.country,
+    COUNT(DISTINCT ud.domain_id) AS domain_count
+  FROM
+    hosts h
+    LEFT JOIN domain_hosts dh ON h.id = dh.host_id
+    LEFT JOIN user_domains ud ON dh.domain_id = ud.domain_id
+  GROUP BY
+    h.id, h.ip, h.lat, h.lon, h.isp, h.org, h.as_number, h.city, h.region, h.country;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+--- Get SSL issuers with domain counts
+CREATE OR REPLACE FUNCTION get_ssl_issuers_with_domain_counts()
+RETURNS TABLE (
+  issuer text,
+  domain_count bigint
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    sc.issuer,
+    COUNT(DISTINCT d.id) AS domain_count
+  FROM 
+    ssl_certificates sc
+    JOIN domains d ON sc.domain_id = d.id
+  WHERE
+    d.user_id = auth.uid()
+  GROUP BY 
+    sc.issuer
+  ORDER BY 
+    domain_count DESC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION get_ssl_issuers_with_domain_counts() TO authenticated;
