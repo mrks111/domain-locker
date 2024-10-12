@@ -807,4 +807,26 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
+  getDnsRecords(recordType: string): Observable<any[]> {
+    return from(this.supabase.supabase
+      .from('dns_records')
+      .select(`
+        record_value,
+        domains (domain_name)
+      `)
+      .eq('record_type', recordType)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(record => ({
+          record_value: record.record_value,
+          // Check if record.domains is an object, and handle accordingly
+          domains: record.domains ? [record.domains.domain_name] : []
+        }));
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+  
+
 }
