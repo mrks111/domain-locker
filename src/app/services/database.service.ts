@@ -98,7 +98,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       *,
       registrars (name, url),
       ip_addresses (ip_address, is_ipv6),
-      ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
+      ssl_certificates!inner (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
       whois_info (name, organization, country, street, city, state, postal_code),
       domain_tags (tags (name)),
       domain_hosts (
@@ -258,12 +258,13 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
 
   private async saveHost(domainId: string, host: Host): Promise<void> {
-    if (!host?.query) return;
+    if (!host?.isp) return;
   
+    // First, try to find an existing host with the same ISP
     const { data: existingHost, error: fetchError } = await this.supabase.supabase
       .from('hosts')
       .select('id')
-      .eq('ip', host.query)
+      .eq('isp', host.isp)
       .single();
   
     if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
@@ -272,7 +273,25 @@ export default class SupabaseDatabaseService extends DatabaseService {
   
     if (existingHost) {
       hostId = existingHost.id;
+      
+      // Update the existing host with the new information
+      const { error: updateError } = await this.supabase.supabase
+        .from('hosts')
+        .update({
+          ip: host.query,
+          lat: host.lat,
+          lon: host.lon,
+          org: host.org,
+          as_number: host.asNumber,
+          city: host.city,
+          region: host.region,
+          country: host.country
+        })
+        .eq('id', hostId);
+  
+      if (updateError) throw updateError;
     } else {
+      // If no existing host found, insert a new one
       const { data: newHost, error: insertError } = await this.supabase.supabase
         .from('hosts')
         .insert({
@@ -288,11 +307,13 @@ export default class SupabaseDatabaseService extends DatabaseService {
         })
         .select('id')
         .single();
+  
       if (insertError) throw insertError;
       if (!newHost) throw new Error('Failed to insert host');
       hostId = newHost.id;
     }
   
+    // Link the host to the domain
     const { error: linkError } = await this.supabase.supabase
       .from('domain_hosts')
       .insert({ domain_id: domainId, host_id: hostId });
@@ -624,4 +645,168 @@ export default class SupabaseDatabaseService extends DatabaseService {
       catchError(error => this.handleError(error))
     );
   }
+
+  getRegistrars(): Observable<Registrar[]> {
+    return from(this.supabase.supabase
+      .from('registrars')
+      .select('*')
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as Registrar[];
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  getDomainCountsByRegistrar(): Observable<Record<string, number>> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select('registrars(name), id', { count: 'exact' })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        const counts: Record<string, number> = {};
+        data.forEach((item: any) => {
+          const registrarName = item.registrars?.name;
+          if (registrarName) {
+            counts[registrarName] = (counts[registrarName] || 0) + 1;
+          }
+        });
+        return counts;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+  
+  getDomainsByRegistrar(registrarName: string): Observable<DbDomain[]> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select(`
+        *,
+        registrars!inner (name, url),
+        ip_addresses (ip_address, is_ipv6),
+        ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
+        whois_info (name, organization, country, street, city, state, postal_code),
+        domain_hosts (
+          hosts (
+            ip, lat, lon, isp, org, as_number, city, region, country
+          )
+        ),
+        dns_records (record_type, record_value),
+        domain_tags (
+          tags (name)
+        )
+      `)
+      .eq('registrars.name', registrarName)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(domain => this.formatDomainData(domain));
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  getHosts(): Observable<Host[]> {
+    return from(this.supabase.supabase
+      .from('hosts')
+      .select('*')
+      .order('isp', { ascending: true })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as Host[];
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  getDomainCountsByHost(): Observable<Record<string, number>> {
+    return from(this.supabase.supabase
+      .from('domain_hosts')
+      .select('hosts(isp), domain_id', { count: 'exact' })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        const counts: Record<string, number> = {};
+        data.forEach((item: any) => {
+          const isp = item.hosts?.isp;
+          if (isp) {
+            counts[isp] = (counts[isp] || 0) + 1;
+          }
+        });
+        return counts;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  getDomainsByHost(hostIsp: string): Observable<DbDomain[]> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select(`
+        *,
+        registrars (name, url),
+        ip_addresses (ip_address, is_ipv6),
+        ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
+        whois_info (name, organization, country, street, city, state, postal_code),
+        domain_hosts!inner (
+          hosts!inner (
+            ip, lat, lon, isp, org, as_number, city, region, country
+          )
+        ),
+        dns_records (record_type, record_value),
+        domain_tags (
+          tags (name)
+        )
+      `)
+      .eq('domain_hosts.hosts.isp', hostIsp)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(domain => this.formatDomainData(domain));
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  getHostsWithDomainCounts(): Observable<(Host & { domainCount: number })[]> {
+    return from(this.supabase.supabase
+      .rpc('get_hosts_with_domain_counts')
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as (Host & { domainCount: number })[];
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  getSslIssuersWithDomainCounts(): Observable<{ issuer: string; domainCount: number }[]> {
+    return from(this.supabase.supabase
+      .rpc('get_ssl_issuers_with_domain_counts')
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data as { issuer: string; domainCount: number }[];
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  getDomainsBySslIssuer(issuer: string): Observable<DbDomain[]> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select(this.getFullDomainQuery())
+      .eq('ssl_certificates.issuer', issuer)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(domain => this.formatDomainData(domain));
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
 }

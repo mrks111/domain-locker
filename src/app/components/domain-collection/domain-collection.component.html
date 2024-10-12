@@ -4,6 +4,7 @@
     (visibilityChange)="onVisibilityChange($event)"
     (searchChange)="onSearchChange($event)"
     (layoutChange)="onLayoutChange($event)"
+    [showAddButton]="showAddButton"
   />
 </div>
 
@@ -30,11 +31,19 @@
 <!-- Note (count of visible fields, and usage instructions) -->
 <div class="flex space-between justify-between items-center flex-wrap mt-4 text-surface-400">
   <p>
-    Viewing {{filteredDomains.length}} of {{domains.length}} domains
+    Viewing {{filteredDomains.length}} of {{domains.length}} domains {{ preFilteredText }}
     <ng-container *ngIf="searchTerm">matching search term "{{searchTerm}}"</ng-container>,
     with {{visibleColumns.length}} fields visible in {{isGridLayout ? 'grid' : 'list'}}<br>
-    <ng-container *ngIf="searchTerm || visibleFields.length !== 5">
+    <ng-container *ngIf="searchTerm || visibleFields.length !== 3">
       <span (click)="resetFilters()" class="text-primary opacity-70 underline cursor-pointer">Reset Filters</span>
+    </ng-container>
+
+    <ng-container *ngIf="(searchTerm || visibleFields.length !== 3) && preFilteredText">
+      or
+    </ng-container>
+
+    <ng-container *ngIf="preFilteredText">
+      <a routerLink="/domains" (click)="resetFilters()" class="text-primary opacity-70 underline cursor-pointer">View All</a>
     </ng-container>
   </p>
   <p class="text-xs">

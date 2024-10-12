@@ -38,7 +38,7 @@
     </div>
   </div>
   <!-- Add Domain Button -->
-  <a pButton routerLink="/domains/add" class="p-button-primary no-underline m-0 mt-4 flex gap-2 w-fit">
+  <a *ngIf="showAddButton" pButton routerLink="/domains/add" class="p-button-primary no-underline m-0 mt-4 flex gap-2 w-fit">
     <i class="pi pi-plus"></i>
     Add Domain
   </a>

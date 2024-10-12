@@ -1,5 +1,3 @@
-// src/app/components/domain-favicon/domain-favicon.component.ts
-
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 
@@ -13,12 +11,12 @@ import { CommonModule, NgOptimizedImage } from '@angular/common';
     </ng-container>
     <img 
       *ngIf="faviconLoaded !== false"
-      [ngSrc]="'https://favicone.com/' + domain + '?s=' + size"
+      [ngSrc]="'https://favicone.com/' + sanitizedDomain + '?s=' + size"
       [width]="size" 
       [height]="size"
       (load)="onFaviconLoad()"
       (error)="onFaviconError()"
-      [alt]="domain + ' favicon'"
+      [alt]="sanitizedDomain + ' favicon'"
       [class]="styleClass || 'rounded-sm'"
     />
   `,
@@ -39,11 +37,13 @@ export class DomainFaviconComponent implements OnInit, OnDestroy {
   @Input() size: number = 24;
   @Input() styleClass: string = '';
 
+  sanitizedDomain: string = '';
   faviconLoaded: boolean | undefined;
   isSpinning: boolean = true;
   private timeoutId: any;
 
   ngOnInit() {
+    this.sanitizedDomain = this.getSanitizedDomain(this.domain);
     this.faviconLoaded = undefined;
     this.startSpinningTimeout();
   }
@@ -73,5 +73,16 @@ export class DomainFaviconComponent implements OnInit, OnDestroy {
     this.clearSpinningTimeout();
     this.faviconLoaded = false;
     this.isSpinning = false;
+  }
+
+  private getSanitizedDomain(domain: string): string {
+    try {
+      let sanitizedDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, '');
+      sanitizedDomain = sanitizedDomain.split('/')[0];
+      return sanitizedDomain;
+    } catch (e) {
+      console.error('Error sanitizing domain:', e);
+      return domain;
+    }
   }
 }

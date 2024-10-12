@@ -122,16 +122,72 @@ export class NavbarComponent implements OnInit, OnDestroy {
           label: 'Domains',
           icon: 'pi pi-fw pi-globe',
           routerLink: '/domains',
+          items: [
+            {
+              label: 'Inventory',
+              icon: 'pi pi-briefcase',
+              routerLink: '/domains',
+            },
+            {
+              label: 'Add Domain',
+              icon: 'pi pi-fw pi-plus',
+              routerLink: '/domains/add'
+            },
+            {
+              label: 'Bulk Import',
+              icon: 'pi pi-fw pi-file-import',
+              routerLink: '/domains/bulk-add'
+            },
+          ],
         },
         {
-          label: 'Tags',
-          icon: 'pi pi-fw pi-tag',
-          routerLink: '/tags',
+          label: 'Assets',
+          icon: 'pi pi-box',
+          routerLink: '/assets',
+          items: [
+            {
+              label: 'Registrars',
+              icon: 'pi pi-fw pi-receipt',
+              routerLink: '/registrars',
+            },
+            {
+              label: 'Hosts',
+              icon: 'pi pi-fw pi-server',
+              routerLink: '/hosts',
+            },
+            {
+              label: 'Certificates',
+              icon: 'pi pi-fw pi-key',
+              routerLink: '/certs',
+            },
+            {
+              label: 'IPs',
+              icon: 'pi pi-fw pi-sitemap',
+              routerLink: '/ips',
+            },
+            {
+              label: 'Tags',
+              icon: 'pi pi-fw pi-tag',
+              routerLink: '/tags',
+            },
+          ],
         },
         {
-          label: 'Add Domain',
-          icon: 'pi pi-fw pi-plus',
-          routerLink: '/domains/add'
+          label: 'Statistics',
+          icon: 'pi pi-fw pi-wave-pulse',
+          routerLink: '/stats',
+          items: [
+            {
+              label: 'Timeline',
+              icon: 'pi pi-calendar',
+              routerLink: '/stats/timeline',
+            },
+            {
+              label: 'Map',
+              icon: 'pi pi-map-marker',
+              routerLink: '/stats/map',
+            },
+          ],
         },
         // {
         //   label: 'Reports',

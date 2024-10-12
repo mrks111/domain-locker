@@ -15,6 +15,8 @@ import { FieldVisibilityFilterComponent, type FieldOption } from '@components/do
 })
 export class DomainCollectionComponent implements OnInit {
   @Input() domains: DbDomain[] = [];
+  @Input() showAddButton: boolean = true;
+  @Input() preFilteredText: string | undefined;
 
   @ViewChild(FieldVisibilityFilterComponent)
   filtersComp: FieldVisibilityFilterComponent = new FieldVisibilityFilterComponent;

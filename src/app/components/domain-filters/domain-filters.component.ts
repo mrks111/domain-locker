@@ -30,7 +30,8 @@ export class FieldVisibilityFilterComponent implements OnInit {
     { label: 'DNS Records', value: 'dnsRecords' },
   ];
 
-  @Input() defaultSelectedFields: string[] = ['domainName', 'registrar', 'expiryDate', 'tags', 'notes'];
+  @Input() defaultSelectedFields: string[] = ['domainName', 'registrar', 'expiryDate'];
+  @Input() showAddButton: boolean = true;
   @Output() visibilityChange = new EventEmitter<FieldOption[]>();
   @Output() searchChange = new EventEmitter<string>();
   @Output() layoutChange = new EventEmitter<boolean>();

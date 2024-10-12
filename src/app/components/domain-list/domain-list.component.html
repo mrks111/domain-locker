@@ -37,7 +37,9 @@
             ></p-tag>
           </span>
           <span *ngSwitchCase="'tags'">
-            <p-tag *ngFor="let tag of domain.tags" [value]="tag" styleClass="mr-1"></p-tag>
+            <a *ngFor="let tag of domain.tags" [href]="'/tags/'+tag">
+              <p-tag  [value]="tag" styleClass="bg-highlight rounded-2xl text-highlight px-2  py-1 mr-1"></p-tag>
+            </a>
           </span>
           <ng-container *ngSwitchCase="'notes'">
             <span [pTooltip]="domain.notes">{{domainUtils.truncateNotes(domain.notes)}}</span>
