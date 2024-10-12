@@ -5,33 +5,26 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { DbDomain } from '@/types/Database';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
-import { DomainCollectionComponent } from '@/app/components/domain-collection/domain-collection.component';
-import { TagEditorComponent } from '@/app/components/forms/tag-editor/tag-editor.component';
+import { DomainCollectionComponent } from '@components/domain-collection/domain-collection.component';
 
 @Component({
   standalone: true,
-  selector: 'app-tag-domains',
-  imports: [CommonModule, PrimeNgModule, DomainCollectionComponent, TagEditorComponent],
-  templateUrl: './tag.page.html',
-  styleUrl: './tag.page.scss',
+  selector: 'app-host-domains',
+  imports: [CommonModule, PrimeNgModule, DomainCollectionComponent],
+  template: `
+    <h1>Domains hosted by "{{ hostIsp }}"</h1>
+    <app-domain-view
+    [domains]="domains"
+    [preFilteredText]="'hosted with '+hostIsp+''"
+    [showAddButton]="false"
+    *ngIf="!loading" />
+    <p-progressSpinner *ngIf="loading"></p-progressSpinner>
+  `,
 })
-export default class TagDomainsPageComponent implements OnInit {
-  tagName: string = '';
+export default class HostDomainsPageComponent implements OnInit {
+  hostIsp: string = '';
   domains: DbDomain[] = [];
   loading: boolean = true;
-  dialogOpen: boolean = false;
-
-  tag = {
-    name: '',
-    color: '',
-    icon: '',
-    notes: ''
-  };
-
-  showDialog() {
-      this.dialogOpen = true;
-  }
-
 
   constructor(
     private route: ActivatedRoute,
@@ -41,25 +34,24 @@ export default class TagDomainsPageComponent implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      this.tagName = params['tag'];
+      this.hostIsp = params['host'];
       this.loadDomains();
     });
-    this.tag.name = this.tagName;
   }
 
   loadDomains() {
     this.loading = true;
-    this.databaseService.getDomainsByTag(this.tagName).subscribe({
+    this.databaseService.getDomainsByHost(this.hostIsp).subscribe({
       next: (domains) => {
         this.domains = domains;
         this.loading = false;
       },
       error: (error) => {
-        console.error(`Error fetching domains for tag ${this.tagName}:`, error);
+        console.error(`Error fetching domains for host ${this.hostIsp}:`, error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to load domains for this tag'
+          detail: 'Failed to load domains for this host'
         });
         this.loading = false;
       }

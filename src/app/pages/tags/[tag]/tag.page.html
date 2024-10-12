@@ -1,0 +1,17 @@
+<div class="flex justify-between align-items-center">
+  <h1 class="capitalize">{{ tagName }}</h1>
+  <p-button (onClick)="showDialog()" label="Edit Tag" icon="pi pi-pencil" />
+</div>
+
+<app-domain-view [domains]="domains" [showAddButton]="false" *ngIf="!loading" [preFilteredText]="'tagged with \''+ tagName+'\''"></app-domain-view>
+<p-progressSpinner *ngIf="loading"></p-progressSpinner>
+
+<p-dialog 
+    header="Edit Tag" 
+    [modal]="true"
+    [(visible)]="dialogOpen" 
+    [style]="{ width: '50rem' }" 
+    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" 
+    [maximizable]="true">
+    <app-tag-editor [tag]="tag"></app-tag-editor>
+</p-dialog>
