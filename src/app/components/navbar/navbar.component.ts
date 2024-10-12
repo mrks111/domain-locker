@@ -170,6 +170,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
               icon: 'pi pi-fw pi-tag',
               routerLink: '/tags',
             },
+            {
+              label: 'DNS',
+              icon: 'pi pi-fw pi-table',
+              routerLink: '/dns',
+            },
           ],
         },
         {

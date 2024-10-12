@@ -455,15 +455,13 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
-  getIpAddresses(domainId: string): Observable<IpAddress[]> {
+  getIpAddresses(isIpv6: boolean): Observable<{ ip_address: string; domains: string[] }[]> {
     return from(this.supabase.supabase
-      .from('ip_addresses')
-      .select('*')
-      .eq('domain_id', domainId)
+      .rpc('get_ip_addresses_with_domains', { p_is_ipv6: isIpv6 })
     ).pipe(
       map(({ data, error }) => {
         if (error) throw error;
-        return data as IpAddress[];
+        return data as { ip_address: string; domains: string[] }[];
       }),
       catchError(error => this.handleError(error))
     );

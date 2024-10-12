@@ -57,7 +57,7 @@ export abstract class DatabaseService {
   abstract listDomains(userId: string): Observable<DbDomain[]>;
   abstract listDomainNames(): Observable<string[]>;
   abstract addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'created_at' | 'updated_at'>): Observable<IpAddress>;
-  abstract getIpAddresses(domainId: string): Observable<IpAddress[]>;
+  abstract getIpAddresses(isIpv6: boolean): Observable<{ip_address: string, domains: string[]}[]>;
   abstract updateIpAddress(id: string, ipAddress: Partial<IpAddress>): Observable<IpAddress>;
   abstract deleteIpAddress(id: string): Observable<void>;
   abstract addTag(tag: Omit<Tag, 'id'>): Observable<Tag>;

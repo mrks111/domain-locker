@@ -284,3 +284,30 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Grant execute permission to authenticated users
 GRANT EXECUTE ON FUNCTION get_ssl_issuers_with_domain_counts() TO authenticated;
+
+--- Get IP addresses with domains
+CREATE OR REPLACE FUNCTION get_ip_addresses_with_domains(p_is_ipv6 boolean)
+RETURNS TABLE (
+  ip_address inet,
+  domains text[]
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    ip.ip_address::inet,
+    array_agg(DISTINCT d.domain_name) AS domains
+  FROM 
+    ip_addresses ip
+    JOIN domains d ON ip.domain_id = d.id
+  WHERE
+    d.user_id = auth.uid()
+    AND ip.is_ipv6 = p_is_ipv6
+  GROUP BY 
+    ip.ip_address
+  ORDER BY 
+    ip.ip_address;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION get_ip_addresses_with_domains(boolean) TO authenticated;
