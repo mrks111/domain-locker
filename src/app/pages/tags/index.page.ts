@@ -11,7 +11,7 @@ import { MessageService } from 'primeng/api';
   selector: 'app-tags-index',
   imports: [CommonModule, RouterModule, PrimeNgModule],
   template: `
-    <h1>Tags</h1>
+    <h1 class="mt-2 mb-4">Tags</h1>
     <p-table [value]="tags" [loading]="loading" styleClass="p-datatable-striped">
       <ng-template pTemplate="header">
         <tr>
@@ -21,7 +21,7 @@ import { MessageService } from 'primeng/api';
       </ng-template>
       <ng-template pTemplate="body" let-tag>
         <tr>
-          <td><a [routerLink]="['/tags', tag.name]">{{ tag.name }}</a></td>
+          <td><a [routerLink]="['/tags', tag.name]" class="text-primary">{{ tag.name }}</a></td>
           <td>{{ tag.domainCount }}</td>
         </tr>
       </ng-template>

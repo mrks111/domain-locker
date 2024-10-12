@@ -4,6 +4,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
 import { TabViewModule } from 'primeng/tabview';
+import { Router } from '@angular/router';
 
 interface IpAddress {
   ip_address: string;
@@ -20,7 +21,7 @@ interface DomainWithIpAddresses {
   selector: 'app-ip-addresses',
   imports: [CommonModule, PrimeNgModule, TabViewModule],
   templateUrl: './index.page.html',
-  styleUrl: './index.page.scss',
+  styleUrls: ['./index.page.scss'],
 })
 export default class IpAddressesPageComponent implements OnInit {
   ipv4Addresses: IpAddress[] = [];
@@ -29,12 +30,11 @@ export default class IpAddressesPageComponent implements OnInit {
   ipv6Domains: DomainWithIpAddresses[] = [];
   loadingIpv4: boolean = true;
   loadingIpv6: boolean = true;
-  loadingDomains: boolean = true;
-
 
   constructor(
     private databaseService: DatabaseService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -42,59 +42,51 @@ export default class IpAddressesPageComponent implements OnInit {
   }
 
   loadIpAddresses() {
-    this.loadingIpv4 = true;
-    this.loadingIpv6 = true;
+    this.loadingIpv4 = this.loadingIpv6 = true;
 
     this.databaseService.getIpAddresses(false).subscribe({
       next: (addresses) => {
         this.ipv4Addresses = addresses;
+        this.ipv4Domains = this.groupByDomain(addresses);
         this.loadingIpv4 = false;
-        this.ipv4Domains = this.makeDomainsList(addresses);
       },
-      error: (error) => {
-        console.error('Error fetching IPv4 addresses:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load IPv4 addresses'
-        });
-        this.loadingIpv4 = false;
-      }
+      error: () => this.handleError('IPv4'),
     });
 
     this.databaseService.getIpAddresses(true).subscribe({
       next: (addresses) => {
         this.ipv6Addresses = addresses;
+        this.ipv6Domains = this.groupByDomain(addresses);
         this.loadingIpv6 = false;
-        this.ipv6Domains = this.makeDomainsList(addresses);
       },
-      error: (error) => {
-        console.error('Error fetching IPv6 addresses:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load IPv6 addresses'
-        });
-        this.loadingIpv6 = false;
-      }
+      error: () => this.handleError('IPv6'),
     });
   }
 
-  makeDomainsList(ipAddresses: IpAddress[]): DomainWithIpAddresses[] {
-    const results: DomainWithIpAddresses[] = [];
-    ipAddresses.forEach((ip) => {
+  handleError(type: string) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to load ${type} addresses`,
+    });
+    this.loadingIpv4 = this.loadingIpv6 = false;
+  }
+
+  groupByDomain(ipAddresses: IpAddress[]): DomainWithIpAddresses[] {
+    return ipAddresses.reduce((results: DomainWithIpAddresses[], ip) => {
       ip.domains.forEach((domain) => {
-        if (!results.find((result) => result.domain === domain)) {
-          results.push({ domain, ipAddresses: [ip.ip_address] });
+        const existingDomain = results.find((result) => result.domain === domain);
+        if (existingDomain) {
+          existingDomain.ipAddresses.push(ip.ip_address);
         } else {
-          const existingDomain = results.find((result) => result.domain === domain);
-          if (existingDomain) {
-            existingDomain.ipAddresses.push(ip.ip_address);
-          }
+          results.push({ domain, ipAddresses: [ip.ip_address] });
         }
       });
-    });
-    return results;
+      return results;
+    }, []);
   }
 
+  navigateToDomain(domain: string) {
+    this.router.navigate([`/domains/${domain}`]);
+  }
 }

@@ -11,7 +11,7 @@ import { MessageService } from 'primeng/api';
   selector: 'app-hosts-index',
   imports: [CommonModule, RouterModule, PrimeNgModule],
   template: `
-<h1>Hosts</h1>
+<h1 class="mt-2 mb-4">Hosts</h1>
 <p-table [value]="hosts" [loading]="loading" styleClass="p-datatable-striped">
   <ng-template pTemplate="header">
     <tr>
@@ -24,7 +24,7 @@ import { MessageService } from 'primeng/api';
   </ng-template>
   <ng-template pTemplate="body" let-host>
     <tr>
-      <td><a [routerLink]="['/hosts', host.isp]">{{ host.isp }}</a></td>
+      <td><a [routerLink]="['/hosts', host.isp]" class="text-primary">{{ host.isp }}</a></td>
       <td>{{ host.ip }}</td>
       <td>{{ host.org }}</td>
       <td>{{ host.country }}</td>
@@ -68,14 +68,13 @@ export default class HostsIndexPageComponent implements OnInit {
   
         // Convert grouped hosts back to an array
         this.hosts = Object.values(groupedHosts)
-          .map(host => ({
+          .map((host: any) => ({
             ...host,
-            ip: host.ips.join(', ') // Join multiple IPs
+            ip: host.ips.join(', ')
           }))
           .sort((a, b) => b.domainCount - a.domainCount);
   
         this.loading = false;
-        console.log('Grouped Hosts:', this.hosts);
       },
       error: (error) => {
         console.error('Error fetching hosts:', error);

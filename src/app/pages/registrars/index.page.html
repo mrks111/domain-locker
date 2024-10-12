@@ -1,4 +1,4 @@
-<h1 class="my-4">Registrars</h1>
+<h1 class="mt-2 mb-4">Registrars</h1>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
   <div *ngFor="let registrar of registrars" class="p-card bg-surface-card text-default p-4 mb-4 shadow-md border-radius-custom h-full flex flex-col gap-2 relative">
     <a [routerLink]="'/registrars/'+registrar.name" class="no-underline text-default hover:underline">

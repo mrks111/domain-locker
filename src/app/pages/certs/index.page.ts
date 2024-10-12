@@ -15,7 +15,7 @@ interface SslIssuer {
   selector: 'app-ssl-issuers-index',
   imports: [CommonModule, RouterModule, PrimeNgModule],
   template: `
-    <h1>SSL Certificate Issuers</h1>
+    <h1 class="mt-2 mb-4">SSL Certificate Issuers</h1>
     <p-table [value]="sslIssuers" [loading]="loading" styleClass="p-datatable-striped">
       <ng-template pTemplate="header">
         <tr>
@@ -25,7 +25,7 @@ interface SslIssuer {
       </ng-template>
       <ng-template pTemplate="body" let-issuer>
         <tr>
-          <td><a [routerLink]="['/certs', issuer.issuer]">{{ issuer.issuer }}</a></td>
+          <td><a [routerLink]="['/certs', issuer.issuer]" class="text-primary">{{ issuer.issuer }}</a></td>
           <td>{{ issuer.domain_count }}</td>
         </tr>
       </ng-template>
