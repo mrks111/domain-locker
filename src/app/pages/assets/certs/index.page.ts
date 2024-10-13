@@ -25,7 +25,7 @@ interface SslIssuer {
       </ng-template>
       <ng-template pTemplate="body" let-issuer>
         <tr>
-          <td><a [routerLink]="['/certs', issuer.issuer]" class="text-primary">{{ issuer.issuer }}</a></td>
+          <td><a [routerLink]="['/assets/certs', issuer.issuer]" class="text-primary">{{ issuer.issuer }}</a></td>
           <td>{{ issuer.domain_count }}</td>
         </tr>
       </ng-template>

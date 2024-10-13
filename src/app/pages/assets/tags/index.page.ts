@@ -21,7 +21,7 @@ import { MessageService } from 'primeng/api';
       </ng-template>
       <ng-template pTemplate="body" let-tag>
         <tr>
-          <td><a [routerLink]="['/tags', tag.name]" class="text-primary">{{ tag.name }}</a></td>
+          <td><a [routerLink]="['/assets/tags', tag.name]" class="text-primary">{{ tag.name }}</a></td>
           <td>{{ tag.domainCount }}</td>
         </tr>
       </ng-template>

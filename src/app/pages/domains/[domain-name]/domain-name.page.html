@@ -86,7 +86,7 @@
       <div class="row">
         <h5>IPv6</h5>
         <ul class="list-none p-0 m-0">
-          <li *ngFor="let ip of filterIpAddresses(domain.ip_addresses, true)" class="mb-2">
+          <li *ngFor="let ip of filterIpAddresses(domain.ip_addresses, true)" class="mb-2 truncate">
             {{ ip.ip_address }}
           </li>
         </ul>
@@ -200,7 +200,7 @@
     </p-card>
 
     <!-- DNS Records -->
-    <p-card *ngIf="domain.dns" class="mb-6">
+    <p-card *ngIf="domain.dns && (domain.dns.nameServers.length || domain.dns.txtRecords.length || domain.dns.mxRecords.length)" class="mb-6">
       <ng-template pTemplate="header">
         <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">DNS Records</h4>
         <div class="absolute top-4 right-4 h-16 w-16 opacity-70 mr-2">
@@ -208,17 +208,17 @@
         </div>
       </ng-template>
       <p-tabView [scrollable]="true" styleClass="mt-4">
-        <p-tabPanel header="Name Servers" *ngIf="domain.dns.nameServers?.length">
+        <p-tabPanel header="NS" *ngIf="domain.dns.nameServers?.length">
           <ul class="list-none p-0 m-0">
             <li *ngFor="let ns of domain.dns.nameServers" class="mb-2 truncate">{{ ns }}</li>
           </ul>
         </p-tabPanel>
-        <p-tabPanel header="MX Records" *ngIf="domain.dns.mxRecords?.length">
+        <p-tabPanel header="MX" *ngIf="domain.dns.mxRecords?.length">
           <ul class="list-none p-0 m-0">
             <li *ngFor="let mx of domain.dns.mxRecords" class="mb-2 truncate">{{ mx }}</li>
           </ul>
         </p-tabPanel>
-        <p-tabPanel header="TXT Records" *ngIf="domain.dns.txtRecords?.length">
+        <p-tabPanel header="TXT" *ngIf="domain.dns.txtRecords?.length">
           <ul class="list-none p-0 m-0">
             <li *ngFor="let txt of domain.dns.txtRecords" class="mb-2 truncate">{{ txt }}</li>
           </ul>
@@ -247,7 +247,7 @@
         </div>
       </ng-template>
       <div class="row mt-4">
-        <a *ngFor="let tag of domain.tags" [href]="'/tags/'+tag">
+        <a *ngFor="let tag of domain.tags" [href]="'/assets/tags/'+tag">
           <p-tag  [value]="tag" styleClass="bg-primary rounded-lg text-highlight px-2  py-1 mr-1"></p-tag>
         </a>
       </div>

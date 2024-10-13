@@ -24,7 +24,7 @@ import { MessageService } from 'primeng/api';
   </ng-template>
   <ng-template pTemplate="body" let-host>
     <tr>
-      <td><a [routerLink]="['/hosts', host.isp]" class="text-primary">{{ host.isp }}</a></td>
+      <td><a [routerLink]="['/assets/hosts', host.isp]" class="text-primary">{{ host.isp }}</a></td>
       <td>{{ host.ip }}</td>
       <td>{{ host.org }}</td>
       <td>{{ host.country }}</td>
