@@ -68,3 +68,5 @@ export abstract class DatabaseService {
   abstract updateNotification(id: string, notification: Partial<Notification>): Observable<Notification>;
   abstract deleteNotification(id: string): Observable<void>;
 }
+export { Registrar, Host };
+

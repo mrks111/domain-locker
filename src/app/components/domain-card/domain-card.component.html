@@ -39,7 +39,7 @@
 
   <!-- Tags -->
   <div *ngIf="domain.tags?.length && isVisible('tags')">
-    <a *ngFor="let tag of domain.tags" [href]="'/tags/'+tag">
+    <a *ngFor="let tag of domain.tags" [href]="'/assets/tags/'+tag">
       <p-tag  [value]="tag" styleClass="bg-highlight rounded-2xl text-highlight px-2  py-1 mr-1"></p-tag>
     </a>
   </div>

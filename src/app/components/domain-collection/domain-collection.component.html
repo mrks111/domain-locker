@@ -29,7 +29,7 @@
 </ng-template>
 
 <!-- Note (count of visible fields, and usage instructions) -->
-<div class="flex space-between justify-between items-center flex-wrap mt-4 text-surface-400">
+<div *ngIf="showFooter" class="flex space-between justify-between items-center flex-wrap mt-4 text-surface-400">
   <p>
     Viewing {{filteredDomains.length}} of {{domains.length}} domains {{ preFilteredText }}
     <ng-container *ngIf="searchTerm">matching search term "{{searchTerm}}"</ng-container>,

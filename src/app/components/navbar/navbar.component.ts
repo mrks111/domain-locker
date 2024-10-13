@@ -148,32 +148,32 @@ export class NavbarComponent implements OnInit, OnDestroy {
             {
               label: 'Registrars',
               icon: 'pi pi-fw pi-receipt',
-              routerLink: '/registrars',
+              routerLink: '/assets/registrars',
             },
             {
               label: 'Hosts',
               icon: 'pi pi-fw pi-server',
-              routerLink: '/hosts',
+              routerLink: '/assets/hosts',
             },
             {
               label: 'Certificates',
               icon: 'pi pi-fw pi-key',
-              routerLink: '/certs',
+              routerLink: '/assets/certs',
             },
             {
               label: 'IPs',
               icon: 'pi pi-fw pi-sitemap',
-              routerLink: '/ips',
+              routerLink: '/assets/ips',
             },
             {
               label: 'Tags',
               icon: 'pi pi-fw pi-tag',
-              routerLink: '/tags',
+              routerLink: '/assets/tags',
             },
             {
               label: 'DNS',
               icon: 'pi pi-fw pi-table',
-              routerLink: '/dns',
+              routerLink: '/assets/dns',
             },
           ],
         },

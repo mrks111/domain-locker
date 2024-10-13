@@ -2,13 +2,17 @@ import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '../../types/Database';
 import { catchError, from, map, Observable, throwError, retry } from 'rxjs';
-import { PostgrestError } from '@supabase/supabase-js';
 
 class DatabaseError extends Error {
   constructor(message: string, public originalError: any) {
     super(message);
     this.name = 'DatabaseError';
   }
+}
+
+export interface DomainExpiration {
+  domain: string;
+  expiration: Date;
 }
 
 @Injectable({
@@ -98,7 +102,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       *,
       registrars (name, url),
       ip_addresses (ip_address, is_ipv6),
-      ssl_certificates!inner (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
+      ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
       whois_info (name, organization, country, street, city, state, postal_code),
       domain_tags (tags (name)),
       domain_hosts (
@@ -361,7 +365,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
         .filter((tagItem: any) => tagItem.tags && tagItem.tags.name)
         .map((tagItem: any) => tagItem.tags.name);
     } else if (data.tags) {
-      // Handle the case for /tags/[tag-name] page
+      // Handle the case for /assets/tags/[tag-name] page
       return [data.tags];
     }
     return [];
@@ -825,6 +829,21 @@ export default class SupabaseDatabaseService extends DatabaseService {
         }));
       }),
       catchError(error => this.handleError(error))
+    );
+  }
+
+  getDomainExpirations(): Observable<DomainExpiration[]> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select('domain_name, expiry_date')
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(d => ({
+          domain: d.domain_name,
+          expiration: new Date(d.expiry_date)
+        }));
+      })
     );
   }
   

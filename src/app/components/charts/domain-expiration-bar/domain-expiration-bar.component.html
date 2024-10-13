@@ -1,0 +1,23 @@
+<p-meterGroup 
+  [value]="meterValues" 
+  [min]="0"
+  [max]="100"
+  showLegend="false"
+/>
+
+<div class="mt-2">
+  <ng-container *ngFor="let item of meterValues">
+    <div class="inline-block mr-4" [pTooltip]="getTooltipContent((item.label || '').split(' ')[0].toLowerCase())" tooltipPosition="top">
+      <i [class]="item.icon" [style.color]="item.color"></i>
+      {{ item.label }}
+    </div>
+  </ng-container>
+</div>
+
+<div *ngIf="upcomingDomains.length > 0">
+  <p class="mt-2 mb-0 text-sm text-red-400">{{getUpcomingDomainsMessage()}}</p>
+</div>
+
+<div *ngIf="upcomingDomains.length === 0 && nextExpiringDomain">
+  <p class="mt-2 mb-0 text-sm text-surface-500">The next domain to expire will be {{ formatExpirationMessage(nextExpiringDomain) }}</p>
+</div>
