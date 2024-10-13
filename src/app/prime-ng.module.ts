@@ -27,6 +27,7 @@ import { MenubarModule } from 'primeng/menubar';
 import { MenuModule } from 'primeng/menu';
 import { MessageModule } from 'primeng/message';
 import { MessagesModule } from 'primeng/messages';
+import { MeterGroupModule } from 'primeng/metergroup';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { OverlayModule } from 'primeng/overlay';
 import { PanelModule } from 'primeng/panel';
@@ -41,6 +42,7 @@ import { StyleClassModule } from 'primeng/styleclass';
 import { TableModule } from 'primeng/table';
 import { TabViewModule } from 'primeng/tabview';
 import { TagModule } from 'primeng/tag';
+import { TimelineModule } from 'primeng/timeline';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 
@@ -74,6 +76,7 @@ import { TooltipModule } from 'primeng/tooltip';
     MenuModule,
     MessageModule,
     MessagesModule,
+    MeterGroupModule,
     MultiSelectModule,
     OverlayModule,
     PanelModule,
@@ -88,6 +91,7 @@ import { TooltipModule } from 'primeng/tooltip';
     TableModule,
     TabViewModule,
     TagModule,
+    TimelineModule,
     ToastModule,
     TooltipModule,
   ]

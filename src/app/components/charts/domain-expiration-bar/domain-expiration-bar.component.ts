@@ -1,17 +1,33 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MeterGroupModule, MeterItem } from 'primeng/metergroup';
-import { TooltipModule } from 'primeng/tooltip';
+import { MeterItem } from 'primeng/metergroup';
+import { PrimeNgModule } from '../../../prime-ng.module';
 import DatabaseService, { DomainExpiration } from '@services/database.service';
+import { trigger, state, style, animate, transition } from '@angular/animations';
 
 @Component({
   selector: 'app-domain-expiration-bar',
   standalone: true,
-  imports: [CommonModule, MeterGroupModule, TooltipModule],
+  imports: [CommonModule, PrimeNgModule],
   templateUrl: './domain-expiration-bar.component.html',
   styles: [`
     ::ng-deep .p-metergroup p-metergrouplabel { display: none; }
-  `]
+    ::ng-deep .p-metergroup .p-metergroup-meters { border-radius: 3px; overflow: hidden; }
+  `],
+    animations: [
+      trigger('slideInOut', [
+        state('in', style({
+          height: '*',
+          opacity: 1
+        })),
+        state('out', style({
+          height: '0px',
+          opacity: 0
+        })),
+        transition('in => out', animate('300ms ease-in-out')),
+        transition('out => in', animate('300ms ease-in-out'))
+      ])
+    ]
 })
 export class DomainExpirationBarComponent implements OnInit {
   meterValues: MeterItem[] = [];
@@ -19,12 +35,20 @@ export class DomainExpirationBarComponent implements OnInit {
   domainsPerCategory: { [key: string]: DomainExpiration[] } = { imminently: [], soon: [], later: [] };
   upcomingDomains: DomainExpiration[] = [];
   nextExpiringDomain?: DomainExpiration;
+  loading: boolean = true;
+
+  timelineEvents: any[] = [];
+  showTimeline: boolean = false;
 
   constructor(private databaseService: DatabaseService) {}
 
   ngOnInit() {
     this.databaseService.getDomainExpirations().subscribe(
-      domains => this.calculateExpirations(domains)
+      domains => {
+        this.calculateExpirations(domains);
+        this.prepareTimelineEvents(domains);
+        this.loading = false;
+      }
     );
   }
 
@@ -61,7 +85,6 @@ export class DomainExpirationBarComponent implements OnInit {
   }
 
   getTooltipContent(category: string): string {
-    console.log(category);
     const domains = this.domainsPerCategory[category] || [];
     if (!domains.length) {
       return 'No domains';
@@ -89,5 +112,36 @@ export class DomainExpirationBarComponent implements OnInit {
     }
     message += ` ${this.upcomingDomains.length === 1 ? 'is' : 'are'} expiring within the next 30 days.`;
     return message;
+  }
+
+  private prepareTimelineEvents(domains: DomainExpiration[]) {
+    this.timelineEvents = domains
+      .sort((a, b) => a.expiration.getTime() - b.expiration.getTime())
+      .slice(0, 10)
+      .map(domain => ({
+        // status: this.getExpirationStatus(domain),
+        date: domain.expiration,
+        icon: this.getExpirationIcon(domain),
+        color: this.getExpirationColor(domain),
+        domain: domain.domain
+      }));
+  }
+
+  private getExpirationIcon(domain: DomainExpiration): string {
+    const daysUntilExpiration = Math.ceil((domain.expiration.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    if (daysUntilExpiration <= 30) return 'pi pi-exclamation-circle';
+    if (daysUntilExpiration <= 90) return 'pi pi-exclamation-triangle';
+    return 'pi pi-check';
+  }
+
+  private getExpirationColor(domain: DomainExpiration): string {
+    const daysUntilExpiration = Math.ceil((domain.expiration.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    if (daysUntilExpiration <= 30) return '#FF4136';
+    if (daysUntilExpiration <= 90) return '#FF851B';
+    return '#2ECC40';
+  }
+
+  toggleTimeline() {
+    this.showTimeline = !this.showTimeline;
   }
 }

@@ -8,7 +8,7 @@ import { DlIconComponent } from '@components/misc/svg-icon.component';
   selector: 'app-asset-list',
   template: `
     <h2 class="my-4 block">Assets</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 relative">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative">
       <ng-container *ngFor="let asset of assets">
         <a class="asset-card-link" [href]="asset.link">
           <div class="p-card asset-card">
