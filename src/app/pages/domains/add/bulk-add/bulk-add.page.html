@@ -1,0 +1,78 @@
+<div class="card bulk-add-wrap">
+  <h2>Bulk Add Domains</h2>
+  <p-steps [model]="[{label: 'Domain List'}, {label: 'Domain Details'}, {label: 'Notifications'}]" [activeIndex]="step - 1"></p-steps>
+
+  <form [formGroup]="bulkAddForm">
+    <p-card>
+      <ng-container [ngSwitch]="step">
+        <!-- Step 1: Domain List -->
+        <div *ngSwitchCase="1">
+          <div class="field">
+            <label for="domainList">
+              Domain List
+              <small>Enter or paste a list of domains, separated by commas or new lines</small>
+            </label>
+            <textarea 
+              id="domainList" 
+              pInputTextarea 
+              formControlName="domainList" 
+              [rows]="10" 
+              [autoResize]="true"
+              placeholder="example.com&#10;subdomain.example.org&#10;http://www.another-example.com/page"></textarea>
+          </div>
+          <div class="button-wrap">
+            <p-button label="Process Domains" (onClick)="processDomains()" [disabled]="bulkAddForm.get('domainList')?.invalid || processingDomains" [loading]="processingDomains"></p-button>
+          </div>
+        </div>
+
+        <!-- Step 2: Domain Details -->
+        <div *ngSwitchCase="2">
+          <p-table [value]="domains.controls" [scrollable]="true" scrollHeight="400px">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Domain</th>
+                <th>Registrar</th>
+                <th>Expiry Date</th>
+                <th>Tags</th>
+                <th>Notes</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-domain>
+              <tr [formGroup]="domain">
+                <td>{{ domain.get('domainName')?.value }}</td>
+                <td><input pInputText formControlName="registrar"></td>
+                <td><p-calendar formControlName="expiryDate"></p-calendar></td>
+                <td><p-chips formControlName="tags"></p-chips></td>
+                <td><textarea pInputTextarea formControlName="notes"></textarea></td>
+              </tr>
+            </ng-template>
+          </p-table>
+          <div class="button-wrap">
+            <p-button label="Previous" (onClick)="step = 1" styleClass="p-button-secondary"></p-button>
+            <p-button label="Next" (onClick)="step = 3"></p-button>
+          </div>
+        </div>
+
+        <!-- Step 3: Notifications -->
+        <div *ngSwitchCase="3">
+          <h3>Setup Notifications</h3>
+          <p>Choose the notifications you want to receive for all domains. You can always change these settings later for individual domains.</p>
+          <div formGroupName="notifications">
+            <div *ngFor="let option of notificationOptions" class="field">
+              <label [for]="option.name">
+                {{ option.label }}
+                <small>{{ option.description }}</small>
+                <small *ngIf="option.note" class="text-yellow-500">{{ option.note }}</small>
+              </label>
+              <p-inputSwitch [formControlName]="option.name"></p-inputSwitch>
+            </div>
+          </div>
+          <div class="button-wrap">
+            <p-button label="Previous" (onClick)="step = 2" styleClass="p-button-secondary"></p-button>
+            <p-button label="Save All Domains" (onClick)="saveDomains()" [disabled]="bulkAddForm.invalid || savingDomains" [loading]="savingDomains"></p-button>
+          </div>
+        </div>
+      </ng-container>
+    </p-card>
+  </form>
+</div>

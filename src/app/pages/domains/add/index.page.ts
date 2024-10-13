@@ -1,16 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { PrimeNgModule } from '../../../prime-ng.module';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { catchError, throwError, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
-import DatabaseService from '../../../services/database.service';
-import { SaveDomainData } from '../../../../types/Database';
+import DatabaseService from '@services/database.service';
+import { SaveDomainData } from '@typings/Database';
 
-import type { DomainInfo } from '../../../../types/DomainInfo';
+import type { DomainInfo } from '@typings/DomainInfo';
 import { Router } from '@angular/router';
 import { Registrar } from '@/types/common';
 

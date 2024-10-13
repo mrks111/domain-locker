@@ -10,7 +10,7 @@ import { DlIconComponent } from '@components/misc/svg-icon.component';
     <h2 class="my-4 block">Assets</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative">
       <ng-container *ngFor="let asset of assets">
-        <a class="asset-card-link" [href]="asset.link">
+        <a class="asset-card-link" [routerLink]="asset.link">
           <div class="p-card asset-card">
             <h4>{{ asset.title }}</h4>
             <div class="absolute top-2 right-4 h-16 w-16 opacity-70">

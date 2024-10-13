@@ -22,7 +22,7 @@
       <td *ngFor="let col of columns">
         <ng-container [ngSwitch]="col.field">
           <span *ngSwitchCase="'domain_name'">
-            <a [href]="'/domains/'+domain.domain_name" class="font-bold no-underline text-default hover:underline">
+            <a [routerLink]="'/domains/'+domain.domain_name" class="font-bold no-underline text-default hover:underline">
               <app-domain-favicon [domain]="domain.domain_name" [size]="18" class="mr-2"></app-domain-favicon>
               {{domain.domain_name}}
             </a>
@@ -37,7 +37,7 @@
             ></p-tag>
           </span>
           <span *ngSwitchCase="'tags'">
-            <a *ngFor="let tag of domain.tags" [href]="'/assets/tags/'+tag">
+            <a *ngFor="let tag of domain.tags" [routerLink]="'/assets/tags/'+tag">
               <p-tag  [value]="tag" styleClass="bg-highlight rounded-2xl text-highlight px-2  py-1 mr-1"></p-tag>
             </a>
           </span>

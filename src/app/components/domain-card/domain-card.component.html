@@ -14,7 +14,7 @@
 
   <!-- Domain Name -->
   <h2 *ngIf="isVisible('domainName')" class="m-0">
-    <a [href]="'/domains/'+domain.domain_name" class="no-underline text-default">
+    <a [routerLink]="'/domains/'+domain.domain_name" class="no-underline text-default">
       <app-domain-favicon [domain]="domain.domain_name" [size]="24" class="mr-2"></app-domain-favicon>
       <span class="text-primary">{{ domainUtils.splitDomain(domain.domain_name).domain }}</span>
       <span class="text-default">.</span>
@@ -39,7 +39,7 @@
 
   <!-- Tags -->
   <div *ngIf="domain.tags?.length && isVisible('tags')">
-    <a *ngFor="let tag of domain.tags" [href]="'/assets/tags/'+tag">
+    <a *ngFor="let tag of domain.tags" [routerLink]="'/assets/tags/'+tag">
       <p-tag  [value]="tag" styleClass="bg-highlight rounded-2xl text-highlight px-2  py-1 mr-1"></p-tag>
     </a>
   </div>

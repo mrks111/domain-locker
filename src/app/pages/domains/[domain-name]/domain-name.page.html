@@ -247,7 +247,7 @@
         </div>
       </ng-template>
       <div class="row mt-4">
-        <a *ngFor="let tag of domain.tags" [href]="'/assets/tags/'+tag">
+        <a *ngFor="let tag of domain.tags" [routerLink]="'/assets/tags/'+tag">
           <p-tag  [value]="tag" styleClass="bg-primary rounded-lg text-highlight px-2  py-1 mr-1"></p-tag>
         </a>
       </div>
