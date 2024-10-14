@@ -11,6 +11,7 @@ import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { DlIconComponent } from '@components/misc/svg-icon.component';
 import { LoadingComponent } from '@components/misc/loading.component';
+import { GlobalMessageService } from '@services/messaging.service';
 
 @Component({
   standalone: true,
@@ -31,6 +32,7 @@ export default class DomainDetailsPage implements OnInit {
     public domainUtils: DomainUtils,
     private confirmationService: ConfirmationService,
     private router: Router,
+    private globalMessageService: GlobalMessageService,
   ) {}
 
   ngOnInit() {
@@ -74,7 +76,7 @@ export default class DomainDetailsPage implements OnInit {
     console.log(this.domain.id)
     this.databaseService.deleteDomain(this.domain.id).subscribe({
       next: () => {
-        this.messageService.add({
+        this.globalMessageService.showMessage({
           severity: 'success',
           summary: 'Success',
           detail: 'Domain deleted successfully'
@@ -83,7 +85,7 @@ export default class DomainDetailsPage implements OnInit {
       },
       error: (err) => {
         console.error('Error deleting domain:', err);
-        this.messageService.add({
+        this.globalMessageService.showMessage({
           severity: 'error',
           summary: 'Error',
           detail: err.message || 'Failed to delete domain'
