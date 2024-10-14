@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 import { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host } from './common';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
 
 export interface DbDomain extends Timestamps {
   id: string;

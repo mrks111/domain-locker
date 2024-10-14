@@ -24,6 +24,7 @@ import { CommonModule } from '@angular/common';
       <p-scrollTop />
       <p-toast />
       <p-confirmDialog />
+      <p-messages />
     </div>
   `,
   styles: [`

@@ -113,7 +113,15 @@ export default class SupabaseDatabaseService extends DatabaseService {
       dns_records (record_type, record_value)
     `;
   }
-
+  
+  deleteDomain(domainId: string): Observable<void> {
+    return from(this.supabase.supabase.rpc('delete_domain', { domain_id: domainId })).pipe(
+      catchError(error => {
+        console.error('Error deleting domain:', error);
+        return throwError(() => new Error('Failed to delete domain'));
+      })
+    );
+  }
   private async saveIpAddresses(domainId: string, ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'created_at' | 'updated_at'>[]): Promise<void> {
     if (ipAddresses.length === 0) return;
 
@@ -426,19 +434,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
         if (error) throw error;
         if (!data) throw new Error('Domain not found');
         return this.formatDomainData(data);
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  deleteDomain(id: string): Observable<void> {
-    return from(this.supabase.supabase
-      .from('domains')
-      .delete()
-      .eq('id', id)
-    ).pipe(
-      map(({ error }) => {
-        if (error) throw error;
       }),
       catchError(error => this.handleError(error))
     );

@@ -311,3 +311,29 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Grant execute permission to authenticated users
 GRANT EXECUTE ON FUNCTION get_ip_addresses_with_domains(boolean) TO authenticated;
+
+--- Delete domain function
+CREATE OR REPLACE FUNCTION delete_domain(domain_id UUID)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Delete related records
+  DELETE FROM ip_addresses WHERE ip_addresses.domain_id = $1;
+  DELETE FROM domain_tags WHERE domain_tags.domain_id = $1;
+  DELETE FROM notifications WHERE notifications.domain_id = $1;
+  DELETE FROM dns_records WHERE dns_records.domain_id = $1;
+  DELETE FROM ssl_certificates WHERE ssl_certificates.domain_id = $1;
+  DELETE FROM whois_info WHERE whois_info.domain_id = $1;
+  DELETE FROM domain_hosts WHERE domain_hosts.domain_id = $1;
+  
+  -- Delete the domain itself
+  DELETE FROM domains WHERE domains.id = $1;
+  
+  -- Clean up orphaned records
+  DELETE FROM tags WHERE tags.id NOT IN (SELECT DISTINCT tag_id FROM domain_tags);
+  DELETE FROM hosts WHERE hosts.id NOT IN (SELECT DISTINCT host_id FROM domain_hosts);
+  DELETE FROM registrars WHERE registrars.id NOT IN (SELECT DISTINCT registrar_id FROM domains);
+END;
+$$;

@@ -10,6 +10,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ChipModule } from 'primeng/chip';
 import { ChipsModule } from 'primeng/chips';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
 import { DividerModule } from 'primeng/divider';
@@ -61,6 +62,7 @@ import { TooltipModule } from 'primeng/tooltip';
     ChipModule,
     ChipsModule,
     ConfirmDialogModule,
+    ConfirmPopupModule,
     ContextMenuModule,
     DialogModule,
     DividerModule,

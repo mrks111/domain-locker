@@ -1,3 +1,5 @@
+<p-messages />
+
 <div *ngIf="domain; else loading" class="domain-details p-4 flex flex-col gap-1">
   <div class="flex gap-2 justify-between align-items-center flex-wrap mb-4">
     <h1 class="text-3xl flex items-center">
@@ -7,16 +9,23 @@
       <span class="text-secondary">{{ domainUtils.splitDomain(domain.domain_name).tld }}</span>
     </h1>
     <div class="flex">
+      <p-button
+        severity="danger"
+        label="Delete"
+        icon="pi pi-trash"
+        (click)="confirmDelete($event)"
+        class="p-button-primary no-underline m-0 flex gap-2 w-fit ml-2 font-medium"
+      />
       <a pButton
         [href]="'https://'+domain.domain_name"
         target="_blank"
-        class="p-button-secondary no-underline m-0 flex gap-2 w-fit" >
+        class="p-button-secondary no-underline m-0 flex gap-2 w-fit ml-2 font-medium" >
         <i class="pi pi-external-link"></i>
         Visit
       </a>
       <a pButton
         routerLink="/domains/add"
-        class="p-button-primary no-underline m-0 flex gap-2 w-fit ml-2">
+        class="p-button-primary no-underline m-0 flex gap-2 w-fit ml-2 font-medium">
         <i class="pi pi-pencil"></i>
         Edit
       </a>
@@ -35,6 +44,7 @@
 
       <p>{{ domain.registrar.name }}</p>
       <p *ngIf="domain.registrar?.url">
+        <app-domain-favicon [domain]="domain.registrar.url" [size]="24" class="mr-1"></app-domain-favicon>
         <a [href]="domain.registrar.url" target="_blank" rel="noopener noreferrer">{{ domain.registrar.url }}</a>
       </p>
     </p-card>
@@ -260,4 +270,4 @@
   <loading loadingTitle="Loading" loadingDescription="Fetching details for domain..." />
 </ng-template>
 
-<p-messages></p-messages>
+<p-confirmPopup />

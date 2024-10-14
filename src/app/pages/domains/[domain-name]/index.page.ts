@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PrimeNgModule } from '../../../prime-ng.module';
 import DatabaseService from '@services/database.service';
 import { type DbDomain } from '@typings/Database';
 import { DomainUtils } from '@services/domain-utils.service';
 import { DomainFaviconComponent } from '@components/misc/favicon.component'; 
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { DlIconComponent } from '@components/misc/svg-icon.component';
@@ -16,6 +16,7 @@ import { LoadingComponent } from '@components/misc/loading.component';
   standalone: true,
   selector: 'app-domain-details',
   imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, DlIconComponent, LoadingComponent ],
+  providers: [ConfirmationService, MessageService],
   templateUrl: './domain-name.page.html',
   styleUrl: './domain-name.page.scss',
 })
@@ -28,6 +29,8 @@ export default class DomainDetailsPage implements OnInit {
     private databaseService: DatabaseService,
     private messageService: MessageService,
     public domainUtils: DomainUtils,
+    private confirmationService: ConfirmationService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -54,5 +57,38 @@ export default class DomainDetailsPage implements OnInit {
   public filterIpAddresses(ipAddresses: { ip_address: string, is_ipv6: boolean }[] | undefined, isIpv6: boolean): any[] {
     if (!ipAddresses) return [];
     return ipAddresses.filter(ip => ip.is_ipv6 === isIpv6);
+  }
+
+  confirmDelete(event: Event) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure you want to delete this domain?',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.deleteDomain();
+      }
+    });
+  }
+
+  deleteDomain() {
+    console.log(this.domain.id)
+    this.databaseService.deleteDomain(this.domain.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Domain deleted successfully'
+        });
+        this.router.navigate(['/domains']);
+      },
+      error: (err) => {
+        console.error('Error deleting domain:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.message || 'Failed to delete domain'
+        });
+      }
+    });
   }
 }
