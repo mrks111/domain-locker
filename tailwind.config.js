@@ -6,7 +6,17 @@ module.exports = {
     "./src/app/pages/**/*.page.ts",
   ],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        fade: {
+          '0%, 100%': { opacity: '0.8' },
+          '50%': { opacity: '1' },
+        },
+      },
+      animation: {
+        'fade-bounce': 'fade 1.5s infinite, bounce 1.5s infinite',
+      },
+    },
   },
   plugins: [],
   corePlugins: {

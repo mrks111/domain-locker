@@ -10,11 +10,12 @@ import { MessageService } from 'primeng/api';
 import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { DlIconComponent } from '@components/misc/svg-icon.component';
+import { LoadingComponent } from '@components/misc/loading.component';
 
 @Component({
   standalone: true,
   selector: 'app-domain-details',
-  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, DlIconComponent ],
+  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, DlIconComponent, LoadingComponent ],
   templateUrl: './domain-name.page.html',
   styleUrl: './domain-name.page.scss',
 })

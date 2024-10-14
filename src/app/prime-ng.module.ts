@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { AccordionModule } from 'primeng/accordion';
+import { AnimateOnScrollModule } from 'primeng/animateonscroll';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
@@ -34,6 +35,7 @@ import { PanelModule } from 'primeng/panel';
 import { PasswordModule } from 'primeng/password';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { ScrollTopModule } from 'primeng/scrolltop';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { SidebarModule } from 'primeng/sidebar';
 import { SplitButtonModule } from 'primeng/splitbutton';
@@ -49,6 +51,7 @@ import { TooltipModule } from 'primeng/tooltip';
 @NgModule({
   exports: [
     AccordionModule,
+    AnimateOnScrollModule,
     AutoCompleteModule,
     BadgeModule,
     ButtonModule,
@@ -83,6 +86,7 @@ import { TooltipModule } from 'primeng/tooltip';
     PasswordModule,
     ProgressSpinnerModule,
     RadioButtonModule,
+    ScrollTopModule,
     SelectButtonModule,
     SidebarModule,
     SplitButtonModule,

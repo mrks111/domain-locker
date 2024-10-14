@@ -29,9 +29,11 @@ export class DomainCardComponent implements OnInit {
 
   ngOnInit() {
     this.contextMenuItems = [
-      { label: 'View', icon: 'pi pi-external-link' },  
+      { label: 'View', icon: 'pi pi-reply' },  
       { label: 'Edit', icon: 'pi pi-pencil' },
       { label: 'Delete', icon: 'pi pi-trash' },
+      { label: 'Copy URL', icon: 'pi pi-copy' },
+      { label: 'Visit URL', icon: 'pi pi-external-link' },
       // { label: 'Advanced',
       //   icon: 'pi pi-file-edit',
       //   items: [

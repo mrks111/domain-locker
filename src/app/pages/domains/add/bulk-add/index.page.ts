@@ -9,6 +9,7 @@ import { forkJoin, from, catchError, of } from 'rxjs';
 import { map, concatMap } from 'rxjs/operators';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -23,6 +24,8 @@ export default class BulkAddComponent implements OnInit {
   processingDomains = false;
   savingDomains = false;
   domainsInfo: DomainInfo[] = [];
+  savedDomains: string[] = [];
+  failedDomains: string[] = [];
 
   notificationOptions = [
     { label: 'Domain Expiration', name: "domainExpiration", description: "Get notified when your domain name needs renewing", initial: true },
@@ -36,7 +39,8 @@ export default class BulkAddComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private messageService: MessageService,
-    private databaseService: DatabaseService
+    private databaseService: DatabaseService,
+    private router: Router
   ) {
     this.bulkAddForm = this.fb.group({
       domainList: ['', Validators.required],
@@ -47,10 +51,15 @@ export default class BulkAddComponent implements OnInit {
     });
   }
 
+  
   ngOnInit() {}
 
-  get domains() {
+  get domains(): FormArray {
     return this.bulkAddForm.get('domains') as FormArray;
+  }
+  
+  getDomainFormGroup(index: number): FormGroup {
+    return this.domains.at(index) as FormGroup;
   }
 
   processDomains() {
@@ -74,8 +83,13 @@ export default class BulkAddComponent implements OnInit {
         )
       )
     ).subscribe(results => {
-      this.domainsInfo = results.filter(Boolean) as {domainInfo: DomainInfo}[];
-      this.populateDomainForms();
+      this.domainsInfo = results.reduce((acc, result, index) => {
+        if (result) {
+          acc[domainList[index]] = result.domainInfo;
+        }
+        return acc;
+      }, {} as { [key: string]: DomainInfo });
+      this.populateDomainForms(domainList);
       this.processingDomains = false;
       this.step = 2;
     });
@@ -91,58 +105,121 @@ export default class BulkAddComponent implements OnInit {
       .filter(Boolean) as string[];
   }
 
-  populateDomainForms() {
+  populateDomainForms(domainList: string[]) {
     this.domains.clear();
-    this.domainsInfo.forEach(info => {
-      if (info && info.domainInfo) {  // Check if info and domainInfo exist
-        this.domains.push(this.fb.group({
-          domainName: [info.domainInfo.domainName, Validators.required],
-          registrar: [info.domainInfo.registrar?.name || ''],
-          expiryDate: [info.domainInfo.dates?.expiry ? new Date(info.domainInfo.dates.expiry) : null],
-          tags: [[]],
-          notes: ['']
-        }));
+    domainList.forEach(domain => {
+      const info = this.domainsInfo[domain];
+      this.domains.push(this.fb.group({
+        domainName: [domain, Validators.required],
+        registrar: [info?.registrar?.name || ''],
+        expiryDate: [info?.dates?.expiry && this.isValidDate(info.dates.expiry) ? new Date(info.dates.expiry) : null],
+        tags: [[]],
+        notes: ['']
+      }));
+    });
+  }
+
+  isValidDate(dateString: string): boolean {
+    const date = new Date(dateString);
+    return !isNaN(date.getTime());
+  }
+
+
+  saveDomains() {
+    this.savingDomains = true;
+    this.savedDomains = [];
+    this.failedDomains = [];
+    const notificationSettings = this.bulkAddForm.get('notifications')?.value;
+  
+    this.databaseService.listDomainNames().pipe(
+      concatMap(existingDomains => {
+        const saveDomainObservables = this.domains.controls.map((domainForm, index) => {
+          const domainName = domainForm.get('domainName')?.value;
+          const domainInfo = this.domainsInfo[domainName];
+  
+          const domainData: SaveDomainData = {
+            domain: {
+              domain_name: domainName,
+              registrar: domainForm.get('registrar')?.value,
+              expiry_date: domainForm.get('expiryDate')?.value,
+              notes: domainForm.get('notes')?.value,
+              registration_date: domainInfo?.dates?.creation ? new Date(domainInfo.dates.creation) : undefined,
+              updated_date: domainInfo?.dates?.updated ? new Date(domainInfo.dates.updated) : undefined,
+            },
+            ipAddresses: domainInfo ? [
+              ...domainInfo.ipAddresses.ipv4.map(ip => ({ ipAddress: ip, isIpv6: false })),
+              ...domainInfo.ipAddresses.ipv6.map(ip => ({ ipAddress: ip, isIpv6: true }))
+            ] : [],
+            tags: domainForm.get('tags')?.value,
+            notifications: Object.entries(notificationSettings)
+              .filter(([_, isEnabled]) => isEnabled)
+              .map(([type, _]) => ({ type, isEnabled: true })),
+            ssl: domainInfo?.ssl,
+            whois: domainInfo?.whois,
+            dns: domainInfo?.dns,
+            registrar: domainInfo?.registrar,
+            host: domainInfo?.host ? {
+              ...domainInfo.host,
+              asNumber: domainInfo.host.as.split(' ')[0].substring(2)
+            } : undefined
+          };
+  
+          const operation = existingDomains.includes(domainName) 
+            ? this.databaseService.updateDomain(domainName, domainData)
+            : this.databaseService.saveDomain(domainData);
+  
+          return operation.pipe(
+            map(() => ({ domain: domainName, success: true })),
+            catchError(error => {
+              console.error(`Error saving domain ${domainName}:`, error);
+              return of({ domain: domainName, success: false, error });
+            })
+          );
+        });
+  
+        return forkJoin(saveDomainObservables);
+      })
+    ).subscribe({
+      next: results => {
+        results.forEach(result => {
+          if (result.success) {
+            this.savedDomains.push(result.domain);
+            this.messageService.add({ 
+              severity: 'success', 
+              summary: 'Success', 
+              detail: `Saved domain: ${result.domain}` 
+            });
+          } else {
+            this.failedDomains.push(result.domain);
+            this.messageService.add({ 
+              severity: 'error', 
+              summary: 'Error', 
+              detail: `Failed to save domain: ${result.domain}` 
+            });
+          }
+        });
+      },
+      error: error => {
+        console.error('An unexpected error occurred:', error);
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: 'An unexpected error occurred while saving domains.' 
+        });
+      },
+      complete: () => {
+        this.savingDomains = false;
+        this.step = 4; // Always move to summary screen
+        this.messageService.add({ 
+          severity: 'info', 
+          summary: 'Complete', 
+          detail: `Bulk add process completed. Saved: ${this.savedDomains.length}, Failed: ${this.failedDomains.length}` 
+        });
       }
     });
   }
 
-  saveDomains() {
-    this.savingDomains = true;
-    const notificationSettings = this.bulkAddForm.get('notifications')?.value;
-
-    from(this.domains.controls).pipe(
-      concatMap(domainForm => {
-        const domainData: SaveDomainData = {
-          domain: {
-            domain_name: domainForm.get('domainName')?.value,
-            registrar: domainForm.get('registrar')?.value,
-            expiry_date: domainForm.get('expiryDate')?.value,
-            notes: domainForm.get('notes')?.value,
-          },
-          tags: domainForm.get('tags')?.value,
-          notifications: Object.entries(notificationSettings)
-            .filter(([_, isEnabled]) => isEnabled)
-            .map(([type, _]) => ({ type, isEnabled: true })),
-        };
-
-        return this.databaseService.saveDomain(domainData).pipe(
-          map(() => ({ domain: domainData.domain.domain_name, success: true })),
-          catchError(error => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: `Failed to save ${domainData.domain.domain_name}: ${error.message}` });
-            return of({ domain: domainData.domain.domain_name, success: false });
-          })
-        );
-      })
-    ).subscribe({
-      next: result => {
-        if (result.success) {
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Saved ${result.domain}` });
-        }
-      },
-      complete: () => {
-        this.savingDomains = false;
-        this.messageService.add({ severity: 'info', summary: 'Complete', detail: 'Bulk add process completed' });
-      }
-    });
+  goToHomePage() {
+    this.router.navigate(['/']);
   }
 }

@@ -189,3 +189,7 @@ h1 {
   background-color: var(--surface-900);
 }
 
+.fill-primary {
+  fill: var(--primary-color);
+}
+

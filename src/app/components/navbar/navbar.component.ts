@@ -136,7 +136,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
             {
               label: 'Bulk Import',
               icon: 'pi pi-fw pi-file-import',
-              routerLink: '/domains/bulk-add'
+              routerLink: '/domains/add/bulk-add'
             },
           ],
         },
