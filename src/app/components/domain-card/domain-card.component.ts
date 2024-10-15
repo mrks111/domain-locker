@@ -89,12 +89,7 @@ export class DomainCardComponent implements OnInit {
   }
 
   editDomain() {
-    // Placeholder for edit functionality
-    this.globalMessageService.showMessage({
-      severity: 'info',
-      summary: 'Info',
-      detail: 'Edit functionality not yet implemented'
-    });
+    this.router.navigate(['/domains', this.domain.domain_name, 'edit']);
   }
 
   deleteDomain(event: any) {

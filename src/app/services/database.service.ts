@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '../../types/Database';
-import { catchError, from, map, Observable, throwError, retry } from 'rxjs';
+import { catchError, from, map, Observable, throwError, retry, forkJoin, switchMap, of } from 'rxjs';
 
 class DatabaseError extends Error {
   constructor(message: string, public originalError: any) {
@@ -105,6 +105,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
       whois_info (name, organization, country, street, city, state, postal_code),
       domain_tags (tags (name)),
+      notifications (notification_type, is_enabled),
       domain_hosts (
         hosts (
           ip, lat, lon, isp, org, as_number, city, region, country
@@ -423,22 +424,124 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
-  updateDomain(id: string, domain: Partial<DbDomain>): Observable<DbDomain> {
-    return from(this.supabase.supabase
-      .from('domains')
-      .update(domain)
-      .eq('id', id)
-      .single()
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        if (!data) throw new Error('Domain not found');
-        return this.formatDomainData(data);
-      }),
+  updateDomain(domainId: string, domainData: SaveDomainData): Observable<DbDomain> {
+    return from(this.updateDomainInternal(domainId, domainData)).pipe(
       catchError(error => this.handleError(error))
     );
   }
-
+  
+  private async updateDomainInternal(domainId: string, data: SaveDomainData): Promise<DbDomain> {
+    const { domain, tags, notifications } = data;
+  
+    // Update domain's basic information
+    const { data: updatedDomain, error: updateError } = await this.supabase.supabase
+      .from('domains')
+      .update({
+        expiry_date: domain.expiry_date,
+        notes: domain.notes,
+        registrar_id: await this.getOrInsertRegistrarId(domain.registrar)
+      })
+      .eq('id', domainId)
+      .select()
+      .single();
+  
+    if (updateError) throw updateError;
+    if (!updatedDomain) throw new Error('Failed to update domain');
+  
+    // Handle tags
+    await this.updateTags(domainId, tags);
+  
+    // Handle notifications
+    await this.updateNotifications(domainId, notifications);
+  
+    return this.getDomainById(domainId);
+  }
+  
+  // Method to get or insert registrar by name
+  private async getOrInsertRegistrarId(registrarName: string): Promise<string> {
+    const { data: existingRegistrar, error: registrarError } = await this.supabase.supabase
+      .from('registrars')
+      .select('id')
+      .eq('name', registrarName)
+      .single();
+  
+    if (registrarError && registrarError.code !== 'PGRST116') throw registrarError;
+  
+    if (existingRegistrar) {
+      return existingRegistrar.id;
+    } else {
+      const { data: newRegistrar, error: insertError } = await this.supabase.supabase
+        .from('registrars')
+        .insert({ name: registrarName })
+        .select('id')
+        .single();
+  
+      if (insertError) throw insertError;
+      return newRegistrar.id;
+    }
+  }
+  
+  // Method to update tags
+  private async updateTags(domainId: string, tags: string[]): Promise<void> {
+    // Delete existing domain tags
+    await this.supabase.supabase.from('domain_tags').delete().eq('domain_id', domainId);
+  
+    // Insert or update tags
+    for (const tagName of tags) {
+      const { data: tag, error: tagError } = await this.supabase.supabase
+        .from('tags')
+        .select('id')
+        .eq('name', tagName)
+        .single();
+  
+      let tagId: string;
+      if (tag) {
+        tagId = tag.id;
+      } else {
+        const { data: newTag, error: newTagError } = await this.supabase.supabase
+          .from('tags')
+          .insert({ name: tagName })
+          .select('id')
+          .single();
+  
+        if (newTagError) throw newTagError;
+        tagId = newTag.id;
+      }
+  
+      await this.supabase.supabase
+        .from('domain_tags')
+        .insert({ domain_id: domainId, tag_id: tagId });
+    }
+  }
+  
+  // Method to update notifications
+  private async updateNotifications(domainId: string, notifications: { notification_type: string; is_enabled: boolean }[]): Promise<void> {
+    for (const notification of notifications) {
+      const { data: existingNotification, error: notificationError } = await this.supabase.supabase
+        .from('notifications')
+        .select('id')
+        .eq('domain_id', domainId)
+        .eq('notification_type', notification.notification_type)
+        .single();
+  
+      if (existingNotification) {
+        await this.supabase.supabase
+          .from('notifications')
+          .update({ is_enabled: notification.is_enabled })
+          .eq('domain_id', domainId)
+          .eq('notification_type', notification.notification_type);
+      } else {
+        await this.supabase.supabase
+          .from('notifications')
+          .insert({
+            domain_id: domainId,
+            notification_type: notification.notification_type,
+            is_enabled: notification.is_enabled
+          });
+      }
+    }
+  }
+  
   addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'created_at' | 'updated_at'>): Observable<IpAddress> {
     return from(this.supabase.supabase
       .from('ip_addresses')

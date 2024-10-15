@@ -3,6 +3,7 @@ import { AccordionModule } from 'primeng/accordion';
 import { AnimateOnScrollModule } from 'primeng/animateonscroll';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { BadgeModule } from 'primeng/badge';
+import { BlockUIModule } from 'primeng/blockui';
 import { ButtonModule } from 'primeng/button';
 import { CalendarModule } from 'primeng/calendar';
 import { CardModule } from 'primeng/card';
@@ -55,6 +56,7 @@ import { TooltipModule } from 'primeng/tooltip';
     AnimateOnScrollModule,
     AutoCompleteModule,
     BadgeModule,
+    BlockUIModule,
     ButtonModule,
     CalendarModule,
     CardModule,

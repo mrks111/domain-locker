@@ -22,7 +22,7 @@
         Visit
       </a>
       <a pButton
-        routerLink="/domains/add"
+        [routerLink]="'/domains/'+domain.domain_name+'/edit'"
         class="p-button-primary no-underline m-0 flex gap-2 w-fit ml-2 font-medium">
         <i class="pi pi-pencil"></i>
         Edit

@@ -6,12 +6,15 @@
   
   <!-- Action buttons - visible only on hover -->
   <div class="edit-button-container absolute top-2 right-2 gap-2 align-items-center">
-    <p-button
-      label="Edit"
-      [link]="true"
-      icon="pi pi-pencil"
-      class="text-xs text-default m-0 opacity-70 hover:!opacity-100"
-      styleClass="text-default m-0 p-2 font-normal text-xs" />
+    <a [routerLink]="'/domains/'+domain.domain_name+'/edit'">
+      <p-button
+        label="Edit"
+        [link]="true"
+        icon="pi pi-pencil"
+        class="text-xs text-default m-0 opacity-70 hover:!opacity-100"
+        styleClass="text-default m-0 p-2 font-normal text-xs"
+      />
+    </a>
   </div>
 
   <!-- Domain Name -->
