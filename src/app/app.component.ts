@@ -13,7 +13,13 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, PrimeNgModule, CommonModule, LoadingComponent ],
+  imports: [
+    RouterOutlet,
+    PrimeNgModule,
+    CommonModule,
+    NavbarComponent,
+    LoadingComponent,
+  ],
   providers: [MessageService],
   template: `
     <!-- Navbar -->
