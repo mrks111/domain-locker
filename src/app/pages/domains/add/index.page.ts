@@ -9,18 +9,11 @@ import { catchError, throwError, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import DatabaseService from '@services/database.service';
 import { SaveDomainData } from '@typings/Database';
+import { notificationTypes } from '@/app/constants/notification-types';
 
 import type { DomainInfo } from '@typings/DomainInfo';
 import { Router } from '@angular/router';
 import { Registrar } from '@/types/common';
-
-interface NotificationOption {
-  label: string;  
-  name: string;
-  description: string;
-  note?: string;
-  initial: boolean;
-}
 
 @Component({
   selector: 'app-add-domain',
@@ -41,6 +34,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private existingDomains: string[] = [];
   public showDomainError = false;
+  public readonly notificationOptions = notificationTypes;
 
   public readonly saveOptions: MenuItem[] = [
     {
@@ -53,14 +47,6 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
       icon: 'pi pi-trash',
       command: () => this.confirmDiscard()
     }
-  ];
-
-  public readonly notificationOptions: NotificationOption[] = [
-    { label: 'Domain Expiration', name: "domainExpiration", description: "Get notified when your domain name needs renewing", initial: true },
-    { label: 'SSL Expiration', name: "sslExpiration", description: "Get notified before your SSL cert expires", note: "Not recommended if you have automatic SSL", initial: false },
-    { label: 'DNS Change', name: "dnsChange", description: "Get notified when DNS records change (MX, TXT, NS)", initial: false },
-    { label: 'WHOIS Change', name: "whoisChange", description: "Get notified when domain registrant info changes", initial: false },
-    { label: 'IP Change', name: "ipChange", description: "Get notified when the target IP address (IPv4 & IPv6) is updated", initial: false }
   ];
 
   constructor(
@@ -85,7 +71,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
 
   private initializeForm(): void {
     const notificationControls = this.notificationOptions.reduce((acc, option) => {
-      acc[option.name] = [option.initial];
+      acc[option.key] = [option.default || false];
       return acc;
     }, {} as Record<string, [boolean]>);
 

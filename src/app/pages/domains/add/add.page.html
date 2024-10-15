@@ -148,13 +148,13 @@
           </p>
           <div formGroupName="notifications">
             <div *ngFor="let option of notificationOptions" class="field">
-              <label [for]="option.name">
-                {{ option.label || option.name }}
+              <label [for]="option.key">
+                {{ option.label || option.key }}
                 <small>{{ option.description }}</small>
                 <small *ngIf="option.note" class="text-yellow-500">{{ option.note }}</small>
               </label>
               <div class="input-wrap flex justify-end">
-                <p-inputSwitch [formControlName]="option.name"></p-inputSwitch>
+                <p-inputSwitch [formControlName]="option.key"></p-inputSwitch>
               </div>
             </div>
           </div>

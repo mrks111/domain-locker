@@ -78,12 +78,12 @@
           <p>Choose the notifications you want to receive for all domains. You can always change these settings later for individual domains.</p>
           <div formGroupName="notifications">
             <div *ngFor="let option of notificationOptions" class="field">
-              <label [for]="option.name">
+              <label [for]="option.key">
                 {{ option.label }}
                 <small>{{ option.description }}</small>
                 <small *ngIf="option.note" class="text-yellow-500">{{ option.note }}</small>
               </label>
-              <p-inputSwitch [formControlName]="option.name"></p-inputSwitch>
+              <p-inputSwitch [formControlName]="option.key"></p-inputSwitch>
             </div>
           </div>
           <div class="button-wrap">

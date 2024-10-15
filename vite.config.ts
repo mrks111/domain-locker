@@ -34,6 +34,7 @@ export default defineConfig( ({ mode }) => {
         '@guards': resolve(__dirname, './src/guards'),
         '@pages': resolve(__dirname, './src/pages'),
         '@styles': resolve(__dirname, './src/styles'),
+        '@constants': resolve(__dirname, './src/constants'),
       }
     },
     plugins: [

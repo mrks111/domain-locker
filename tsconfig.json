@@ -29,7 +29,8 @@
       "@typings/*": ["src/types/*"],
       "@guards/*": ["src/guards/*"],
       "@pages/*": ["src/app/pages/*"],
-      "@styles/*": ["src/styles/*"]
+      "@styles/*": ["src/styles/*"],
+      "@constants/*": ["src/constants/*"],
     }
   },
   "angularCompilerOptions": {

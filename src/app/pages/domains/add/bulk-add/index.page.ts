@@ -10,6 +10,7 @@ import { map, concatMap } from 'rxjs/operators';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { notificationTypes } from '@/app/constants/notification-types';
 
 @Component({
   standalone: true,
@@ -26,14 +27,7 @@ export default class BulkAddComponent implements OnInit {
   domainsInfo: DomainInfo[] = [];
   savedDomains: string[] = [];
   failedDomains: string[] = [];
-
-  notificationOptions = [
-    { label: 'Domain Expiration', name: "domainExpiration", description: "Get notified when your domain name needs renewing", initial: true },
-    { label: 'SSL Expiration', name: "sslExpiration", description: "Get notified before your SSL cert expires", note: "Not recommended if you have automatic SSL", initial: false },
-    { label: 'DNS Change', name: "dnsChange", description: "Get notified when DNS records change (MX, TXT, NS)", initial: false },
-    { label: 'WHOIS Change', name: "whoisChange", description: "Get notified when domain registrant info changes", initial: false },
-    { label: 'IP Change', name: "ipChange", description: "Get notified when the target IP address (IPv4 & IPv6) is updated", initial: false }
-  ];
+  public readonly notificationOptions = notificationTypes;
 
   constructor(
     private fb: FormBuilder,
@@ -46,7 +40,7 @@ export default class BulkAddComponent implements OnInit {
       domainList: ['', Validators.required],
       domains: this.fb.array([]),
       notifications: this.fb.group(
-        this.notificationOptions.reduce((acc, opt) => ({ ...acc, [opt.name]: opt.initial }), {})
+        this.notificationOptions.reduce((acc, opt) => ({ ...acc, [opt.key]: opt.default || false }), {})
       )
     });
   }
