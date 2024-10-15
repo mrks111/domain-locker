@@ -45,9 +45,9 @@ export class LoadingComponent implements OnInit, OnDestroy {
   private errorTimeout: any;
 
   ngOnInit() {
-    this.errorTimeout = setTimeout(() => {
-      this.showError = true;
-    }, 8500);
+    // this.errorTimeout = setTimeout(() => {
+    //   this.showError = true;
+    // }, 8500);
   }
 
   ngOnDestroy() {

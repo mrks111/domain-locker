@@ -27,7 +27,7 @@ import { Subscription } from 'rxjs';
       <p-scrollTop />
       <p-toast />
       <p-confirmDialog />
-      <p-messages />
+      <p-confirmPopup />
     </div>
   `,
   styles: [`

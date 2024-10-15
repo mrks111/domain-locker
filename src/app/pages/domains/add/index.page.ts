@@ -300,8 +300,6 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
           registrar: this.domainInfo?.registrar as Registrar,
         };
 
-        console.log('Domain Info to save: ', this.domainInfo);
-
         if (formValue.registrar) {
           domainData.domain.registrar = formValue.registrar;
         }

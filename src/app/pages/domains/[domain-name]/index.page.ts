@@ -73,7 +73,7 @@ export default class DomainDetailsPage implements OnInit {
   }
 
   deleteDomain() {
-    console.log(this.domain.id)
+    if (!this.domain) return;
     this.databaseService.deleteDomain(this.domain.id).subscribe({
       next: () => {
         this.globalMessageService.showMessage({

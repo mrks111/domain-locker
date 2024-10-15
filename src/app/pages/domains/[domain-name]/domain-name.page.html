@@ -1,5 +1,3 @@
-<p-messages />
-
 <div *ngIf="domain; else loading" class="domain-details p-4 flex flex-col gap-1">
   <div class="flex gap-2 justify-between align-items-center flex-wrap mb-4">
     <h1 class="text-3xl flex items-center">
@@ -45,7 +43,9 @@
       <p>{{ domain.registrar.name }}</p>
       <p *ngIf="domain.registrar?.url">
         <app-domain-favicon [domain]="domain.registrar.url" [size]="24" class="mr-1"></app-domain-favicon>
-        <a [href]="domain.registrar.url" target="_blank" rel="noopener noreferrer">{{ domain.registrar.url }}</a>
+        <a [href]="domain.registrar.url" target="_blank" rel="noopener noreferrer">
+          {{ (domain.registrar.url || '').replace('https://', '').replace('www.', '') }}
+        </a>
       </p>
     </p-card>
     <p-card *ngIf="domain.expiry_date || domain.registration_date">
