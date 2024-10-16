@@ -9,6 +9,7 @@ import { SupabaseService } from './services/supabase.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ import { Subscription } from 'rxjs';
   imports: [
     RouterOutlet,
     PrimeNgModule,
+    NgApexchartsModule,
     CommonModule,
     NavbarComponent,
     LoadingComponent,

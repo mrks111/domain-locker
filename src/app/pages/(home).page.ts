@@ -12,6 +12,7 @@ import { DomainCollectionComponent } from '@components/domain-collection/domain-
 import { Subscription } from 'rxjs';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { WelcomeComponent } from '@components/getting-started/welcome.component';
+import { RegistrarPieChartComponent } from '@components/charts/domain-pie/domain-pie.component';
 
 @Component({
   standalone: true,
@@ -23,6 +24,7 @@ import { WelcomeComponent } from '@components/getting-started/welcome.component'
     DomainExpirationBarComponent,
     LoadingComponent,
     WelcomeComponent,
+    RegistrarPieChartComponent,
   ],
   templateUrl: './home.page.html',
 })
