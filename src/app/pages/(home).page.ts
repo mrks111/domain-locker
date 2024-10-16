@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { WelcomeComponent } from '@components/getting-started/welcome.component';
 import { RegistrarPieChartComponent } from '@components/charts/domain-pie/domain-pie.component';
+import { HostMapComponent } from '@components/charts/host-map/host-map.component';
 
 @Component({
   standalone: true,
@@ -25,6 +26,7 @@ import { RegistrarPieChartComponent } from '@components/charts/domain-pie/domain
     LoadingComponent,
     WelcomeComponent,
     RegistrarPieChartComponent,
+    HostMapComponent,
   ],
   templateUrl: './home.page.html',
 })
