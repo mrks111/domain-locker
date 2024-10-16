@@ -58,6 +58,7 @@ export class DomainExpirationBarComponent implements OnInit {
     const ninetyDays = 90 * 24 * 60 * 60 * 1000;
 
     domains.forEach(domain => {
+      if (!domain.expiration || domain.expiration.getTime() === 0) return;
       const timeUntilExpiration = domain.expiration.getTime() - now.getTime();
       if (timeUntilExpiration < thirtyDays) {
         this.counts.imminently++;
@@ -71,7 +72,7 @@ export class DomainExpirationBarComponent implements OnInit {
       }
     });
 
-    const total = domains.length;
+    const total = domains.filter(d => d.expiration.getTime() !== 0).length;
 
     this.meterValues = [
       { label: `Imminently (${this.counts.imminently})`, value: (this.counts.imminently / total) * 100, color: 'var(--red-400)', icon: 'pi pi-exclamation-circle' },
@@ -80,8 +81,15 @@ export class DomainExpirationBarComponent implements OnInit {
     ];
 
     this.upcomingDomains = this.domainsPerCategory['imminently'];
-    this.nextExpiringDomain = domains.reduce<DomainExpiration | undefined>((next, current) => 
-      (!next || current.expiration < next.expiration) ? current : next, undefined);
+    this.nextExpiringDomain = domains.reduce<DomainExpiration | undefined>((next, current) => {
+      const now = new Date();
+      if (current.expiration > now) {
+        if (!next || current.expiration < next.expiration) {
+          return current;
+        }
+      }
+      return next;
+    }, undefined);
   }
 
   getTooltipContent(category: string): string {

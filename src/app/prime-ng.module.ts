@@ -15,6 +15,7 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { ContextMenuModule } from 'primeng/contextmenu';
 import { DialogModule } from 'primeng/dialog';
 import { DividerModule } from 'primeng/divider';
+import { DropdownModule } from 'primeng/dropdown';
 import { FieldsetModule } from 'primeng/fieldset';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { FormsModule } from '@angular/forms';
@@ -68,6 +69,7 @@ import { TooltipModule } from 'primeng/tooltip';
     ContextMenuModule,
     DialogModule,
     DividerModule,
+    DropdownModule,
     FieldsetModule,
     FloatLabelModule,
     FormsModule,

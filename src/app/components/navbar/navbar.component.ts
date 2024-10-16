@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { SupabaseService } from '../../services/supabase.service';
-import { ThemeService, Theme } from '../../services/theme.service';
+import { ThemeService, Theme } from '@services/theme.service';
 import { FormsModule } from '@angular/forms';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { RadioButtonModule } from 'primeng/radiobutton';
@@ -194,26 +194,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
             },
           ],
         },
-        // {
-        //   label: 'Reports',
-        //   icon: 'pi pi-fw pi-chart-line',
-        //   routerLink: '/notifications'
-        // },
-        // {
-        //   label: 'Data Export',
-        //   icon: 'pi pi-fw pi-file-export',
-        //   routerLink: '/export'
-        // },
-        // {
-        //   label: 'Change History',
-        //   icon: 'pi pi-fw pi-history',
-        //   routerLink: '/history'
-        // },
-        // {
-        //   label: 'Notifications',
-        //   icon: 'pi pi-fw pi-bell',
-        //   routerLink: '/notifications'
-        // }
       ];
     } else {
       this.items.push({
@@ -261,7 +241,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   async signOut() {
     await this.supabaseService.signOut();
-    // redirect to /login
     window.location.href = '/login';
   }
 }

@@ -946,4 +946,37 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
   
 
+  getAssetCount(assetType: string): Observable<number> {
+    let table: string;
+    switch (assetType) {
+      case 'registrars':
+        table = 'registrars';
+        break;
+      case 'ip addresses':
+        table = 'ip_addresses';
+        break;
+      case 'ssl certificates':
+        table = 'ssl_certificates';
+        break;
+      case 'hosts':
+        table = 'hosts';
+        break;
+      case 'dns records':
+        table = 'dns_records';
+        break;
+      case 'tags':
+        table = 'tags';
+        break;
+      default:
+        throw new Error(`Unknown asset type: ${assetType}`);
+    }
+
+    return from(this.supabase.supabase
+      .from(table)
+      .select('id', { count: 'exact' })
+    ).pipe(
+      map(response => response.count || 0)
+    );
+  }
+
 }

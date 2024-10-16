@@ -8,7 +8,6 @@
   <div class="edit-button-container absolute top-2 right-2 gap-2 align-items-center">
     <a [routerLink]="'/domains/'+domain.domain_name+'/edit'">
       <p-button
-        label="Edit"
         [link]="true"
         icon="pi pi-pencil"
         class="text-xs text-default m-0 opacity-70 hover:!opacity-100"
@@ -28,11 +27,14 @@
   </h2>
   
   <!-- Core Info: Registrar and Expiry -->
-  <div class="flex justify-between align-items-center">
-    <p *ngIf="domain.registrar && isVisible('registrar')"
-      class="m-0 truncate max-w-xs"
-      [pTooltip]="'Registrar: ' + domain.registrar.name + ' (' + domain.registrar.id + ')'"
-    >{{ domain.registrar.name }}</p>
+  <div class="flex justify-between align-items-center {{ (domain.expiry_date && !domain.registrar) ? '!justify-end' : ''}}">
+    @if (domain.registrar && isVisible('registrar')) {
+      <a [routerLink]="'/assets/registrars/'+domain.registrar.name" class="text-default no-underline hover:underline">
+        <p class="m-0 truncate max-w-xs" [pTooltip]="'Click to view all domains registered through ' + domain.registrar.name">
+          {{ domain.registrar.name }}
+        </p>
+      </a>
+    }
     <p-tag
       *ngIf="domain.expiry_date && isVisible('expiryDate')"
       [pTooltip]="domain.expiry_date ? 'Expires on ' + (domain.expiry_date | date:'mediumDate') : 'Unknown Expiry Date'"

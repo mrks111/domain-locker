@@ -27,6 +27,7 @@ export class DomainCollectionComponent implements OnInit {
   isGridLayout: boolean = true;
   visibleFields: FieldOption[] = [];
   searchTerm: string = '';
+  sortOrder: string = 'date';
   private fuse!: Fuse<DbDomain>;
 
   allColumns = [
@@ -46,12 +47,18 @@ export class DomainCollectionComponent implements OnInit {
 
   ngOnInit() {
     this.filteredDomains = this.domains;
+    this.sortDomains();
     this.initializeFuse();
   }
 
   onVisibilityChange(selectedFields: FieldOption[]) {
     this.visibleFields = selectedFields;
     this.updateVisibleColumns();
+  }
+
+  onSortChange(sortOption: FieldOption) {
+    this.sortOrder = sortOption.value;
+    this.sortDomains();
   }
 
   updateVisibleColumns() {
@@ -67,6 +74,21 @@ export class DomainCollectionComponent implements OnInit {
     this.visibleColumns.sort((a, b) => 
       a.field === 'domain_name' ? -1 : b.field === 'domain_name' ? 1 : 0
     );
+  }
+
+  sortDomains() {
+    switch (this.sortOrder) {
+      case 'alphabetical':
+        this.filteredDomains.sort((a, b) => a.domain_name.localeCompare(b.domain_name));
+        break;
+      case 'expiryDate':
+        this.filteredDomains.sort((a, b) => new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime());
+        break;
+      case 'date':
+      default:
+        this.filteredDomains = [...this.domains];
+        break;
+    }
   }
 
   mapFieldToColumn(fieldValue: string): string {
@@ -129,5 +151,7 @@ export class DomainCollectionComponent implements OnInit {
     this.searchTerm = '';
     this.filtersComp.initializeSelectedFields();
     this.filteredDomains = this.domains;
+    this.sortOrder = 'date';
+    this.sortDomains();
   }
 }

@@ -5,18 +5,19 @@ import DatabaseService from '@services/database.service';
 import { DbDomain } from '@/types/Database';
 import { MessageService } from 'primeng/api';
 import { DomainCollectionComponent } from '@components/domain-collection/domain-collection.component';
+import { LoadingComponent } from '@components/misc/loading.component';
 
 @Component({
   standalone: true,
   selector: 'domain-all-page',
-  imports: [DomainCollectionComponent, PrimeNgModule, CommonModule],
+  imports: [DomainCollectionComponent, PrimeNgModule, CommonModule, LoadingComponent],
   template: `
     <app-domain-view 
       *ngIf="!loading; else loadingTemplate" 
       [domains]="domains"
     ></app-domain-view>
     <ng-template #loadingTemplate>
-      <p-progressSpinner></p-progressSpinner>
+      <loading loadingTitle="Loading" loadingDescription="Fetching domains from database" />
     </ng-template>
   `,
 })

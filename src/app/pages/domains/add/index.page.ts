@@ -290,9 +290,10 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
           domainData.domain.registrar = formValue.registrar;
         }
   
-        const savedDomain = await this.databaseService.saveDomain(domainData);
-  
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Domain ${savedDomain.domainName} added successfully` });
+        await this.databaseService.saveDomain(domainData);
+        const name = domainData.domain.domain_name;
+
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Domain ${name} added successfully` });
         this.router.navigate(['/domains']);
       } catch (error) {
         this.handleError(error);

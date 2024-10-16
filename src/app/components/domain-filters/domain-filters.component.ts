@@ -29,14 +29,21 @@ export class FieldVisibilityFilterComponent implements OnInit {
     { label: 'Host Info', value: 'hostInfo' },
     { label: 'DNS Records', value: 'dnsRecords' },
   ];
+  @Input() sortOptions: FieldOption[] = [
+    { label: 'Date Added', value: 'date' },
+    { label: 'Alphabetical', value: 'alphabetical' },
+    { label: 'Expiry Date', value: 'expiryDate' },
+  ];
 
   @Input() defaultSelectedFields: string[] = ['domainName', 'registrar', 'expiryDate'];
   @Input() showAddButton: boolean = true;
   @Output() visibilityChange = new EventEmitter<FieldOption[]>();
   @Output() searchChange = new EventEmitter<string>();
   @Output() layoutChange = new EventEmitter<boolean>();
+  @Output() sortChange = new EventEmitter<FieldOption>();
 
   selectedFields: FieldOption[] = [];
+  sortOrder: FieldOption = this.sortOptions[0];
   selectedLayout: boolean = true;
 
   layoutOptions = [
@@ -60,6 +67,10 @@ export class FieldVisibilityFilterComponent implements OnInit {
       this.initializeSelectedFields();
     }
     this.visibilityChange.emit(this.selectedFields);
+  }
+
+  onSortChange(event: any) {
+    this.sortChange.emit(event.value);
   }
 
   onSearch(event: Event) {

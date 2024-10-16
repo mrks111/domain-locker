@@ -17,10 +17,23 @@
         [(ngModel)]="selectedFields"
         (onChange)="onSelectionChange()"
         optionLabel="label"
-        selectedItemsLabel="{0} fields selected"
+        selectedItemsLabel="{0} fields shown"
         [style]="{minWidth: '200px'}"
         placeholder="Choose visible fields"
       ></p-multiSelect>
+    </div>
+    <!-- Sort Select Dropdown -->
+    <div class="flex flex-col gap-1" *ngIf="selectedLayout">
+      <label for="field-filters" class="text-xs text-surface-400">Sort</label>
+      <p-dropdown
+        id="field-filters"
+        [options]="sortOptions"
+        [(ngModel)]="sortOrder"
+        (onChange)="onSortChange($event)"
+        optionLabel="label"
+        selectedItemsLabel="sorted by {0}"
+        [style]="{minWidth: '160px'}"
+      />
     </div>
     <!-- Layout Toggle -->
     <div class="flex flex-col gap-1">

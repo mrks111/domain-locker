@@ -43,7 +43,7 @@ export class ThemeService {
     return this.themes;
   }
 
-  private initializeTheme() {
+  public initializeTheme() {
     if (isPlatformBrowser(this.platformId)) {
       // Get users saved preferences from local storage
       const savedTheme = localStorage.getItem('selectedTheme');

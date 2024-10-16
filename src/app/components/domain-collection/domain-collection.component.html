@@ -4,9 +4,20 @@
     (visibilityChange)="onVisibilityChange($event)"
     (searchChange)="onSearchChange($event)"
     (layoutChange)="onLayoutChange($event)"
+    (sortChange)="onSortChange($event)"
     [showAddButton]="showAddButton"
   />
 </div>
+
+@if (domains.length === 0) {
+  <div class="p-card p-4">
+    <h4 class="mt-0 mb-4">No Domains Found</h4>
+    <p>
+      You don't yet have any domains in this collection yet.
+      Get started by <a routerLink="/domains/add" class="text-primary underline">adding your first domain</a>.
+    </p>
+  </div>
+}
 
 <!-- Domain Grid (cards) -->
 <ng-container *ngIf="isGridLayout; else tableLayout">

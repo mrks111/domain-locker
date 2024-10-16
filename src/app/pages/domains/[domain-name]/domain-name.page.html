@@ -44,7 +44,8 @@
       <p *ngIf="domain.registrar?.url">
         <app-domain-favicon [domain]="domain.registrar.url" [size]="24" class="mr-1"></app-domain-favicon>
         <a [href]="domain.registrar.url" target="_blank" rel="noopener noreferrer">
-          {{ (domain.registrar.url || '').replace('https://', '').replace('www.', '') }}
+          {{ (domain.registrar.url || '')
+            .replace('https://', '').replace('http://', '').replace('www.', '') }}
         </a>
       </p>
     </p-card>

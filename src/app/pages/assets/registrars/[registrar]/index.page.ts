@@ -17,9 +17,11 @@ import { DomainFaviconComponent } from '@components/misc/favicon.component';
       <app-domain-favicon *ngIf="registrarUrl" [domain]="registrarUrl" [size]="28" class=""></app-domain-favicon>
       {{ registrarName }}
     </h1>
-    <p *ngIf="registrarUrl" class="md:float-right">
-      <a [href]="registrarUrl"><i class="pi pi-external-link mr-2 capitalize"></i> {{registrarName}} Website</a>
-    </p>
+    @if (registrarUrl && registrarUrl !== 'Unknown') {
+      <p class="md:float-right">
+        <a [href]="registrarUrl"><i class="pi pi-external-link mr-2 capitalize"></i> {{registrarName}} Website</a>
+      </p>
+    }
     <app-domain-view
       [domains]="domains"
       *ngIf="!loading"
