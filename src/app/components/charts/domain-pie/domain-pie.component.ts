@@ -2,10 +2,11 @@ import { Component, OnInit, ViewChild, AfterViewInit, PLATFORM_ID, Inject, Eleme
 import { ChartComponent, NgApexchartsModule } from "ng-apexcharts";
 import { ApexNonAxisChartSeries, ApexChart, ApexResponsive, ApexTheme, ApexLegend, ApexStroke } from "ng-apexcharts";
 import DatabaseService from '@services/database.service';
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { NgIf } from '@angular/common';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -19,48 +20,112 @@ export type ChartOptions = {
 };
 
 @Component({
-  selector: 'app-registrar-pie-chart',
-  template: `
-    <div #chartContainer class="chart-container">
-      <apx-chart *ngIf="dataLoaded"
-        [series]="chartOptions.series"
-        [chart]="chartOptions.chart"
-        [labels]="chartOptions.labels"
-        [responsive]="chartOptions.responsive"
-        [theme]="chartOptions.theme"
-        [legend]="chartOptions.legend"
-        [stroke]="chartOptions.stroke"
-      [colors]="chartOptions.colors"
-      ></apx-chart>
-    </div>
-  `,
-  styles: [`
-    .chart-container {
-      width: 100%;
-      height: 100%;
-    }
-  `],
+  selector: 'app-domain-pie-charts',
+  templateUrl: './domain-pie.component.html',
+  styleUrl: './domain-pie.component.scss',
   standalone: true,
-  imports: [NgApexchartsModule, NgIf]
+  imports: [NgApexchartsModule, NgIf, PrimeNgModule]
 })
-export class RegistrarPieChartComponent implements OnInit, AfterViewInit {
-  @ViewChild("chart") chart: ChartComponent;
-  @ViewChild('chartContainer', { static: true }) chartContainer: ElementRef;
-  public chartOptions: Partial<ChartOptions>;
-  public dataLoaded = false;
+export class DomainPieChartsComponent implements OnInit, AfterViewInit {
+  @ViewChild("registrarChart") registrarChart!: ChartComponent;
+  @ViewChild("sslIssuerChart") sslIssuerChart!: ChartComponent;
+  @ViewChild("hostChart") hostChart!: ChartComponent;
+  @ViewChild('chartContainer', { static: true }) chartContainer!: ElementRef;
+
+  public registrarChartOptions: Partial<ChartOptions> = {};
+  public sslIssuerChartOptions: Partial<ChartOptions> = {};
+  public hostChartOptions: Partial<ChartOptions> = {};
+
+  public registrarDataLoaded = false;
+  public sslIssuerDataLoaded = false;
+  public hostDataLoaded = false;
+
+  public registrarChartReady = false;
+  public sslIssuerChartReady = false;
+  public hostChartReady = false;
+
+  public activeTabIndex = 0; // Track the active tab
+
+  private colors: string[] = [];
   
   constructor(
     private databaseService: DatabaseService,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {
-    this.chartOptions = {
-      series: [],
+  ) {}
+
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.setChartColors();
+      this.loadRegistrarData(); // Load initial tab data
+    }
+  }
+
+  ngAfterViewInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.setChartSize();
+    }
+  }
+
+  onTabChange(event: any) {
+    this.activeTabIndex = event.index;
+    if (event.index === 0) {
+      this.loadRegistrarData();
+    } else if (event.index === 1) {
+      this.loadSslIssuerData();
+    } else if (event.index === 2) {
+      this.loadHostData();
+    }
+    setTimeout(() => this.forceChartRedraw(event.index), 100);
+  }
+
+  forceChartRedraw(index: number) {
+    if (index === 0 && this.registrarChartReady) {
+      this.registrarChartOptions = { ...this.registrarChartOptions };
+    } else if (index === 1 && this.sslIssuerChartReady) {
+      this.sslIssuerChartOptions = { ...this.sslIssuerChartOptions };
+    } else if (index === 2 && this.hostChartReady) {
+      this.hostChartOptions = { ...this.hostChartOptions };
+    }
+  }
+
+  loadRegistrarData() {
+    this.getRegistrarData().pipe(
+      tap(data => {
+        this.initChartOptions('registrar', data);
+        this.registrarDataLoaded = true;
+        this.registrarChartReady = true;
+      })
+    ).subscribe();
+  }
+
+  loadSslIssuerData() {
+    this.getSslIssuerData().pipe(
+      tap(data => {
+        this.initChartOptions('sslIssuer', data);
+        this.sslIssuerDataLoaded = true;
+        this.sslIssuerChartReady = true;
+      })
+    ).subscribe();
+  }
+
+  loadHostData() {
+    this.getHostData().pipe(
+      tap(data => {
+        this.initChartOptions('host', data);
+        this.hostDataLoaded = true;
+        this.hostChartReady = true;
+      })
+    ).subscribe();
+  }
+
+  initChartOptions(chartType: 'registrar' | 'sslIssuer' | 'host', data: {name: string, count: number}[]) {
+    const baseOptions: Partial<ChartOptions> = {
+      series: data.map(item => item.count),
+      labels: data.map(item => item.name),
       chart: {
         type: "pie",
-        id: 'registrarPieChart',
         background: 'transparent',
       },
-      labels: [],
       responsive: [{
         breakpoint: 480,
         options: {
@@ -75,12 +140,6 @@ export class RegistrarPieChartComponent implements OnInit, AfterViewInit {
       theme: {
         mode: 'dark',
         palette: 'palette1',
-        monochrome: {
-          enabled: false,
-          color: '#255aee',
-          shadeTo: 'dark',
-          shadeIntensity: 0.65
-        },
       },
       legend: {
         position: 'bottom',
@@ -91,43 +150,54 @@ export class RegistrarPieChartComponent implements OnInit, AfterViewInit {
       stroke: {
         colors: ['var(--surface-100)']
       },
-      colors: []
+      colors: this.colors
     };
-  }
 
-  ngOnInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.loadRegistrarData();
+    if (chartType === 'registrar') {
+      this.registrarChartOptions = baseOptions;
+    } else if (chartType === 'sslIssuer') {
+      this.sslIssuerChartOptions = baseOptions;
+    } else if (chartType === 'host') {
+      this.hostChartOptions = baseOptions;
     }
-  }
 
-  ngAfterViewInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.setChartColors();
-      this.setChartSize();
-    }
-  }
-
-  loadRegistrarData() {
-    this.getRegistrarData().pipe(
-      tap(data => {
-        this.chartOptions.series = data.map(item => item.count);
-        this.chartOptions.labels = data.map(item => item.name);
-        this.dataLoaded = true;
-      })
-    ).subscribe();
+    this.setChartSize();
   }
 
   getRegistrarData(): Observable<{name: string, count: number}[]> {
     return this.databaseService.getDomainCountsByRegistrar().pipe(
-      map(counts => Object.entries(counts).map(([name, count]) => ({ name, count })))
+      map(counts => Object.entries(counts).map(([name, count]) => ({ name, count }))),
+      catchError(error => {
+        console.error('Error fetching registrar data:', error);
+        return of([]);
+      })
+    );
+  }
+
+  getSslIssuerData(): Observable<{name: string, count: number}[]> {
+    return this.databaseService.getSslIssuersWithDomainCounts().pipe(
+      map(data => data.map(item => ({ name: item.issuer, count: item.domain_count }))),
+      catchError(error => {
+        console.error('Error fetching SSL issuer data:', error);
+        return of([]);
+      })
+    );
+  }
+
+  getHostData(): Observable<{name: string, count: number}[]> {
+    return this.databaseService.getHostsWithDomainCounts().pipe(
+      map(data => data.map(item => ({ name: item.isp, count: item.domain_count }))),
+      catchError(error => {
+        console.error('Error fetching host data:', error);
+        return of([]);
+      })
     );
   }
 
   setChartColors() {
     if (isPlatformBrowser(this.platformId)) {
       const style = getComputedStyle(document.body);
-      const colors = [
+      this.colors = [
         style.getPropertyValue('--purple-400'),
         style.getPropertyValue('--blue-400'),
         style.getPropertyValue('--green-400'),
@@ -137,20 +207,27 @@ export class RegistrarPieChartComponent implements OnInit, AfterViewInit {
         style.getPropertyValue('--pink-400'),
         style.getPropertyValue('--yellow-400'),
         style.getPropertyValue('--orange-400'),
-        style.getPropertyValue('--red-400')
+        style.getPropertyValue('--red-000')
       ];
-      this.chartOptions.colors = colors;
     }
   }
 
   setChartSize() {
     if (this.chartContainer) {
       const { width, height } = this.chartContainer.nativeElement.getBoundingClientRect();
-      this.chartOptions.chart = {
-        ...this.chartOptions.chart,
+      const chartSize = {
         width: '90%',
         height: height,
       };
+      if (this.registrarChartOptions.chart) {
+        this.registrarChartOptions.chart = { ...this.registrarChartOptions.chart, ...chartSize };
+      }
+      if (this.sslIssuerChartOptions.chart) {
+        this.sslIssuerChartOptions.chart = { ...this.sslIssuerChartOptions.chart, ...chartSize };
+      }
+      if (this.hostChartOptions.chart) {
+        this.hostChartOptions.chart = { ...this.hostChartOptions.chart, ...chartSize };
+      }
     }
   }
 }

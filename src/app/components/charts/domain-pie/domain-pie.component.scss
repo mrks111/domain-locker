@@ -1,0 +1,22 @@
+.chart-container {
+  width: 100%;
+  height: 100%;
+}
+
+
+::ng-deep .p-tabview-nav {
+  border-bottom: 0;
+  display: flex;
+  justify-content: space-evenly;
+  .p-element.p-tabview-nav-link {
+    padding: 0.5rem 0.75rem;
+    font-weight: 400;
+    &[aria-selected="true"] {
+      font-weight: bold;
+    }
+  }
+}
+
+::ng-deep .p-tabview-panels {
+  padding: 0.5rem 0 0 0;
+}

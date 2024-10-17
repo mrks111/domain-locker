@@ -12,7 +12,7 @@ import { DomainCollectionComponent } from '@components/domain-collection/domain-
 import { Subscription } from 'rxjs';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { WelcomeComponent } from '@components/getting-started/welcome.component';
-import { RegistrarPieChartComponent } from '@components/charts/domain-pie/domain-pie.component';
+import { DomainPieChartsComponent } from '@components/charts/domain-pie/domain-pie.component';
 import { HostMapComponent } from '@components/charts/host-map/host-map.component';
 
 @Component({
@@ -25,7 +25,7 @@ import { HostMapComponent } from '@components/charts/host-map/host-map.component
     DomainExpirationBarComponent,
     LoadingComponent,
     WelcomeComponent,
-    RegistrarPieChartComponent,
+    DomainPieChartsComponent,
     HostMapComponent,
   ],
   templateUrl: './home.page.html',

@@ -1,0 +1,59 @@
+<p-tabView (onChange)="onTabChange($event)">
+  <p-tabPanel header="Registrars">
+    <div #chartContainer class="chart-container">
+      <apx-chart *ngIf="registrarChartReady"
+        [series]="registrarChartOptions.series"
+        [chart]="registrarChartOptions.chart"
+        [labels]="registrarChartOptions.labels"
+        [responsive]="registrarChartOptions.responsive"
+        [theme]="registrarChartOptions.theme"
+        [legend]="registrarChartOptions.legend"
+        [stroke]="registrarChartOptions.stroke"
+        [colors]="registrarChartOptions.colors"
+      ></apx-chart>
+    </div>
+    <a
+      routerLink="/assets/registrars"
+      class="text-xs text-primary-600 text-right block w-full opacity-70 hover:opacity-100">
+      View all Registrars
+    </a>
+  </p-tabPanel>
+  <p-tabPanel header="SSL Issuers">
+    <div class="chart-container">
+      <apx-chart *ngIf="sslIssuerChartReady"
+        [series]="sslIssuerChartOptions.series"
+        [chart]="sslIssuerChartOptions.chart"
+        [labels]="sslIssuerChartOptions.labels"
+        [responsive]="sslIssuerChartOptions.responsive"
+        [theme]="sslIssuerChartOptions.theme"
+        [legend]="sslIssuerChartOptions.legend"
+        [stroke]="sslIssuerChartOptions.stroke"
+        [colors]="sslIssuerChartOptions.colors"
+      ></apx-chart>
+    </div>
+    <a
+      routerLink="/assets/certs"
+      class="text-xs text-primary-600 text-right block w-full opacity-70 hover:opacity-100">
+      View all Cert Providers
+    </a>
+  </p-tabPanel>
+  <p-tabPanel header="Hosts">
+    <div class="chart-container">
+      <apx-chart *ngIf="hostChartReady"
+        [series]="hostChartOptions.series"
+        [chart]="hostChartOptions.chart"
+        [labels]="hostChartOptions.labels"
+        [responsive]="hostChartOptions.responsive"
+        [theme]="hostChartOptions.theme"
+        [legend]="hostChartOptions.legend"
+        [stroke]="hostChartOptions.stroke"
+        [colors]="hostChartOptions.colors"
+      ></apx-chart>
+      <a
+        routerLink="/assets/hosts"
+        class="text-xs text-primary-600 text-right block w-full opacity-70 hover:opacity-100">
+        View all Hosts
+      </a>
+    </div>
+  </p-tabPanel>
+</p-tabView>
