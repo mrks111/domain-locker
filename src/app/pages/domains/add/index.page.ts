@@ -181,7 +181,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
   private async fetchDomainInfo(): Promise<void> {
     const domainName = this.domainForm.get('domainName')?.value;
     if (!domainName) return;
-
+  
     this.http.get<DomainInfo>(`/api/domain-info?domain=${domainName}`).pipe(
       catchError(this.handleHttpError.bind(this))
     ).subscribe({
@@ -191,6 +191,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
           this.domainInfo = domainInfo;
           this.updateFormWithDomainInfo();
           this.prepareTableData();
+          this.domainForm.patchValue({ statuses: domainInfo.status || [] });
         } else {
           this.messageService.add({
             severity: 'warn',
@@ -205,6 +206,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
       }
     });
   }
+  
 
   /**
    * Checks if the fetched domain info is valid
@@ -273,6 +275,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
             expiry_date: formValue.expiryDate,
             notes: formValue.notes,
           },
+          statuses: this.domainInfo?.status || [],
           ipAddresses: this.domainInfo?.ipAddresses.ipv4.map(ip => ({ ipAddress: ip, isIpv6: false }))
             .concat(this.domainInfo?.ipAddresses.ipv6.map(ip => ({ ipAddress: ip, isIpv6: true }))) || [],
           tags: formValue.tags,
@@ -301,7 +304,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     } else {
       this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Please fill in all required fields correctly.' });
     }
-  }
+  }  
 
   /**
    * Saves the current form and resets it for a new entry

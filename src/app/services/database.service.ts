@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '../../types/Database';
 import { catchError, from, map, Observable, throwError, retry, forkJoin, switchMap, of } from 'rxjs';
+import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
 
 class DatabaseError extends Error {
   constructor(message: string, public originalError: any) {
@@ -79,7 +80,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
       this.saveSslInfo(insertedDomain.id, ssl),
       this.saveWhoisInfo(insertedDomain.id, whois),
       this.saveRegistrar(insertedDomain.id, registrar),
-      this.saveHost(insertedDomain.id, host)
+      this.saveHost(insertedDomain.id, host),
+      this.saveStatuses(insertedDomain.id, data.statuses),
     ]);
   
     return this.getDomainById(insertedDomain.id);
@@ -106,14 +108,11 @@ export default class SupabaseDatabaseService extends DatabaseService {
       whois_info (name, organization, country, street, city, state, postal_code),
       domain_tags (tags (name)),
       notifications (notification_type, is_enabled),
-      domain_hosts (
-        hosts (
-          ip, lat, lon, isp, org, as_number, city, region, country
-        )
-      ),
-      dns_records (record_type, record_value)
+      domain_hosts (hosts (ip, lat, lon, isp, org, as_number, city, region, country)),
+      dns_records (record_type, record_value),
+      domain_statuses (status_code)
     `;
-  }
+  }  
   
   deleteDomain(domainId: string): Observable<void> {
     return from(this.supabase.supabase.rpc('delete_domain', { domain_id: domainId })).pipe(
@@ -270,9 +269,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
     if (updateError) throw updateError;
   }
 
-  private async saveHost(domainId: string, host: Host): Promise<void> {
-    if (!host?.isp) return;
-  
+  private async saveHost(domainId: string, host?: Host): Promise<void> {
+    if (!host || !host?.isp) return;
     // First, try to find an existing host with the same ISP
     const { data: existingHost, error: fetchError } = await this.supabase.supabase
       .from('hosts')
@@ -334,6 +332,19 @@ export default class SupabaseDatabaseService extends DatabaseService {
     if (linkError) throw linkError;
   }
 
+  private async saveStatuses(domainId: string, statuses: string[]): Promise<void> {
+    if (!statuses || statuses.length === 0) return;
+    const statusEntries = statuses.map(status => ({
+      domain_id: domainId,
+      status_code: status,
+    }));
+    const { error } = await this.supabase.supabase
+      .from('domain_statuses')
+      .insert(statusEntries);
+    if (error) throw error;
+  }
+  
+
   private async saveNotifications(domainId: string, notifications: { type: string; isEnabled: boolean }[]): Promise<void> {
     if (notifications.length === 0) return;
 
@@ -392,7 +403,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
         mxRecords: data.dns_records?.filter((record: any) => record.record_type === 'MX').map((record: any) => record.record_value) || [],
         txtRecords: data.dns_records?.filter((record: any) => record.record_type === 'TXT').map((record: any) => record.record_value) || [],
         nameServers: data.dns_records?.filter((record: any) => record.record_type === 'NS').map((record: any) => record.record_value) || []
-      }
+      },
+      statuses: makeEppArrayFromLabels(data.domain_statuses?.map((status: any) => status.status_code) || []),
     };
   }
 

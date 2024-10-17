@@ -218,6 +218,22 @@ CREATE INDEX idx_ssl_certificates_domain_id ON ssl_certificates(domain_id);
 CREATE INDEX idx_ip_addresses_domain_id ON ip_addresses(domain_id);
 CREATE INDEX idx_notifications_domain_id ON notifications(domain_id);
 
+-- Create domain_statuses table to store EPP statuses for each domain
+CREATE TABLE domain_statuses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  domain_id UUID NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+  status_code TEXT NOT NULL,  -- EPP status code (e.g., addPeriod, ok, etc.)
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enable RLS on domain_statuses table
+ALTER TABLE domain_statuses ENABLE ROW LEVEL SECURITY;
+
+-- Create policy for domain_statuses
+CREATE POLICY domain_statuses_policy ON domain_statuses
+  USING (EXISTS (SELECT 1 FROM domains WHERE domains.id = domain_statuses.domain_id AND domains.user_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM domains WHERE domains.id = domain_statuses.domain_id AND domains.user_id = auth.uid()));
+
 -- Function to get hosts with domain counts
 CREATE OR REPLACE FUNCTION get_hosts_with_domain_counts()
 RETURNS TABLE (

@@ -32,6 +32,7 @@
   
   <div class="masonry sm:masonry-sm md:masonry-md lg:masonry-lg xl:masonry-lg 2xl:masonry-xl">
 
+    <!-- Registrar -->
     <p-card *ngIf="domain.registrar">
       <ng-template pTemplate="header">
         <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Registrar</h4>
@@ -49,6 +50,8 @@
         </a>
       </p>
     </p-card>
+
+    <!-- Dates -->
     <p-card *ngIf="domain.expiry_date || domain.registration_date">
       <ng-template pTemplate="header">
         <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Dates</h4>
@@ -76,6 +79,43 @@
         <h5>Updated</h5>
         <p class="m-0">{{ domain.updated_date | date:'mediumDate' }}</p>
       </div>
+    </p-card>
+ 
+    <!-- Statuses -->
+    <p-card *ngIf="domain.statuses">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Status</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="status" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <ul  class="row p-0 list-none">
+        @for (status of domain.statuses; track status.label) {
+          <li class="py-1">
+          @if (status.severity === 'good') {
+            <p-tag icon="pi pi-check-circle" severity="success" [pTooltip]="status.description" />
+          } @else if (status.severity === 'bad') {
+            <p-tag icon="pi pi-times-circle" severity="danger" [pTooltip]="status.description" />
+          } @else {
+            <p-tag icon="pi pi-info-circle" severity="info" [pTooltip]="status.description" />
+          }
+          <span class="ml-2">{{status.label}}</span>
+          <ul class="pl-5 ml-1 text-surface-400 list-none text-xs">
+            <li>{{status.description}}</li>
+            @if (status.actionToTake) {
+              <li [class]="status.severity === 'bad' ? 'text-red-400' : 'text-blue-400'">{{status.actionToTake}}</li>
+            }
+          </ul>
+        </li>
+          <!-- @if (status.severity === 'good') {
+            <p-tag icon="pi pi-check-circle" [value]="status.label" severity="success" [pTooltip]="status.description" />
+          } @else if (status.severity === 'bad') {
+            <p-tag icon="pi pi-times-circle" [value]="status.label" severity="danger" [pTooltip]="status.description" />
+          } @else {
+            <p-tag icon="pi pi-info-circle" [value]="status.label" severity="info" [pTooltip]="status.description" />
+          } -->
+        }
+      </ul>
     </p-card>
 
     <!-- IP Addresses -->

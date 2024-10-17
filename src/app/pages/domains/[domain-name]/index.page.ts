@@ -12,6 +12,7 @@ import { of } from 'rxjs';
 import { DlIconComponent } from '@components/misc/svg-icon.component';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { GlobalMessageService } from '@services/messaging.service';
+import { securityCategories } from '@/app/constants/security-categories';
 
 @Component({
   standalone: true,
