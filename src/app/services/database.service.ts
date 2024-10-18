@@ -638,6 +638,55 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
+  getStatusesWithDomainCounts(): Observable<{ eppCode: string; description: string; domainCount: number }[]> {
+    return from(this.supabase.supabase
+      .rpc('get_statuses_with_domain_counts')  // Use the updated RPC function
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(item => ({
+          eppCode: item.status_code,
+          description: '',
+          // description: this.getDescriptionForStatus(item.status_code),  // Retrieve description from your constant
+          domainCount: item.domain_count
+        }));
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }  
+
+  
+  getDomainsByStatus(statusCode: string): Observable<DbDomain[]> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select(`
+        *,
+        registrars (name, url),
+        ip_addresses (ip_address, is_ipv6),
+        ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
+        whois_info (name, organization, country, street, city, state, postal_code),
+        domain_hosts (
+          hosts (
+            ip, lat, lon, isp, org, as_number, city, region, country
+          )
+        ),
+        dns_records (record_type, record_value),
+        domain_tags (
+          tags (name)
+        ),
+        domain_statuses!inner (status_code)
+      `)
+      .eq('domain_statuses.status_code', statusCode)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(domain => this.formatDomainData(domain));
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+  
+
   deleteTag(id: string): Observable<void> {
     return from(this.supabase.supabase
       .from('tags')

@@ -353,3 +353,23 @@ BEGIN
   DELETE FROM registrars WHERE registrars.id NOT IN (SELECT DISTINCT registrar_id FROM domains);
 END;
 $$;
+
+CREATE OR REPLACE FUNCTION get_statuses_with_domain_counts()
+RETURNS TABLE (
+  status_code TEXT,
+  domain_count BIGINT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    domain_statuses.status_code,
+    COUNT(domain_statuses.domain_id) AS domain_count
+  FROM 
+    domain_statuses
+  GROUP BY 
+    domain_statuses.status_code
+  ORDER BY 
+    domain_count DESC;
+END;
+$$ LANGUAGE plpgsql;
+
