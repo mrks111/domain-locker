@@ -123,7 +123,7 @@
           <dl-icon icon="ips" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
         </div>
       </ng-template>
-      <div class="row">
+      <div class="row" *ngIf="filterIpAddresses(domain.ip_addresses, false).length">
         <h5>IPv4</h5>
         <ul class="list-none p-0 m-0">
           <li *ngFor="let ip of filterIpAddresses(domain.ip_addresses, false)" class="mb-2">
@@ -131,7 +131,7 @@
           </li>
         </ul>
       </div>
-      <div class="row">
+      <div class="row" *ngIf="filterIpAddresses(domain.ip_addresses, true).length">
         <h5>IPv6</h5>
         <ul class="list-none p-0 m-0">
           <li *ngFor="let ip of filterIpAddresses(domain.ip_addresses, true)" class="mb-2 truncate">

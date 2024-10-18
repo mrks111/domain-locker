@@ -259,6 +259,13 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     return date ? new Date(date) : undefined;
   }
 
+  private formatDomainName(domainName: string): string {
+    return domainName
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '')
+        .replace(/\/.*$/, '');
+}
+
   /**
    * Handles form submission
    */  
@@ -268,7 +275,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
         const formValue = this.domainForm.value;
         const domainData: SaveDomainData = {
           domain: {
-            domain_name: formValue.domainName,
+            domain_name: this.formatDomainName(formValue.domainName),
             registration_date: this.makeDateOrUndefined(this.domainInfo?.dates.creation),
             updated_date: this.makeDateOrUndefined(this.domainInfo?.dates.updated),
             registrar: formValue.registrar,
