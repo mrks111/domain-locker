@@ -36,6 +36,7 @@ export class DomainCollectionComponent implements OnInit {
     { field: 'expiry_date', header: 'Expiry', width: 120 },
     { field: 'tags', header: 'Tags', width: 150 },
     { field: 'notes', header: 'Notes', width: 200 },
+    { field: 'statuses', header: 'Security Statuses', width: 150 },
     { field: 'ip_addresses', header: 'IP Addresses', width: 150 },
     { field: 'ssl', header: 'SSL', width: 200 },
     { field: 'whois', header: 'WHOIS', width: 200 },

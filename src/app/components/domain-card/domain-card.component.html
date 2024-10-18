@@ -51,6 +51,32 @@
     </a>
   </div>
 
+  <!-- Security Statuses -->
+  <p-panel *ngIf="domain.statuses?.length && isVisible('statuses')" [toggleable]="true" class="custom-pannel">
+    <ng-template pTemplate="header">
+      <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">Security Features</h4>
+    </ng-template>
+    <ul  class="row p-0 m-0 list-none">
+      @for (status of domain.statuses; track status.label) {
+        <li class="py-1">
+        @if (status.severity === 'good') {
+          <p-tag icon="pi pi-check-circle" severity="success" [pTooltip]="status.description" />
+        } @else if (status.severity === 'bad') {
+          <p-tag icon="pi pi-times-circle" severity="danger" [pTooltip]="status.description" />
+        } @else {
+          <p-tag icon="pi pi-info-circle" severity="info" [pTooltip]="status.description" />
+        }
+        <span class="ml-2">{{status.label}}</span>
+        <ul class="pl-5 ml-1 text-surface-400 list-none text-xs">
+          <li>{{status.description}}</li>
+          @if (status.actionToTake) {
+            <li [class]="status.severity === 'bad' ? 'text-red-400' : 'text-blue-400'">{{status.actionToTake}}</li>
+          }
+        </ul>
+      </li>
+      }
+    </ul>
+  </p-panel>
 
   <!-- IP address list -->
   <p-panel *ngIf="domain.ip_addresses?.length && isVisible('ipAddresses')" [toggleable]="true" class="custom-pannel">
@@ -71,7 +97,9 @@
     </ng-template>
     <div class="flex flex-col gap-1">
       <p class="m-0 text-xs">
-        <strong class="font-semibold">Issuer:</strong> {{ domain.ssl.issuer }}</p>
+        <strong class="font-semibold">Issuer: </strong>
+        <a class="text-default" [routerLink]="'/assets/certs/'+domain.ssl.issuer">{{ domain.ssl.issuer }}</a>
+      </p>
       <p class="m-0 text-xs">
         <strong class="font-semibold">Issuer Country:</strong> {{ domain.ssl.issuer_country }}
       </p>
@@ -129,12 +157,13 @@
     
     <div class="flex flex-col gap-1">
       <p class="m-0 text-xs">
-        <strong class="font-semibold">ISP:</strong> {{ domain.host.isp }}
+        <strong class="font-semibold">ISP: </strong>
+        <a class="text-default" [routerLink]="'/assets/hosts/'+domain.host.isp">{{ domain.host.isp }}</a>
       </p>
-      <p class="m-0 text-xs">
+      <p *ngIf="domain.host.org !== domain.host.isp" class="m-0 text-xs">
         <strong class="font-semibold">Org:</strong> {{ domain.host.org }}
       </p>
-      <p class="m-0 text-xs">
+      <p *ngIf="domain.host.asNumber" class="m-0 text-xs">
         <strong class="font-semibold">AS Ref:</strong> {{ domain.host.asNumber }}
       </p>
       <p class="m-0 text-xs">

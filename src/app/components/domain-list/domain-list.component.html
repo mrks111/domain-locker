@@ -44,17 +44,30 @@
           <ng-container *ngSwitchCase="'notes'">
             <span [pTooltip]="domain.notes">{{domainUtils.truncateNotes(domain.notes)}}</span>
           </ng-container>
+          <div *ngSwitchCase="'statuses'" class="max-w-72 flex flex-wrap gap-1">
+            <a *ngFor="let status of domain.statuses" [routerLink]="'/assets/statuses/'+status.eppCode">
+              @if (status.severity === 'good') {
+                <p-tag [value]="status.label" styleClass="mr-1" icon="pi pi-check-circle" severity="success" [pTooltip]="status.description" />
+              } @else if (status.severity === 'bad') {
+                <p-tag [value]="status.label" styleClass="mr-1" icon="pi pi-times-circle" severity="danger" [pTooltip]="status.description" />
+              } @else {
+                <p-tag [value]="status.label" styleClass="mr-1" icon="pi pi-info-circle" severity="info" [pTooltip]="status.description" />
+              }
+            </a>
+          </div>
           <span *ngSwitchCase="'ip_addresses'">
             <ng-container *ngFor="let ip of domain.ip_addresses">
               {{ip.ip_address}} ({{ip.is_ipv6 ? 'IPv6' : 'IPv4'}})<br>
             </ng-container>
           </span>
           <span *ngSwitchCase="'ssl'">
-            {{domain.ssl?.issuer}}<br>
+            <a [routerLink]="'/assets/certs/' + domain.ssl?.issuer" class="text-primary">{{domain.ssl?.issuer}}</a><br>
             Valid until: {{domain.ssl?.valid_to | date:'shortDate'}}
           </span>
           <span *ngSwitchCase="'whois'">{{domain.whois?.name}}</span>
-          <span *ngSwitchCase="'host'">{{domain.host?.isp}}</span>
+          <span *ngSwitchCase="'host'" [pTooltip]="domain.host.org + '\n' + domain.host.city + ', ' + domain.host.region + ', ' + domain.host.country">
+            <a class="text-primary" [routerLink]="'/assets/hosts/'+domain.host?.isp">{{domain.host?.isp}}</a>
+          </span>
           <span *ngSwitchCase="'dns'">
             <ng-container *ngIf="domain.dns?.nameServers">
               NS: {{domain.dns.nameServers[0]}}

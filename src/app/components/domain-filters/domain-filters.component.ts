@@ -23,6 +23,7 @@ export class FieldVisibilityFilterComponent implements OnInit {
     { label: 'Expiry Date', value: 'expiryDate' },
     { label: 'Tags', value: 'tags' },
     { label: 'Notes', value: 'notes' },
+    { label: 'Security Status', value: 'statuses' },
     { label: 'IP Addresses', value: 'ipAddresses' },
     { label: 'SSL Certificate', value: 'sslCertificate' },
     { label: 'WHOIS Record', value: 'whoisRecord' },

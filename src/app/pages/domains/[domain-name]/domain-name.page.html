@@ -41,7 +41,9 @@
         </div>
       </ng-template>
 
-      <p>{{ domain.registrar.name }}</p>
+      <a [routerLink]="'/assets/registrars/'+domain.registrar.name" class="text-default no-underline hover:underline">
+        {{ domain.registrar.name }}
+      </a>
       <p *ngIf="domain.registrar?.url">
         <app-domain-favicon [domain]="domain.registrar.url" [size]="24" class="mr-1"></app-domain-favicon>
         <a [href]="domain.registrar.url" target="_blank" rel="noopener noreferrer">
@@ -99,7 +101,9 @@
           } @else {
             <p-tag icon="pi pi-info-circle" severity="info" [pTooltip]="status.description" />
           }
-          <span class="ml-2">{{status.label}}</span>
+          <a [routerLink]="'/assets/statuses/'+status.eppCode" class="ml-2 text-default no-underline hover:underline">
+            {{ status.label }}
+          </a>
           <ul class="pl-5 ml-1 text-surface-400 list-none text-xs">
             <li>{{status.description}}</li>
             @if (status.actionToTake) {
@@ -149,7 +153,9 @@
       <div>
         <div class="row" *ngIf="domain.ssl.issuer">
           <h5>Issuer</h5>
-          <p>{{ domain.ssl.issuer }}</p>
+          <a [routerLink]="'/assets/certs/'+domain.ssl.issuer" class="text-default no-underline hover:underline">
+            {{ domain.ssl.issuer }}
+          </a>
         </div>
         <div class="row" *ngIf="domain.ssl.issuer_country">
           <h5>Issuer Country</h5>
@@ -226,7 +232,9 @@
       <div>
         <div class="row" *ngIf="domain.host.isp">
           <h5>ISP</h5>
-          <p>{{ domain.host.isp }}</p>
+          <a [routerLink]="'/assets/hosts/'+domain.host.isp" class="text-default no-underline hover:underline">
+            {{ domain.host.isp }}
+          </a>
         </div>
         <div class="row" *ngIf="domain.host.org">
           <h5>Organization</h5>
