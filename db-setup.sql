@@ -373,3 +373,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION get_domains_by_epp_status_codes(status_codes TEXT[])
+RETURNS TABLE (
+  status_code TEXT,
+  domain_id UUID,
+  domain_name TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    domain_statuses.status_code,
+    domain_statuses.domain_id,
+    domains.domain_name
+  FROM 
+    domain_statuses
+  JOIN 
+    domains ON domain_statuses.domain_id = domains.id
+  WHERE 
+    domain_statuses.status_code = ANY(status_codes)
+  ORDER BY 
+    domain_statuses.status_code;
+END;
+$$ LANGUAGE plpgsql;
+

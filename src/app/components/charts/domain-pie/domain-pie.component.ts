@@ -56,7 +56,7 @@ export class DomainPieChartsComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.setChartColors();
-      this.loadRegistrarData(); // Load initial tab data
+      this.loadRegistrarData();
     }
   }
 
@@ -132,9 +132,6 @@ export class DomainPieChartsComponent implements OnInit, AfterViewInit {
           chart: {
             width: '100%'
           },
-          legend: {
-            position: "bottom"
-          }
         }
       }],
       theme: {
@@ -143,6 +140,7 @@ export class DomainPieChartsComponent implements OnInit, AfterViewInit {
       },
       legend: {
         position: 'bottom',
+        show: false,
         labels: {
           colors: 'var(--surface-500)'
         }

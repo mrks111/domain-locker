@@ -14,6 +14,7 @@ import { LoadingComponent } from '@components/misc/loading.component';
 import { WelcomeComponent } from '@components/getting-started/welcome.component';
 import { DomainPieChartsComponent } from '@components/charts/domain-pie/domain-pie.component';
 import { HostMapComponent } from '@components/charts/host-map/host-map.component';
+import { EppStatusChartComponent } from '@components/charts/domain-epp-status/domain-epp-status.component';
 
 @Component({
   standalone: true,
@@ -27,6 +28,7 @@ import { HostMapComponent } from '@components/charts/host-map/host-map.component
     WelcomeComponent,
     DomainPieChartsComponent,
     HostMapComponent,
+    EppStatusChartComponent,
   ],
   templateUrl: './home.page.html',
 })

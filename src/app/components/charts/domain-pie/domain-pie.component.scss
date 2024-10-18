@@ -20,3 +20,18 @@
 ::ng-deep .p-tabview-panels {
   padding: 0.5rem 0 0 0;
 }
+
+::ng-deep .apexcharts-svg {
+  g.apexcharts-series.apexcharts-pie-series {
+    path.apexcharts-pie-area {
+      &.apexcharts-pie-slice-0 { fill: var(--purple-400); }
+      &.apexcharts-pie-slice-1 { fill: var(--blue-400); }
+      &.apexcharts-pie-slice-2 { fill: var(--green-400); }
+      &.apexcharts-pie-slice-3 { fill: var(--cyan-400); }
+      &.apexcharts-pie-slice-4 { fill: var(--indigo-400); }
+      &.apexcharts-pie-slice-5 { fill: var(--teal-400); }
+      &.apexcharts-pie-slice-6 { fill: var(--orange-400); }
+      &.apexcharts-pie-slice-7 { fill: var(--purple-400); }
+    }
+  }
+}

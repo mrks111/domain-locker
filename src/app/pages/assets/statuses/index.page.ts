@@ -4,38 +4,25 @@ import { RouterModule } from '@angular/router';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
+import { LoadingComponent } from '@components/misc/loading.component';
+import { getByEppCode, type SecurityCategory, securityCategories } from '@/app/constants/security-categories';
 
 @Component({
   standalone: true,
   selector: 'app-statuses-index',
-  imports: [CommonModule, RouterModule, PrimeNgModule],
-  template: `
-    <h1 class="mt-2 mb-4">Statuses</h1>
-    <p-table [value]="statuses" [loading]="loading" styleClass="p-datatable-striped">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Status Code</th>
-          <th>Description</th>
-          <th>Domain Count</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-status>
-        <tr>
-          <td><a [routerLink]="['/assets/statuses', status.eppCode]" class="text-primary">{{ status.eppCode }}</a></td>
-          <td>{{ status.description }}</td>
-          <td>{{ status.domainCount }}</td>
-        </tr>
-      </ng-template>
-    </p-table>
-  `,
+  imports: [CommonModule, RouterModule, LoadingComponent, PrimeNgModule],
+  templateUrl: './statuses.page.html',
+  styleUrls: ['./statuses.page.scss'],
 })
 export default class StatusesIndexPageComponent implements OnInit {
   statuses: { eppCode: string; description: string; domainCount: number }[] = [];
   loading: boolean = true;
+  detailedStatuses: { statusCount: number, statusInfo?: SecurityCategory }[] = [];
+  public securityCategories: SecurityCategory[] = securityCategories
 
   constructor(
     private databaseService: DatabaseService,
-    private messageService: MessageService
+    private messageService: MessageService,
   ) {}
 
   ngOnInit() {
@@ -47,6 +34,12 @@ export default class StatusesIndexPageComponent implements OnInit {
     this.databaseService.getStatusesWithDomainCounts().subscribe({
       next: (statusesWithCounts) => {
         this.statuses = statusesWithCounts.sort((a, b) => b.domainCount - a.domainCount);
+        this.detailedStatuses = this.statuses.map(status => {
+          return { statusCount: status.domainCount, statusInfo: getByEppCode(status.eppCode) };
+        });
+        this.securityCategories = securityCategories.filter(cat => 
+          this.statuses.every(status => status.eppCode !== cat.eppCode)
+        );
         this.loading = false;
       },
       error: (error) => {

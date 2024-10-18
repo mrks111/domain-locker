@@ -655,7 +655,37 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }  
 
+  // Method to get the total number of domains
+  getTotalDomains(): Observable<number> {
+    return from(this.supabase.supabase
+      .from('domains')
+      .select('id', { count: 'exact' })
+    ).pipe(
+      map(({ count, error }) => {
+        if (error) throw error;
+        return count || 0;
+      })
+    );
+  }
+
+  getDomainsByEppCodes(statuses: string[]): Observable<Record<string, { domainId: string, domainName: string }[]>> {
+    return from(this.supabase.supabase
+      .rpc('get_domains_by_epp_status_codes', { status_codes: statuses })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        const domainsByStatus: Record<string, { domainId: string, domainName: string }[]> = {};  
+        statuses.forEach(status => {
+          domainsByStatus[status] = data
+            .filter((d: { status_code: string; }) => d.status_code === status)
+            .map((d: { domain_id: any; domain_name: any; }) => ({ domainId: d.domain_id, domainName: d.domain_name }));
+        });
+        return domainsByStatus;
+      })
+    );
+  }
   
+
   getDomainsByStatus(statusCode: string): Observable<DbDomain[]> {
     return from(this.supabase.supabase
       .from('domains')

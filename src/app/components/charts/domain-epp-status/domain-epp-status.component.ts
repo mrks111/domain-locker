@@ -1,0 +1,161 @@
+import { Component, OnInit, ViewChild, Inject, PLATFORM_ID } from '@angular/core';
+import { ApexNonAxisChartSeries, ApexPlotOptions, ApexChart, ApexStroke, ApexFill, ChartComponent, NgApexchartsModule, ApexTooltip } from 'ng-apexcharts';
+import DatabaseService from '@/app/services/database.service';
+import { NgIf, isPlatformBrowser } from '@angular/common';
+import { PrimeNgModule } from '@/app/prime-ng.module';
+import { getByEppCode } from '@/app/constants/security-categories';
+
+export type ChartOptions = {
+  series: ApexNonAxisChartSeries;
+  chart: ApexChart;
+  labels: string[];
+  plotOptions: ApexPlotOptions;
+  fill: ApexFill;
+  stroke: ApexStroke;
+  tooltip: ApexTooltip;
+};
+
+@Component({
+  standalone: true,
+  selector: 'app-epp-status-chart',
+  templateUrl: './domain-epp-status.component.html',
+  styleUrls: ['./domain-epp-status.component.scss'],
+  imports: [NgApexchartsModule, NgIf, PrimeNgModule],
+})
+export class EppStatusChartComponent implements OnInit {
+  @ViewChild('epp-chart') chart: ChartComponent | undefined;
+  public chartOptions: Partial<ChartOptions> | undefined;
+  private totalDomainsWithEpp: number = 0; // Updated: Track domains with EPP status
+  private percentages: number[] = [];
+  private counts: Record<string, number> = {};
+  public loading: boolean = true;
+  public colors: string[] = [];
+
+  constructor(
+    private databaseService: DatabaseService,
+    @Inject(PLATFORM_ID) private platformId: any
+  ) {}
+
+  ngOnInit(): void {
+    this.setChartColors();
+    this.loadEppCounts();
+  }
+
+  private setChartColors() {
+    if (isPlatformBrowser(this.platformId)) {
+      const style = getComputedStyle(document.body);
+      this.colors = [
+        style.getPropertyValue('--blue-400'),
+        style.getPropertyValue('--green-400'),
+        style.getPropertyValue('--yellow-400'),
+        style.getPropertyValue('--cyan-400'),
+        style.getPropertyValue('--indigo-400'),
+        style.getPropertyValue('--teal-400'),
+        style.getPropertyValue('--orange-400'),
+        style.getPropertyValue('--purple-400')
+      ];
+    }
+  }
+
+  private loadEppCounts() {
+    const statuses = [
+      'clientTransferProhibited',
+      'serverTransferProhibited',
+      'clientUpdateProhibited',
+      'serverUpdateProhibited',
+      'clientDeleteProhibited',
+      'serverDeleteProhibited'
+    ];
+  
+    this.databaseService.getDomainsByEppCodes(statuses).subscribe({
+      next: (domainsByStatus) => {
+        // Collect all domain IDs across statuses into a single Set (to deduplicate them)
+        const uniqueDomains = new Map<string, string>(); // Map to track domainId -> domainName
+  
+        statuses.forEach(status => {
+          domainsByStatus[status]?.forEach(domain => uniqueDomains.set(domain.domainId, domain.domainName));
+        });
+  
+        // Calculate the total number of unique domains with at least one EPP code
+        this.totalDomainsWithEpp = uniqueDomains.size;
+  
+        // Calculate the percentage for each status
+        this.percentages = statuses.map(status => {
+          const statusDomains = domainsByStatus[status] || [];
+          return Math.round((statusDomains.length / this.totalDomainsWithEpp) * 100);
+        });
+        this.createChart();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching EPP status counts:', error);
+      }
+    });
+  }
+  
+
+  private createChart() {
+    const statuses = [
+      'clientTransferProhibited',
+      'serverTransferProhibited',
+      'clientUpdateProhibited',
+      'serverUpdateProhibited',
+      'clientDeleteProhibited',
+      'serverDeleteProhibited'
+    ];
+
+    this.chartOptions = {
+      series: this.percentages,
+      chart: {
+        height: 350,
+        type: 'radialBar',
+      },
+      plotOptions: {
+        radialBar: {
+          hollow: {
+            margin: 5,
+            size: '33%'
+          },
+          track: {
+            background: 'var(--surface-100)',
+            strokeWidth: '100%',
+            margin: 5,
+          },
+          dataLabels: {
+            name: {
+              fontSize: '22px'
+            },
+            value: {
+              fontSize: '16px'
+            },
+            total: {
+              show: true,
+              label: 'Total',
+              formatter: () => {
+                return `${this.totalDomainsWithEpp}`; // Show total domains with EPP
+              }
+            }
+          }
+        }
+      },
+      fill: {
+        colors: this.colors,
+      },
+      tooltip: {
+        enabled: true,
+        custom: ({ seriesIndex }) => {
+          const eppCode = statuses[seriesIndex];
+          const count = this.counts[eppCode];
+          const category = getByEppCode(eppCode);
+          const description = category?.description || '';
+          return `<div style="padding:10px;">
+                    <strong>${category?.label || eppCode}</strong><br>
+                    Domains: ${count}<br>
+                    ${description}
+                  </div>`;
+        }
+      },
+      labels: statuses.map(status => getByEppCode(status)?.label || status)
+    };
+  }
+}

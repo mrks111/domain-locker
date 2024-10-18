@@ -175,6 +175,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
               icon: 'pi pi-fw pi-table',
               routerLink: '/assets/dns',
             },
+            {
+              label: 'Security',
+              icon: 'pi pi-fw pi-shield',
+              routerLink: '/assets/statuses',
+            },
           ],
         },
         {

@@ -82,7 +82,7 @@
     </p-card>
  
     <!-- Statuses -->
-    <p-card *ngIf="domain.statuses">
+    <p-card *ngIf="domain.statuses && domain.statuses.length">
       <ng-template pTemplate="header">
         <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Status</h4>
         <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
@@ -107,13 +107,6 @@
             }
           </ul>
         </li>
-          <!-- @if (status.severity === 'good') {
-            <p-tag icon="pi pi-check-circle" [value]="status.label" severity="success" [pTooltip]="status.description" />
-          } @else if (status.severity === 'bad') {
-            <p-tag icon="pi pi-times-circle" [value]="status.label" severity="danger" [pTooltip]="status.description" />
-          } @else {
-            <p-tag icon="pi pi-info-circle" [value]="status.label" severity="info" [pTooltip]="status.description" />
-          } -->
         }
       </ul>
     </p-card>
