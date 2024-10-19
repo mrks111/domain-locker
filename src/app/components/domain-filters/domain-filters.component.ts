@@ -29,6 +29,7 @@ export class FieldVisibilityFilterComponent implements OnInit {
     { label: 'WHOIS Record', value: 'whoisRecord' },
     { label: 'Host Info', value: 'hostInfo' },
     { label: 'DNS Records', value: 'dnsRecords' },
+    { label: 'Renewal Cost', value: 'renewalCost' },
   ];
   @Input() sortOptions: FieldOption[] = [
     { label: 'Date Added', value: 'date' },

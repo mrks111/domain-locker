@@ -110,7 +110,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
       notifications (notification_type, is_enabled),
       domain_hosts (hosts (ip, lat, lon, isp, org, as_number, city, region, country)),
       dns_records (record_type, record_value),
-      domain_statuses (status_code)
+      domain_statuses (status_code),
+      domain_costings (purchase_price, current_value, renewal_cost, auto_renew)
     `;
   }  
   
@@ -122,6 +123,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       })
     );
   }
+
   private async saveIpAddresses(domainId: string, ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'created_at' | 'updated_at'>[]): Promise<void> {
     if (ipAddresses.length === 0) return;
 
@@ -684,7 +686,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
       })
     );
   }
-  
 
   getDomainsByStatus(statusCode: string): Observable<DbDomain[]> {
     return from(this.supabase.supabase
@@ -715,7 +716,41 @@ export default class SupabaseDatabaseService extends DatabaseService {
       catchError(error => this.handleError(error))
     );
   }
-  
+
+   // Get all domains with costings info
+  getDomainCostings(): Observable<any[]> {
+    return from(this.supabase.supabase
+      .from('domain_costings')
+      .select(`
+        domain_id, 
+        domains(domain_name), 
+        purchase_price, 
+        current_value, 
+        renewal_cost, 
+        auto_renew
+      `)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  // Update costings for all edited domains
+  updateDomainCostings(updates: any[]): Observable<void> {
+    return from(
+      this.supabase.supabase
+        .from('domain_costings')
+        .upsert(updates, { onConflict: 'domain_id' }) // Use the unique constraint on domain_id
+        .then((response) => {
+          if (response.error) {
+            throw response.error;
+          }
+        })
+    );
+  }  
 
   deleteTag(id: string): Observable<void> {
     return from(this.supabase.supabase

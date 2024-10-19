@@ -4,16 +4,16 @@ import dns from 'dns';
 import tls from 'tls';
 import { PeerCertificate } from 'tls';
 import type { DomainInfo } from '../../types/DomainInfo';
-import type { WhoisData, HostData } from '../../types/DomainInfo';
+import type { HostData } from '../../types/DomainInfo';
 import { Contact, Host } from 'src/types/common';
 
 // Helper function to handle potential failures in asynchronous operations
-const safeExecute = async <T>(fn: () => Promise<T>, errorMsg: string, errors: string[]): Promise<T | null> => {
+const safeExecute = async <T>(fn: () => Promise<T>, errorMsg: string, errors: string[]): Promise<T | undefined> => {
   try {
     return await fn();
   } catch (error) {
     errors.push(errorMsg);
-    return null;
+    return;
   }
 };
 
@@ -100,7 +100,7 @@ const getTxtRecords = async (domain: string): Promise<string[]> => {
   });
 };
 
-const getHostData = async (ip: string): Promise<Host | null> => {
+const getHostData = async (ip: string): Promise<Host | undefined> => {
   const apiUrl = `http://ip-api.com/json/${ip}?fields=12249`;
   try {
     const response = await fetch(apiUrl);
@@ -109,11 +109,11 @@ const getHostData = async (ip: string): Promise<Host | null> => {
       if (data.regionName) data.region = data.regionName;
       return data;
     } else {
-      return null;
+      return;
     }
   } catch (error) {
     console.error(error);
-    return null;
+    return;
   }
 };
 
@@ -170,7 +170,7 @@ export default defineEventHandler(async (event) => {
       safeExecute(() => getSslCertificateDetails(domain), 'Failed to fetch SSL certificate details', errors)
     ]);
 
-    let hostInfo: HostData | null = null;
+    let hostInfo: HostData | undefined;
     if (ipv4Addresses && ipv4Addresses.length > 0) {
       hostInfo = await safeExecute(() => getHostData(ipv4Addresses[0]), 'Failed to fetch IP information', errors);
     }

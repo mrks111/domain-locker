@@ -3,6 +3,13 @@ export interface Timestamps {
   updated_at: string;
 }
 
+export interface Valuation {
+  auto_renew: boolean;
+  current_value: number;
+  purchase_price: number;
+  renewal_cost: number;
+}
+
 export interface IpAddresses {
   ipv4: string[];
   ipv6: string[];

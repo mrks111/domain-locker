@@ -19,13 +19,16 @@ import { DropdownModule } from 'primeng/dropdown';
 import { FieldsetModule } from 'primeng/fieldset';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { FormsModule } from '@angular/forms';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { InplaceModule } from 'primeng/inplace';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { InputOtpModule } from 'primeng/inputotp';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { InplaceModule } from 'primeng/inplace';
 import { KeyFilterModule } from 'primeng/keyfilter';
 import { MenubarModule } from 'primeng/menubar';
 import { MenuModule } from 'primeng/menu';
@@ -73,13 +76,16 @@ import { TooltipModule } from 'primeng/tooltip';
     FieldsetModule,
     FloatLabelModule,
     FormsModule,
+    InputGroupModule,
+    InputGroupAddonModule,
     IconFieldModule,
     InputIconModule,
-    InplaceModule,
+    InputNumberModule,
     InputOtpModule,
     InputSwitchModule,
     InputTextModule,
     InputTextareaModule,
+    InplaceModule,
     KeyFilterModule,
     MenubarModule,
     MenuModule,

@@ -116,6 +116,39 @@
     </p-card>
 
     <!-- IP Addresses -->
+    <p-card *ngIf="domain.domain_costings" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Value</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="valuation" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <div class="row" *ngIf="domain.domain_costings.renewal_cost">
+        <h5>Renewal Cost</h5>
+        <p>
+          Payment of {{ domain.domain_costings.renewal_cost| currency:'USD':'symbol':'1.0-0' }}
+          is due on {{ domain.expiry_date | date:'mediumDate' }}
+        </p>
+      </div>
+      <div class="row">
+        <h5>Auto-Renew</h5>
+        @if (domain.domain_costings.auto_renew) {
+          <span class="text-green-400"><i class="pi pi-check"></i> Enabled</span>
+        } @else {
+          <span class="text-red-400"><i class="pi pi-times"></i> Not Enabled</span>
+        }
+      </div>
+      <div class="row" *ngIf="domain.domain_costings.purchase_price">
+        <h5>Purchase Price</h5>
+        <p>{{ domain.domain_costings.purchase_price | currency:'USD':'symbol':'1.0-0' }}</p>
+      </div>
+      <div class="row" *ngIf="domain.domain_costings.current_value">
+        <h5>Current Value</h5>
+        <p>{{ domain.domain_costings.current_value | currency:'USD':'symbol':'1.0-0' }}</p>
+      </div>
+    </p-card>
+
+    <!-- IP Addresses -->
     <p-card *ngIf="domain.ip_addresses?.length" class="mb-6">
       <ng-template pTemplate="header">
         <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">IP Addresses</h4>

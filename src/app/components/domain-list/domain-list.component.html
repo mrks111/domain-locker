@@ -60,6 +60,9 @@
               {{ip.ip_address}} ({{ip.is_ipv6 ? 'IPv6' : 'IPv4'}})<br>
             </ng-container>
           </span>
+          <span *ngSwitchCase="'renewal_cost'">
+            <p>${{ domain.domain_costings.renewal_cost }}</p>
+          </span>
           <span *ngSwitchCase="'ssl'">
             <a [routerLink]="'/assets/certs/' + domain.ssl?.issuer" class="text-primary">{{domain.ssl?.issuer}}</a><br>
             Valid until: {{domain.ssl?.valid_to | date:'shortDate'}}

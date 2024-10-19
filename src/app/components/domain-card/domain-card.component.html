@@ -90,6 +90,35 @@
     </ul>
   </p-panel>
 
+  <!-- Costings -->
+  <p-panel *ngIf="domain.domain_costings && isVisible('renewalCost')" [toggleable]="true" class="custom-pannel">
+    <ng-template pTemplate="header">
+      <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">Costings</h4>
+    </ng-template>
+    <div class="text-sm">
+      <p *ngIf="domain.domain_costings.renewal_cost" class="m-0 mb-2 font-semibold">
+        Payment of {{ domain.domain_costings.renewal_cost| currency:'USD':'symbol':'1.0-0' }}
+        is due on {{ domain.expiry_date | date:'mediumDate' }}
+      </p>
+      <h5 class="my-2 mr-2 inline">Auto-Renew</h5>
+      @if (domain.domain_costings.auto_renew) {
+        <span class="text-green-400"><i class="pi pi-check text-sm"></i> Enabled</span>
+      } @else {
+        <span class="text-red-400"><i class="pi pi-times text-sm"></i> Not Enabled</span>
+      }
+      <br>
+      @if (domain.domain_costings.purchase_price) {
+        <h5 class="my-2 mr-2 inline">Purchase Price: </h5>
+        <span>{{ domain.domain_costings.purchase_price | currency:'USD':'symbol':'1.0-0' }}</span>
+        <br>
+      }
+      @if (domain.domain_costings.current_value) {
+        <h5 class="my-2 mr-2 inline">Current Value</h5>
+        <span>{{ domain.domain_costings.current_value | currency:'USD':'symbol':'1.0-0' }}</span>
+      }
+    </div>
+  </p-panel>
+
    <!-- SSL Info -->
   <p-panel *ngIf="domain.ssl && isVisible('sslCertificate')" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">

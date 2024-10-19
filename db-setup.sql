@@ -234,6 +234,36 @@ CREATE POLICY domain_statuses_policy ON domain_statuses
   USING (EXISTS (SELECT 1 FROM domains WHERE domains.id = domain_statuses.domain_id AND domains.user_id = auth.uid()))
   WITH CHECK (EXISTS (SELECT 1 FROM domains WHERE domains.id = domain_statuses.domain_id AND domains.user_id = auth.uid()));
 
+
+
+-- Enable UUID extension if not already enabled
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Create domain_costings table
+CREATE TABLE domain_costings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  domain_id UUID NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+  purchase_price NUMERIC(10, 2) DEFAULT 0,
+  current_value NUMERIC(10, 2) DEFAULT 0,
+  renewal_cost NUMERIC(10, 2) DEFAULT 0,
+  auto_renew BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enable RLS on domain_costings table
+ALTER TABLE domain_costings ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policy for domain_costings
+CREATE POLICY domain_costings_policy ON domain_costings
+  USING (EXISTS (SELECT 1 FROM domains WHERE domains.id = domain_costings.domain_id AND domains.user_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM domains WHERE domains.id = domain_costings.domain_id AND domains.user_id = auth.uid()));
+
+
+ALTER TABLE domain_costings
+ADD CONSTRAINT domain_costings_domain_id_unique UNIQUE (domain_id);
+
+
 -- Function to get hosts with domain counts
 CREATE OR REPLACE FUNCTION get_hosts_with_domain_counts()
 RETURNS TABLE (
@@ -343,7 +373,8 @@ BEGIN
   DELETE FROM ssl_certificates WHERE ssl_certificates.domain_id = $1;
   DELETE FROM whois_info WHERE whois_info.domain_id = $1;
   DELETE FROM domain_hosts WHERE domain_hosts.domain_id = $1;
-  
+  DELETE FROM domain_costings WHERE domain_costings.domain_id = $1; -- New line to delete costings
+
   -- Delete the domain itself
   DELETE FROM domains WHERE domains.id = $1;
   
@@ -397,3 +428,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION update_domain_costings(
+  domain_id UUID, 
+  purchase_price NUMERIC, 
+  current_value NUMERIC, 
+  renewal_cost NUMERIC, 
+  auto_renew BOOLEAN
+) RETURNS VOID AS $$
+BEGIN
+  UPDATE domain_costings 
+  SET 
+    purchase_price = purchase_price, 
+    current_value = current_value, 
+    renewal_cost = renewal_cost, 
+    auto_renew = auto_renew, 
+    updated_at = NOW()
+  WHERE domain_id = domain_id;
+END;
+$$ LANGUAGE plpgsql;
