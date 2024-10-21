@@ -46,3 +46,11 @@
     </p>
   </div>
 </div>
+
+<p-paginator
+  styleClass="mt-4 border-0"
+  [rows]="25"
+  [totalRecords]="totalRecords"
+  [rowsPerPageOptions]="[25, 50, 100]"
+  (onPageChange)="onPageChange($event)"
+></p-paginator>

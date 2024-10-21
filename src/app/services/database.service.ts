@@ -1104,8 +1104,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       map(response => response.count || 0)
     );
   }
-
-  getDomainUpdates(domainName?: string): Observable<any[]> {
+  getDomainUpdates(domainName?: string, start: number = 0, end: number = 24): Observable<any[]> {
     let query = this.supabase.supabase
       .from('domain_updates')
       .select(`
@@ -1113,22 +1112,48 @@ export default class SupabaseDatabaseService extends DatabaseService {
         domains!inner(domain_name)
       `)
       .order('date', { ascending: false })
-      .limit(100);
+      .range(start, end);
   
     if (domainName) {
       query = query.eq('domains.domain_name', domainName);
     }
-  
-    return from(query).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data;
-      }),
+    return from(query.then(({ data, error }) => {
+      if (error) {
+        throw error;
+      }
+      return data;
+    })).pipe(
       catchError(error => {
         console.error('Error fetching domain updates:', error);
         return of([]);
       })
     );
   }
+  
+  
+  getTotalUpdateCount(domainName?: string): Observable<number> {
+    let query = this.supabase.supabase
+      .from('domain_updates')
+      .select('id', { count: 'exact' });
+  
+    if (domainName) {
+      query = this.supabase.supabase
+        .from('domain_updates')
+        .select('id, domains!inner(domain_name)', { count: 'exact' })
+        .eq('domains.domain_name', domainName);
+    }
+  
+    return from(query.then(({ count, error }) => {
+      if (error) throw error;
+      return count || 0;
+    })).pipe(
+      catchError(error => {
+        console.error('Error fetching total update count:', error);
+        return of(0);
+      })
+    );
+  }
+  
+  
   
 }

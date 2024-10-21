@@ -37,6 +37,7 @@ import { MessagesModule } from 'primeng/messages';
 import { MeterGroupModule } from 'primeng/metergroup';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { OverlayModule } from 'primeng/overlay';
+import { PaginatorModule } from 'primeng/paginator';
 import { PanelModule } from 'primeng/panel';
 import { PasswordModule } from 'primeng/password';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -94,6 +95,7 @@ import { TooltipModule } from 'primeng/tooltip';
     MeterGroupModule,
     MultiSelectModule,
     OverlayModule,
+    PaginatorModule,
     PanelModule,
     PasswordModule,
     ProgressSpinnerModule,
