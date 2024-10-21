@@ -13,11 +13,12 @@ import { DlIconComponent } from '@components/misc/svg-icon.component';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { GlobalMessageService } from '@services/messaging.service';
 import { securityCategories } from '@/app/constants/security-categories';
+import { DomainUpdatesComponent } from '@/app/components/domain-things/domain-updates/domain-updates.component';
 
 @Component({
   standalone: true,
   selector: 'app-domain-details',
-  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, DlIconComponent, LoadingComponent ],
+  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, DlIconComponent, LoadingComponent, DomainUpdatesComponent ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './domain-name.page.html',
   styleUrl: './domain-name.page.scss',
@@ -25,6 +26,7 @@ import { securityCategories } from '@/app/constants/security-categories';
 export default class DomainDetailsPage implements OnInit {
   domain: DbDomain | null = null;
   error: string | null = null;
+  name: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,6 +42,7 @@ export default class DomainDetailsPage implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         const domainName = params['domain-name'];
+        this.name = domainName;
         return this.databaseService.getDomain(domainName).pipe(
           catchError(error => {
             this.error = error.message;

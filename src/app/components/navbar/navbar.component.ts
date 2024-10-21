@@ -134,6 +134,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
               routerLink: '/value',
             },
             {
+              label: 'Change History',
+              icon: 'pi pi-history',
+              routerLink: '/domains/change-history',
+            },
+            {
               label: 'Add Domain',
               icon: 'pi pi-fw pi-plus',
               routerLink: '/domains/add'
@@ -142,6 +147,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
               label: 'Bulk Import',
               icon: 'pi pi-fw pi-file-import',
               routerLink: '/domains/add/bulk-add'
+            },
+            {
+              label: 'Export Data',
+              icon: 'pi pi-truck',
+              routerLink: '/domains/export',
             },
           ],
         },

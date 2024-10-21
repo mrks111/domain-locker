@@ -31,11 +31,13 @@ import { EppStatusChartComponent } from '@components/charts/domain-epp-status/do
     EppStatusChartComponent,
   ],
   templateUrl: './home.page.html',
+  styles: [`::ng-deep .p-divider-content { border-radius: 4px; }`],
 })
 export default class HomePageComponent implements OnInit {
   domains: DbDomain[] = [];
   loading: boolean = true;
   isAuthenticated: boolean = false;
+  showInsights: boolean = false;
 
   private subscriptions: Subscription = new Subscription();
 
@@ -72,6 +74,11 @@ export default class HomePageComponent implements OnInit {
       }
     });
   }
+
+  toggleInsights() {
+    this.showInsights = !this.showInsights;
+  }
+
   features = [
     { icon: 'pi-chart-line', text: 'Keep track of all your domains in a simple dashboard' },
     { icon: 'pi-lock', text: 'Check security and privacy configurations for each domain' },

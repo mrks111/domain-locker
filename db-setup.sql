@@ -525,3 +525,11 @@ BEGIN
   WHERE domain_id = domain_id;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+SELECT cron.schedule(
+  'run_domain_update_job',
+  '0 4 * * *',
+  $$SELECT http_post('https://svrtyblfdhowviyowxwt.supabase.co/functions/v1/process-all-domains', '{}');$$
+);

@@ -1105,6 +1105,30 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
-
-
+  getDomainUpdates(domainName?: string): Observable<any[]> {
+    let query = this.supabase.supabase
+      .from('domain_updates')
+      .select(`
+        *,
+        domains!inner(domain_name)
+      `)
+      .order('date', { ascending: false })
+      .limit(100);
+  
+    if (domainName) {
+      query = query.eq('domains.domain_name', domainName);
+    }
+  
+    return from(query).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data;
+      }),
+      catchError(error => {
+        console.error('Error fetching domain updates:', error);
+        return of([]);
+      })
+    );
+  }
+  
 }
