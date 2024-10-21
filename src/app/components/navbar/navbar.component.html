@@ -45,6 +45,20 @@
               </p-radioButton>
             </div>
           </div>
+          <!-- Scale (size) options -->
+           <div class="mb-4">
+              <h3 class="text-sm font-semibold mb-2">
+                <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center mr-2"></i>UI Scale
+              </h3>
+              <p-selectButton [options]="scaleOptions" [(ngModel)]="scale"
+                  (onChange)="onScaleChange()" optionLabel="label"
+                  class="scale-select"
+                  optionValue="value" styleClass="text-sm flex justify-center">
+                <ng-template let-option pTemplate>
+                  <i [class]="option.icon"></i>
+                </ng-template>
+              </p-selectButton>
+           </div>
           <!-- Language Section (Placeholder) -->
           <div class="mb-4">
             <h3 class="text-sm font-semibold mb-2">

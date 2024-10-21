@@ -1,8 +1,8 @@
 // src/app/components/navbar/navbar.component.ts
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { SupabaseService } from '../../services/supabase.service';
 import { ThemeService, Theme } from '@services/theme.service';
@@ -26,6 +26,10 @@ import { Subscription } from 'rxjs';
   ],
   templateUrl: './navbar.component.html',
   styles: [`
+    ::ng-deep .scale-select .p-button {
+      justify-content: center;
+      width: 100%;
+    }
     ::ng-deep .custom-menubar .p-menubar-root-list {
       display: flex;
       align-items: center;
@@ -65,8 +69,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
     { label: 'Light', value: false, icon: 'pi pi-sun' },
     { label: 'Dark', value: true, icon: 'pi pi-moon' }
   ];
+  scaleOptions = [
+    { label: 'Small', value: 'small', icon: 'pi pi-minus-circle' },
+    { label: 'Medium', value: 'medium', icon: 'pi pi-circle-off' },
+    { label: 'Large', value: 'large', icon: 'pi pi-plus-circle' },
+  ];
+  scale: 'small' | 'medium' | 'large' = 'medium';
 
   private subscriptions: Subscription = new Subscription();
+  private platformId = inject(PLATFORM_ID);
 
   constructor(
     public supabaseService: SupabaseService,
@@ -102,6 +113,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     // Initial check for auth status
     this.checkAuthStatus();
+
+    // Update scale, if previously set in local storage
+    if (isPlatformBrowser(this.platformId)) {
+      const scale = localStorage.getItem('scale');
+      if (scale) {
+        this.scale = scale as 'small' | 'medium' | 'large';
+        this.setScale(this.scale);
+      }
+    }
   }
 
   ngOnDestroy() {
@@ -242,6 +262,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.themeService.toggleDarkMode();
   }
 
+  onScaleChange() {
+    this.setScale(this.scale);
+    localStorage.setItem('scale', this.scale);
+  }
+
   onThemeChange(theme: Theme) {
     this.themeService.setTheme(theme);
   }
@@ -257,6 +282,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
   toggleSettings(event: Event) {
     this.settingsVisible = !this.settingsVisible;
     event.preventDefault();
+  }
+
+  setScale(scale: 'small' | 'medium' | 'large') {
+    const scales = { small: '14px', medium: '16px', large: '18px' };
+    document.documentElement.style.fontSize = scales[scale] || scales.medium;
   }
 
   async signOut() {
