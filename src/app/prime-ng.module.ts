@@ -42,6 +42,7 @@ import { PanelModule } from 'primeng/panel';
 import { PasswordModule } from 'primeng/password';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { ScrollTopModule } from 'primeng/scrolltop';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { SidebarModule } from 'primeng/sidebar';
@@ -100,6 +101,7 @@ import { TooltipModule } from 'primeng/tooltip';
     PasswordModule,
     ProgressSpinnerModule,
     RadioButtonModule,
+    ScrollPanelModule,
     ScrollTopModule,
     SelectButtonModule,
     SidebarModule,
