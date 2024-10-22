@@ -338,21 +338,21 @@
       </div>
     </p-card>
   </div>
-</div>
 
-<p-card styleClass="mx-4">
-  <ng-template pTemplate="header">
-    <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Change History</h4>
-    <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
-      <dl-icon icon="history" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+  <p-card styleClass="mt-2">
+    <ng-template pTemplate="header">
+      <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Change History</h4>
+      <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+        <dl-icon icon="history" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+      </div>
+    </ng-template>
+    <div class="row mt-4">
+      @if (name) {
+        <app-domain-updates [domainName]="name"></app-domain-updates>
+      }
     </div>
-  </ng-template>
-  <div class="row mt-4">
-    @if (name) {
-      <app-domain-updates [domainName]="name"></app-domain-updates>
-    }
-  </div>
-</p-card>
+  </p-card>
+</div>
 
 
 <ng-template #loading>

@@ -1,18 +1,21 @@
-import { Component, Inject, Input, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable, from, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 import DatabaseService from '@services/database.service';
 import { NgIf, NgFor } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { PaginatorModule } from 'primeng/paginator';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { CHANGE_CATEGORIES } from '@/app/constants/change-categories';
 
 @Component({
   standalone: true,
   selector: 'app-domain-updates',
   templateUrl: './domain-updates.component.html',
   styleUrls: ['./domain-updates.component.scss'],
-  imports: [NgIf, NgFor, PrimeNgModule, PaginatorModule, CommonModule],
+  imports: [NgIf, NgFor, PrimeNgModule, PaginatorModule, DropdownModule, InputTextModule, SelectButtonModule, CommonModule],
 })
 export class DomainUpdatesComponent implements OnInit {
   @Input() domainName?: string;
@@ -20,6 +23,19 @@ export class DomainUpdatesComponent implements OnInit {
   public loading = true;
   public totalRecords: number = 0;
   public currentPage: number = 0;
+  public showFilters = false;
+  public changeCategories = CHANGE_CATEGORIES;
+
+  public selectedCategory: string | undefined;
+
+  public changeTypes = [
+    { label: 'Added', value: 'added', icon: 'pi pi-plus' },
+    { label: 'Updated', value: 'updated', icon: 'pi pi-pencil' },
+    { label: 'Removed', value: 'removed', icon: 'pi pi-minus' },
+  ];
+  public selectedChangeType: string | undefined;
+
+  public filterDomain: string | undefined;
 
   constructor(private databaseService: DatabaseService) {}
 
@@ -34,16 +50,18 @@ export class DomainUpdatesComponent implements OnInit {
     const from = page * limit;
     const to = from + limit - 1;
     
-    this.databaseService.getDomainUpdates(this.domainName, from, to).subscribe({
-      next: (updates) => {
-        this.updates$ = of(updates);
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error fetching domain updates:', error);
-        this.loading = false;
-      }
-    });
+    this.databaseService
+      .getDomainUpdates(this.domainName, from, to, this.selectedCategory, this.selectedChangeType, this.filterDomain)
+      .subscribe({
+        next: (updates) => {
+          this.updates$ = of(updates);
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error fetching domain updates:', error);
+          this.loading = false;
+        }
+      });
   }
   
 
@@ -54,13 +72,25 @@ export class DomainUpdatesComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching total updates count:', error);
-      }
+      },
     });
   }
 
   onPageChange(event: any) {
     this.currentPage = event.page;
     this.fetchUpdates(this.currentPage);
+  }
+
+  applyFilters() {
+    this.fetchUpdates(0);
+  }
+
+  clearFilters() {
+    this.selectedCategory = undefined;
+    this.selectedChangeType = undefined;
+    this.filterDomain = undefined;
+    this.fetchUpdates(0);
+    this.showFilters = false;
   }
 
   formatDate(date: string): string {
@@ -72,33 +102,11 @@ export class DomainUpdatesComponent implements OnInit {
   }
 
   mapChangeKey(key: string): string {
-    switch (key) {
-      case 'dates_expiry':
-        return 'Expiry Date';
-      case 'dates_updated':
-        return 'Update Date';
-      case 'domain_name':
-        return 'Domain Name';
-      case 'ip_ipv4':
-        return 'IPv4';
-      case 'ip_ipv6':
-        return 'IPv6';
-      case 'dns_mx':
-        return 'MX record';
-      case 'dns_ns':
-        return 'Name Server';
-      case 'dns_txt':
-        return 'TXT record';
-      case 'whois_postal_code':
-        return 'Postal Code';
-      case 'whois_name':
-        return 'Registrant Name';
-      case 'ssl_issuer':
-        return 'SSL Issuer';
-      case 'domain_statuses':
-        return 'Status';
-      default:
-        return key;
-    }
+    const category = CHANGE_CATEGORIES.find((cat) => cat.value === key);
+    return category ? category.label : key;
+  }
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
   }
 }
