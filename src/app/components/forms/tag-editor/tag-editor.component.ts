@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { MessageService } from 'primeng/api';
@@ -14,6 +14,9 @@ import { Tag } from '@/types/common';
 })
 export class TagEditorComponent {
   @Input() tag: Tag | any = {};
+  @Input() isAddNew: boolean = false;
+  @Input() afterSave: (p?: string) => void = () => {};
+  @Output() $afterSave = new EventEmitter<string>();
 
   tagColors: string[] = ['blue', 'green', 'yellow', 'cyan', 'pink', 'indigo', 'teal', 'orange', 'purple', 'red', 'gray'];
 
@@ -31,23 +34,66 @@ export class TagEditorComponent {
       });
       return;
     }
+
+    if (this.isAddNew) {
+      this.createTag();
+    } else {
+      this.updateTag();
+    }
+  }
+
+  private createTag() {
+    this.databaseService.createTag(this.tag).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Tag created successfully',
+        });
+        this.$afterSave.emit(this.tag.name);
+      },
+      error: (err) => {
+        if (err.code === '23505') {  // Handle duplicate tag names
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Tag with this name already exists',
+          });
+        } else {
+          console.error('Error creating tag:', err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to create tag',
+          });
+        }
+      }
+    });
+  }
+
+  private updateTag() {
     this.databaseService.updateTag(this.tag).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Tag saved successfully',
+          detail: 'Tag updated successfully',
         });
+        this.$afterSave.emit(this.tag.name);
       },
       error: (err) => {
-        console.error('Error saving tag:', err);
+        console.error('Error updating tag:', err);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to save tag',
+          detail: 'Failed to update tag',
         });
       }
     });
   }
-  
+
+  isValidIcon(): boolean {
+    const iconRegex = /^[a-z]+\/[a-z-]+$/;
+    return iconRegex.test(this.tag.icon);
+  }
 }

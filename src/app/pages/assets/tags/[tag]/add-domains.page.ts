@@ -4,18 +4,18 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { DbDomain, Tag } from '@/types/Database';
 import { DomainCollectionComponent } from '@/app/components/domain-collection/domain-collection.component';
-import { TagEditorComponent } from '@/app/components/forms/tag-editor/tag-editor.component';
+import { TagPickListComponent } from '@/app/components/forms/tag-picklist/tag-picklist.component';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
 
 @Component({
   standalone: true,
   selector: 'app-tag-edit',
-  imports: [CommonModule, PrimeNgModule, DomainCollectionComponent, TagEditorComponent],
+  imports: [CommonModule, PrimeNgModule, DomainCollectionComponent, TagPickListComponent],
   template: `
-  <h2 class="mb-4 ml-4">Edit Tag: {{ tagName }}</h2>
-  <div class="p-card p-4 m-4">
-    <app-tag-editor [tag]="tag" ($afterSave)="afterSave($event)" />
+  <h2 class="mb-4 ml-4">Add Domains: {{ tagName }}</h2>
+  <div *ngIf="tag && tag.id" class="p-card p-4 m-4">
+    <app-domain-tag-picklist [tagId]="tag.id" ($afterSave)="afterSave()" />
   </div>`,
 })
 export default class TagDomainsPageComponent implements OnInit {
@@ -23,6 +23,7 @@ export default class TagDomainsPageComponent implements OnInit {
   domains: DbDomain[] = [];
   loading: boolean = true;
   dialogOpen: boolean = false;
+
   tag: Tag | any = {};
 
   constructor(
@@ -61,7 +62,12 @@ export default class TagDomainsPageComponent implements OnInit {
   }
 
   afterSave() {
-    this.router.navigate([`/assets/tags/${this.tag.name}/add-domains`]);
+    console.log('afterSave', this.tagName);
+    if (this.tagName) {
+      this.router.navigate([`/assets/tags/${this.tagName}`]);
+    } else {
+      this.router.navigate([`/assets/tags`]);
+    } 
   }
 
 }

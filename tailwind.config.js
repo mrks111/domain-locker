@@ -18,6 +18,11 @@ module.exports = {
       },
     },
   },
+  safelist: [
+   {
+      pattern: /border-l-(red|green|blue|yellow|purple|pink|indigo|gray|teal)-400/,
+    },
+  ],
   plugins: [],
   corePlugins: {
     preflight: false,  // Disable preflight if it causes too many issues

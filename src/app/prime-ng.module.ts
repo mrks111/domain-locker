@@ -41,6 +41,7 @@ import { OverlayModule } from 'primeng/overlay';
 import { PaginatorModule } from 'primeng/paginator';
 import { PanelModule } from 'primeng/panel';
 import { PasswordModule } from 'primeng/password';
+import { PickListModule } from 'primeng/picklist';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
@@ -101,6 +102,7 @@ import { TooltipModule } from 'primeng/tooltip';
     PaginatorModule,
     PanelModule,
     PasswordModule,
+    PickListModule,
     ProgressSpinnerModule,
     RadioButtonModule,
     ScrollPanelModule,

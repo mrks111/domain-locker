@@ -34,8 +34,8 @@ import { NgApexchartsModule } from 'ng-apexcharts';
       <!-- Global components -->
       <p-scrollTop />
       <p-toast />
-      <p-confirmDialog />
-      <p-confirmPopup />
+      <!-- <p-confirmDialog /> -->
+      <!-- <p-confirmPopup /> -->
     </div>
   `,
   styles: [`
