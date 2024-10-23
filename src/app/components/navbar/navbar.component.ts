@@ -202,7 +202,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
             },
             {
               label: 'Tags',
-              icon: 'pi pi-fw pi-tag',
+              icon: 'pi pi-fw pi-tags',
               routerLink: '/assets/tags',
             },
             {

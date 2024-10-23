@@ -41,9 +41,12 @@ CREATE INDEX idx_domains_user_id ON domains(user_id);
 =========================== */
 
 -- Tags table
-CREATE TABLE tags (
+CREATE TABLE IF NOT EXISTS tags (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
+  color TEXT,
+  description TEXT,
+  icon TEXT,
   UNIQUE(name)
 );
 

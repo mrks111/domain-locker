@@ -2,6 +2,8 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { MessageService } from 'primeng/api';
+import DatabaseService from '@services/database.service';
+import { Tag } from '@/types/common';
 
 @Component({
   selector: 'app-tag-editor',
@@ -11,11 +13,14 @@ import { MessageService } from 'primeng/api';
   imports: [PrimeNgModule, CommonModule],
 })
 export class TagEditorComponent {
-  @Input() tag: any;
+  @Input() tag: Tag | any = {};
 
   tagColors: string[] = ['blue', 'green', 'yellow', 'cyan', 'pink', 'indigo', 'teal', 'orange', 'purple', 'red', 'gray'];
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private databaseService: DatabaseService,
+    private messageService: MessageService,
+  ) {}
 
   saveTag() {
     if (!this.tag.name.trim()) {
@@ -26,21 +31,23 @@ export class TagEditorComponent {
       });
       return;
     }
-    if (this.tag.icon && !this.isValidIcon()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Invalid icon format',
-      });
-      return;
-    }
-
-    // Logic to save the tag, e.g., update the tag in your service
-    console.log('Saving tag:', this.tag);
+    this.databaseService.updateTag(this.tag).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Tag saved successfully',
+        });
+      },
+      error: (err) => {
+        console.error('Error saving tag:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to save tag',
+        });
+      }
+    });
   }
-
-  isValidIcon(): boolean {
-    const iconRegex = /^fa-solid fa-[a-z]+$/;
-    return iconRegex.test(this.tag.icon);
-  }
+  
 }

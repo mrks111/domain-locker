@@ -627,6 +627,22 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
+  getTag(tagName: string): Observable<Tag> {
+    return from(this.supabase.supabase
+      .from('tags')
+      .select('*')
+      .eq('name', tagName)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('Tag not found');
+        return data as Tag;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
   getTags(): Observable<Tag[]> {
     return from(this.supabase.supabase
       .from('tags')
@@ -1274,6 +1290,27 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
   
-  
-  
+  updateTag(tag: any): Observable<void> {
+    return from(
+      this.supabase.supabase
+        .from('tags')
+        .update({
+          name: tag.name,
+          color: tag.color || null, 
+          description: tag.description || null,
+          icon: tag.icon || null
+        })
+        .eq('name', tag.name)
+    ).pipe(
+      map(({ error }) => {
+        if (error) {
+          throw error;
+        }
+      }),
+      catchError((error) => {
+        console.error('Error updating tag:', error);
+        return throwError(() => new Error('Failed to update tag.'));
+      })
+    );
+  }  
 }

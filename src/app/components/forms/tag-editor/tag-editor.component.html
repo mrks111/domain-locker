@@ -36,7 +36,7 @@
   <div class="field-row">
     <label for="tag-icon">
       Tag Icon
-      <small>Choose an icon from Font Awesome</small>
+      <small>Choose an icon from Iconify</small>
     </label>
     <div class="flex flex-col w-1/2">
       <input 
@@ -45,9 +45,11 @@
         class="w-full"
         placeholder="fa-solid fa-icon"
         [(ngModel)]="tag.icon"
-        pattern="fa-solid fa-[a-z]+"
-        [ngClass]="{'p-invalid': !isValidIcon()}" />
-      <small *ngIf="!isValidIcon()" class="p-error">Invalid icon format</small>
+        pattern="fa-solid fa-[a-z]+" />
+      <small  class="p-info opacity-70">
+        Choose an icon from <a class="primary" href="https://icon-sets.iconify.design/" target="_blank">iconify.design</a>
+        and specify in the format of [icon-pack]/[icon-name]. E.g. mdi/penguin
+      </small>
     </div>
   </div>
 
@@ -63,7 +65,7 @@
       pInputTextarea 
       [autoResize]="true"
       class="w-1/2 h-auto"
-      [(ngModel)]="tag.notes"
+      [(ngModel)]="tag.description"
       maxlength="255"></textarea>
   </div>
 

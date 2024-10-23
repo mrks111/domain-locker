@@ -26,6 +26,7 @@
   }
 
   <button pButton
+  *ngIf="updates.length > 0 || showFilters"
     [label]="(showFilters ? 'Hide' : 'Show') + 'Filters'"
     (click)="toggleFilters()"
     size="small"
@@ -83,6 +84,7 @@
 </div>
 
 <p-paginator
+  *ngIf="totalRecords > 25"
   styleClass="mt-4 border-0"
   [rows]="25"
   [totalRecords]="totalRecords"

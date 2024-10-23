@@ -10,23 +10,8 @@ import { MessageService } from 'primeng/api';
   standalone: true,
   selector: 'app-tags-index',
   imports: [CommonModule, RouterModule, PrimeNgModule],
-  template: `
-    <h1 class="mt-2 mb-4">Tags</h1>
-    <p-table [value]="tags" [loading]="loading" styleClass="p-datatable-striped">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Tag Name</th>
-          <th>Domain Count</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-tag>
-        <tr>
-          <td><a [routerLink]="['/assets/tags', tag.name]" class="text-primary">{{ tag.name }}</a></td>
-          <td>{{ tag.domainCount }}</td>
-        </tr>
-      </ng-template>
-    </p-table>
-  `,
+  templateUrl: './index.page.html',
+  styleUrl: './tags.scss'
 })
 export default class TagsIndexPageComponent implements OnInit {
   tags: (Tag & { domainCount: number })[] = [];

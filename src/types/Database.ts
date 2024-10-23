@@ -1,7 +1,8 @@
 import { Observable } from 'rxjs';
-import { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation } from './common';
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
+import { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag } from './common';
 import { type SecurityCategory } from '@/app/constants/security-categories';
+
+export { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag };
 
 export interface DbDomain extends Timestamps {
   id: string;
@@ -27,11 +28,6 @@ export interface IpAddress extends Timestamps {
   domainId: string;
   ipAddress: string;
   isIpv6: boolean;
-}
-
-export interface Tag {
-  id: string;
-  name: string;
 }
 
 export interface Notification extends Timestamps {
@@ -72,5 +68,5 @@ export abstract class DatabaseService {
   abstract updateNotification(id: string, notification: Partial<Notification>): Observable<Notification>;
   abstract deleteNotification(id: string): Observable<void>;
 }
-export { Registrar, Host };
+
 
