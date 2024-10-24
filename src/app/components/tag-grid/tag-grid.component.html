@@ -1,0 +1,13 @@
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" *ngIf="!loading">
+  <div class="p-card" *ngFor="let tag of tags">
+    <div class="p-card-header flex items-center gap-2">
+      <div class="tag-icon" *ngIf="tag.icon" [style]="{ 'mask-image': 'url(https://api.iconify.design/' + tag.icon + '.svg)' }"></div>
+      <h2 class="capitalize text-lg text-{{tag.color}}-400">{{ tag.name }}</h2>
+    </div>
+    <div class="p-card-body">
+      <p *ngIf="tag.description">{{ tag.description }}</p>
+      <p>Domains: <strong>{{ tag.domainCount }}</strong></p>
+    </div>
+  </div>
+</div>
+<p-progressSpinner *ngIf="loading"></p-progressSpinner>

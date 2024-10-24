@@ -15,6 +15,8 @@ import { WelcomeComponent } from '@components/getting-started/welcome.component'
 import { DomainPieChartsComponent } from '@components/charts/domain-pie/domain-pie.component';
 import { HostMapComponent } from '@components/charts/host-map/host-map.component';
 import { EppStatusChartComponent } from '@components/charts/domain-epp-status/domain-epp-status.component';
+import { TagGridComponent } from '@components/tag-grid/tag-grid.component';
+
 
 @Component({
   standalone: true,
@@ -29,6 +31,7 @@ import { EppStatusChartComponent } from '@components/charts/domain-epp-status/do
     DomainPieChartsComponent,
     HostMapComponent,
     EppStatusChartComponent,
+    TagGridComponent,
   ],
   templateUrl: './home.page.html',
   styles: [`::ng-deep .p-divider-content { border-radius: 4px; }`],

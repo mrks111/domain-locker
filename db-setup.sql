@@ -529,6 +529,34 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION get_tags_with_domain_counts()
+RETURNS TABLE (
+  tag_id UUID,
+  name TEXT,
+  color TEXT,
+  icon TEXT,
+  description TEXT,
+  domain_count BIGINT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    tags.id AS tag_id,
+    tags.name,
+    tags.color,
+    tags.icon,
+    tags.description,
+    COUNT(domain_tags.domain_id) AS domain_count
+  FROM 
+    tags
+  LEFT JOIN 
+    domain_tags ON tags.id = domain_tags.tag_id
+  GROUP BY 
+    tags.id;
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 
 SELECT cron.schedule(
