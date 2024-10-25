@@ -4,12 +4,13 @@ import DatabaseService from '@services/database.service';
 import { Host } from '@/types/Database';
 import { ThemeService } from '@/app/services/theme.service';
 import { Subscription } from 'rxjs';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 
 @Component({
   selector: 'app-host-map',
   standalone: true,
-  imports: [CommonModule],
-  template: '<div id="map" style="height: 300px;"></div>',
+  imports: [CommonModule, PrimeNgModule],
+  templateUrl: './host-map.component.html',
   styleUrl: './host-map.component.scss',
   encapsulation: ViewEncapsulation.None, // So I can load Leaflet styles
 })

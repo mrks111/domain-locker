@@ -1,0 +1,14 @@
+@if (loading) {
+  <p-progressSpinner />
+} @else if (!words || words.length === 0) {
+  <p>No tags found</p>
+}
+<div class="cloud-container h-56">
+  <div #wordCloudContainer class="h-full w-full"></div>
+</div>
+
+<a
+routerLink="/assets/tags"
+class="text-xs text-primary-600 text-right block w-full opacity-70 hover:opacity-100">
+View all Tags
+</a>

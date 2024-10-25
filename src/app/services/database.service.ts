@@ -1355,7 +1355,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
   getTagsWithDomainCounts(): Observable<any[]> {
     return from(
       this.supabase.supabase
-        .rpc('get_tags_with_domain_counts')  // Call the SQL function
+        .rpc('get_tags_with_domain_counts')
         .then((response) => {
           if (response.error) {
             throw response.error;

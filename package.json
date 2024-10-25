@@ -31,6 +31,8 @@
     "@types/leaflet": "^1.9.12",
     "@types/leaflet.markercluster": "^1.5.4",
     "apexcharts": "^3.54.1",
+    "d3": "^7.9.0",
+    "d3-cloud": "^1.2.7",
     "dotenv": "^16.4.5",
     "file-saver": "^2.0.5",
     "front-matter": "^4.0.2",

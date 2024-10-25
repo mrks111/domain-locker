@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { WelcomeComponent } from '@components/getting-started/welcome.component';
 import { DomainPieChartsComponent } from '@components/charts/domain-pie/domain-pie.component';
+import { DomainTagCloudComponent } from '@components/charts/tag-cloud/tag-cloud.component';
 import { HostMapComponent } from '@components/charts/host-map/host-map.component';
 import { EppStatusChartComponent } from '@components/charts/domain-epp-status/domain-epp-status.component';
 import { TagGridComponent } from '@components/tag-grid/tag-grid.component';
@@ -31,6 +32,7 @@ import { TagGridComponent } from '@components/tag-grid/tag-grid.component';
     DomainPieChartsComponent,
     HostMapComponent,
     EppStatusChartComponent,
+    DomainTagCloudComponent,
     TagGridComponent,
   ],
   templateUrl: './home.page.html',
