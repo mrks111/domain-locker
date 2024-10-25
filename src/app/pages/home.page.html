@@ -77,7 +77,7 @@
         </div>
       </div>
     }
-    <p-divider align="center" (click)="toggleInsights()" />
+    <p-divider align="center" (click)="toggleInsights()">
       @if (!showInsights) {
         <div class="flex gap-2 items-center px-3 py-2 cursor-pointer hover:text-primary">
           <i class="pi pi-angle-double-down"></i>
@@ -91,7 +91,8 @@
           <i class="pi pi-angle-double-up"></i>
         </div>
       }
-    <p-divider />
+    </p-divider>
+    <h2 class="my-4 block">Categories</h2>
     <app-tag-grid />
     <p-divider />
     <h2 class="my-4 block">Domains</h2>

@@ -8,7 +8,7 @@ import { MessageService } from 'primeng/api';
   standalone: true,
   selector: 'app-tag-grid',
   templateUrl: './tag-grid.component.html',
-  // styleUrls: ['./tag-grid.component.scss'],
+  styleUrls: ['../../pages/assets/tags/tags.scss'],
   imports: [CommonModule, PrimeNgModule]
 })
 export class TagGridComponent implements OnInit {
