@@ -92,11 +92,11 @@
         </div>
       }
     </p-divider>
-    <h2 class="my-4 block">Categories</h2>
-    <app-tag-grid />
-    <p-divider />
     <h2 class="my-4 block">Domains</h2>
     <app-domain-view  *ngIf="!loading" [domains]="domains" [showFooter]="false" />
+    <p-divider />
+    <h2 class="my-4 block">Categories</h2>
+    <app-tag-grid />
     <p-divider />
     <app-asset-list class="block m-2"></app-asset-list>
   }

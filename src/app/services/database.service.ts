@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '../../types/Database';
-import { catchError, from, map, Observable, throwError, retry, forkJoin, switchMap, of } from 'rxjs';
+import { catchError, from, map, Observable, throwError, retry, forkJoin, switchMap, of, concatMap } from 'rxjs';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
 
 class DatabaseError extends Error {
@@ -770,16 +770,22 @@ export default class SupabaseDatabaseService extends DatabaseService {
 
   deleteTag(id: string): Observable<void> {
     return from(this.supabase.supabase
-      .from('tags')
+      .from('domain_tags')
       .delete()
-      .eq('id', id)
+      .eq('tag_id', id)
     ).pipe(
+      concatMap(() => 
+        this.supabase.supabase
+          .from('tags')
+          .delete()
+          .eq('id', id)
+      ),
       map(({ error }) => {
         if (error) throw error;
       }),
       catchError(error => this.handleError(error))
     );
-  }
+  }  
 
   addNotification(notification: Omit<Notification, 'id' | 'created_at' | 'updated_at'>): Observable<Notification> {
     return from(this.supabase.supabase

@@ -159,19 +159,30 @@ export class NavbarComponent implements OnInit, OnDestroy {
               routerLink: '/domains/change-history',
             },
             {
+              label: 'Categories',
+              icon: 'pi pi-fw pi-tags',
+              routerLink: '/assets/tags',
+            },
+            {
               label: 'Add Domain',
               icon: 'pi pi-fw pi-plus',
               routerLink: '/domains/add'
             },
             {
-              label: 'Bulk Import',
-              icon: 'pi pi-fw pi-file-import',
-              routerLink: '/domains/add/bulk-add'
-            },
-            {
-              label: 'Export Data',
-              icon: 'pi pi-truck',
-              routerLink: '/domains/export',
+              label: 'Move Data',
+              icon: 'pi pi-fw pi-truck',
+              items: [
+                {
+                  label: 'Bulk Import',
+                  icon: 'pi pi-fw pi-upload',
+                  routerLink: '/domains/add/bulk-add'
+                },
+                {
+                  label: 'Bulk Export',
+                  icon: 'pi pi-download',
+                  routerLink: '/domains/export',
+                },
+              ],
             },
           ],
         },
@@ -201,14 +212,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
               routerLink: '/assets/ips',
             },
             {
-              label: 'Tags',
-              icon: 'pi pi-fw pi-tags',
-              routerLink: '/assets/tags',
-            },
-            {
               label: 'DNS',
               icon: 'pi pi-fw pi-table',
               routerLink: '/assets/dns',
+            },
+            {
+              label: 'Tags',
+              icon: 'pi pi-fw pi-tags',
+              routerLink: '/assets/tags',
             },
             {
               label: 'Security',

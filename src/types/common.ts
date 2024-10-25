@@ -8,7 +8,7 @@ export interface Tag {
   name: string;
   color?: string;
   icon?: string;
-  notes?: string;
+  description?: string;
 }
 
 export interface Valuation {

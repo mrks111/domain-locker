@@ -62,7 +62,6 @@ export default class TagDomainsPageComponent implements OnInit {
   }
 
   afterSave() {
-    console.log('afterSave', this.tagName);
     if (this.tagName) {
       this.router.navigate([`/assets/tags/${this.tagName}`]);
     } else {

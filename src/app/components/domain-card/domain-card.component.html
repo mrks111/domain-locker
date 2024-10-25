@@ -107,12 +107,22 @@
         <span class="text-red-400"><i class="pi pi-times text-sm"></i> Not Enabled</span>
       }
       <br>
-      @if (domain.domain_costings.purchase_price) {
+      @if (domain.domain_costings.purchase_price && domain.domain_costings.current_value) {
+        <h5 class="my-2 mr-2 inline">Profit/Loss: </h5>
+        <span class="text-{{domain.domain_costings.current_value - domain.domain_costings.purchase_price >= 0? 'green' : 'red'}}-400">
+          {{ domain.domain_costings.current_value - domain.domain_costings.purchase_price | currency:'USD':'symbol':'1.0-0' }}
+        </span>
+        <span>
+          ({{ domain.domain_costings.current_value | currency:'USD':'symbol':'1.0-0' }} - {{ domain.domain_costings.purchase_price | currency:'USD':'symbol':'1.0-0' }})
+        </span>
+        <br>
+      }
+      @else if (domain.domain_costings.purchase_price) {
         <h5 class="my-2 mr-2 inline">Purchase Price: </h5>
         <span>{{ domain.domain_costings.purchase_price | currency:'USD':'symbol':'1.0-0' }}</span>
         <br>
       }
-      @if (domain.domain_costings.current_value) {
+      @else if (domain.domain_costings.current_value) {
         <h5 class="my-2 mr-2 inline">Current Value</h5>
         <span>{{ domain.domain_costings.current_value | currency:'USD':'symbol':'1.0-0' }}</span>
       }

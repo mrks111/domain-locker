@@ -22,6 +22,9 @@ module.exports = {
    {
       pattern: /border-l-(red|green|blue|yellow|purple|pink|indigo|gray|teal)-400/,
     },
+   {
+      pattern: /border-(red|green|blue|yellow|purple|pink|indigo|gray|teal)-400/,
+    },
   ],
   plugins: [],
   corePlugins: {
