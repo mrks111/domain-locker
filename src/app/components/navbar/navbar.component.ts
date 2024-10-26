@@ -236,7 +236,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
             {
               label: 'Timeline',
               icon: 'pi pi-calendar',
-              routerLink: '/stats/timeline',
+              routerLink: '/stats/registration-timeline',
             },
             {
               label: 'Map',

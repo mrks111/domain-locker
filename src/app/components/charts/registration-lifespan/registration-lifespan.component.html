@@ -1,0 +1,29 @@
+<div *ngIf="loading" class="text-center">
+  <p-progressSpinner></p-progressSpinner>
+</div>
+<div *ngIf="!loading" class="gantt-container">
+  <!-- Header -->
+  <div class="gantt-header">
+    <div *ngFor="let year of yearRange" class="gantt-year truncate" [pTooltip]="year">
+      {{ ('01-01-' + year) | date: 'yy' }}
+    </div>
+    <!-- Today's line indicator -->
+    <div class="gantt-today-line" [ngStyle]="{ left: todayPosition }"></div>
+  </div>
+  
+  <!-- Rows -->
+  <div class="gantt-body">
+    <div *ngFor="let domain of domains; let i = index" class="gantt-row">
+      <a 
+        [routerLink]="['/domains', domain.name]" 
+        class="gantt-domain-name no-underline hover:underline cursor-pointer text-primary">
+        {{ domain.name }}
+      </a>
+      <div 
+        class="gantt-bar"
+        [ngStyle]="{ left: calculateBarPosition(domain).left, width: calculateBarPosition(domain).width, backgroundColor: getBarColor(i) }"
+        pTooltip="{{ domain.name }}: {{ domain.start | date }} - {{ domain.end | date }}">
+      </div>
+    </div>
+  </div>
+</div>
