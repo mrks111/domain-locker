@@ -107,7 +107,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
       whois_info (name, organization, country, street, city, state, postal_code),
       domain_tags (tags (name)),
-      notifications (notification_type, is_enabled),
+      notification_preferences (notification_type, is_enabled),
       domain_hosts (hosts (ip, lat, lon, isp, org, as_number, city, region, country)),
       dns_records (record_type, record_value),
       domain_statuses (status_code),
@@ -357,7 +357,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
     }));
 
     const { error } = await this.supabase.supabase
-      .from('notifications')
+      .from('notification_preferences')
       .insert(dbNotifications);
 
     if (error) throw error;
@@ -532,7 +532,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
   private async updateNotifications(domainId: string, notifications: { notification_type: string; is_enabled: boolean }[]): Promise<void> {
     for (const notification of notifications) {
       const { data: existingNotification, error: notificationError } = await this.supabase.supabase
-        .from('notifications')
+        .from('notification_preferences')
         .select('id')
         .eq('domain_id', domainId)
         .eq('notification_type', notification.notification_type)
@@ -540,13 +540,13 @@ export default class SupabaseDatabaseService extends DatabaseService {
   
       if (existingNotification) {
         await this.supabase.supabase
-          .from('notifications')
+          .from('notification_preferences')
           .update({ is_enabled: notification.is_enabled })
           .eq('domain_id', domainId)
           .eq('notification_type', notification.notification_type);
       } else {
         await this.supabase.supabase
-          .from('notifications')
+          .from('notification_preferences')
           .insert({
             domain_id: domainId,
             notification_type: notification.notification_type,
@@ -789,7 +789,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
 
   addNotification(notification: Omit<Notification, 'id' | 'created_at' | 'updated_at'>): Observable<Notification> {
     return from(this.supabase.supabase
-      .from('notifications')
+      .from('notification_preferences')
       .insert(notification)
       .single()
     ).pipe(
@@ -804,7 +804,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
 
   getNotifications(domainId: string): Observable<Notification[]> {
     return from(this.supabase.supabase
-      .from('notifications')
+      .from('notification_preferences')
       .select('*')
       .eq('domain_id', domainId)
     ).pipe(
@@ -818,7 +818,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
 
   updateNotification(id: string, notification: Partial<Notification>): Observable<Notification> {
     return from(this.supabase.supabase
-      .from('notifications')
+      .from('notification_preferences')
       .update(notification)
       .eq('id', id)
       .single()
@@ -834,7 +834,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
 
   deleteNotification(id: string): Observable<void> {
     return from(this.supabase.supabase
-      .from('notifications')
+      .from('notification_preferences')
       .delete()
       .eq('id', id)
     ).pipe(
@@ -1194,7 +1194,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       whois_info: 'whois_info(name, organization, country, street, city, state, postal_code)',
       domain_tags: 'domain_tags(tags(name))',
       ssl_certificates: 'ssl_certificates(issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm)',
-      notifications: 'notifications(notification_type, is_enabled)',
+      notifications: 'notification_preferences(notification_type, is_enabled)',
       domain_hosts: 'domain_hosts(hosts(ip, lat, lon, isp, org, as_number, city, region, country))',
       dns_records: 'dns_records(record_type, record_value)',
       domain_costings: 'domain_costings(purchase_price, current_value, renewal_cost, auto_renew)',

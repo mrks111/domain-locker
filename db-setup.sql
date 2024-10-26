@@ -246,11 +246,11 @@ CREATE INDEX idx_ip_addresses_domain_id ON ip_addresses(domain_id);
 
 
 /* ===========================
-   Notifications Table
+   Notification Preferences Table
 =========================== */
 
 -- Notifications table
-CREATE TABLE notifications (
+CREATE TABLE notification_preferences (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id),
   notification_type TEXT NOT NULL,
@@ -261,15 +261,72 @@ CREATE TABLE notifications (
 );
 
 -- Enable RLS on notifications table
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;
 
 -- Policy for notifications table
-CREATE POLICY notifications_policy ON notifications
-  USING (EXISTS (SELECT 1 FROM domains WHERE domains.id = notifications.domain_id AND domains.user_id = auth.uid()))
-  WITH CHECK (EXISTS (SELECT 1 FROM domains WHERE domains.id = notifications.domain_id AND domains.user_id = auth.uid()));
+CREATE POLICY notifications_policy ON notification_preferences
+  USING (EXISTS (SELECT 1 FROM domains WHERE domains.id = notification_preferences.domain_id AND domains.user_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM domains WHERE domains.id = notification_preferences.domain_id AND domains.user_id = auth.uid()));
 
 -- Index for notifications
-CREATE INDEX idx_notifications_domain_id ON notifications(domain_id);
+CREATE INDEX idx_notifications_domain_id ON notification_preferences(domain_id);
+
+
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id),
+  domain_id UUID NOT NULL REFERENCES domains(id),
+  change_type TEXT NOT NULL,
+  message TEXT,
+  sent BOOLEAN NOT NULL DEFAULT false,
+  read BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enable RLS on notifications table
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+-- RLS policy to allow access for the correct user
+CREATE POLICY select_notifications_policy ON notifications
+  FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY insert_notifications_policy ON notifications
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+
+/* ===========================
+Notifications Table
+=========================== */
+
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL,
+  domain_id UUID NOT NULL REFERENCES domains(id),
+  change_type TEXT NOT NULL,
+  message TEXT,
+  sent BOOLEAN NOT NULL DEFAULT false,
+  read BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enable RLS on notifications table
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+-- RLS policy to allow users to access only their notifications
+CREATE POLICY select_notifications_policy ON notifications
+  FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY insert_notifications_policy ON notifications
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- Index for user_id and domain_id for efficient queries
+CREATE INDEX idx_notifications_user_id_domain_id ON notifications(user_id, domain_id);
+
+
 
 
 /* ===========================
@@ -448,7 +505,7 @@ BEGIN
   -- Delete related records
   DELETE FROM ip_addresses WHERE ip_addresses.domain_id = $1;
   DELETE FROM domain_tags WHERE domain_tags.domain_id = $1;
-  DELETE FROM notifications WHERE notifications.domain_id = $1;
+  DELETE FROM notification_preferences WHERE notification_preferences.domain_id = $1;
   DELETE FROM dns_records WHERE dns_records.domain_id = $1;
   DELETE FROM ssl_certificates WHERE ssl_certificates.domain_id = $1;
   DELETE FROM whois_info WHERE whois_info.domain_id = $1;
@@ -557,10 +614,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
-
 SELECT cron.schedule(
   'run_domain_update_job',
   '0 4 * * *',
-  $$SELECT http_post('https://svrtyblfdhowviyowxwt.supabase.co/functions/v1/process-all-domains', '{}');$$
+  $$SELECT http_post('https://svrtyblfdhowviyowxwt.supabase.co/functions/v1/trigger-updates', '{}');$$
 );
