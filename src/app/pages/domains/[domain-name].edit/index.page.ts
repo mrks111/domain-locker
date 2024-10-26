@@ -81,7 +81,7 @@ export default class EditDomainComponent implements OnInit {
   
     // Set the notification values within the form group
     const notificationsFormGroup = this.domainForm.get('notifications') as FormGroup;
-    (this.domain.notifications || []).forEach((notification: { notification_type: string, is_enabled: boolean }) => {
+    (this.domain.notification_preferences || []).forEach((notification: { notification_type: string, is_enabled: boolean }) => {
       const notificationControl = notificationsFormGroup.get(notification.notification_type);
       if (notificationControl) {
         notificationControl.setValue(notification.is_enabled);

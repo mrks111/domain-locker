@@ -16,6 +16,7 @@ import { DomainPieChartsComponent } from '@components/charts/domain-pie/domain-p
 import { DomainTagCloudComponent } from '@components/charts/tag-cloud/tag-cloud.component';
 import { HostMapComponent } from '@components/charts/host-map/host-map.component';
 import { EppStatusChartComponent } from '@components/charts/domain-epp-status/domain-epp-status.component';
+import { DomainGanttChartComponent } from '@components/charts/registration-lifespan/registration-lifespan.component';
 import { TagGridComponent } from '@components/tag-grid/tag-grid.component';
 
 
@@ -33,10 +34,14 @@ import { TagGridComponent } from '@components/tag-grid/tag-grid.component';
     HostMapComponent,
     EppStatusChartComponent,
     DomainTagCloudComponent,
+    DomainGanttChartComponent,
     TagGridComponent,
   ],
   templateUrl: './home.page.html',
-  styles: [`::ng-deep .p-divider-content { border-radius: 4px; }`],
+  styles: [`
+  ::ng-deep .p-divider-content { border-radius: 4px; }
+  ::ng-deep .gantt-domain-name { background: var(--surface-50) !important; }
+  `],
 })
 export default class HomePageComponent implements OnInit {
   domains: DbDomain[] = [];

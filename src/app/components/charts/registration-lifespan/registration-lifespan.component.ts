@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@services/database.service';
@@ -18,9 +18,11 @@ interface Domain {
   styleUrls: ['./registration-lifespan.component.scss'],
   imports: [PrimeNgModule, CommonModule]
 })
-export class DomainGanttChartComponent implements OnInit { 
+export class DomainGanttChartComponent implements OnInit {
+  @Input() groupDates: boolean = false;
+
   domains: Domain[] = [];
-  yearRange: number[] = [];
+  yearRange: string[] = [];
   todayPosition: string = '';
   loading = true;
 
@@ -36,7 +38,8 @@ export class DomainGanttChartComponent implements OnInit {
 
   ngOnInit() {
     this.loadDomains();
-    this.calculateYearRangeAndTodayPosition();
+    this.setYearRange();
+    this.calculateTodayPosition();
   }
 
   private loadDomains() {
@@ -57,21 +60,32 @@ export class DomainGanttChartComponent implements OnInit {
     });
   }
 
-  private calculateYearRangeAndTodayPosition() {
+  private setYearRange() {
     const startYear = 1990;
     const endYear = new Date().getFullYear() + 10;
-    this.yearRange = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
+    const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
 
-    const yearsSpan = endYear - startYear + 1;
-    this.todayPosition = `${((new Date().getFullYear() - startYear) / yearsSpan) * 100}%`;
+    this.yearRange = this.groupDates
+      ? years.reduce<string[]>((ranges, year, i) => {
+          if (i % 5 === 0) ranges.push(`${year}-${String(year + 4).slice(-2)}`);
+          return ranges;
+        }, [])
+      : years.map(year => year.toString());
   }
 
   calculateBarPosition(domain: Domain): { left: string; width: string } {
-    const startYear = this.yearRange[0];
-    const yearsSpan = this.yearRange.length;
+    const startYear = parseInt(this.yearRange[0]);
+    const yearsSpan = this.yearRange.length * (this.groupDates ? 5 : 1);
     const startPos = ((domain.start.getFullYear() - startYear) / yearsSpan) * 100;
     const duration = ((domain.end.getFullYear() - domain.start.getFullYear()) / yearsSpan) * 100;
     return { left: `${startPos}%`, width: `${duration}%` };
+  }
+
+  calculateTodayPosition() {
+    const startYear = parseInt(this.yearRange[0]);
+    const yearsSpan = this.yearRange.length * (this.groupDates ? 5 : 1);
+    const currentYear = new Date().getFullYear();
+    this.todayPosition = `${((currentYear - startYear) / yearsSpan) * 100}%`;
   }
 
   getBarColor(index: number): string {

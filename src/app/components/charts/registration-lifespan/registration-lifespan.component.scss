@@ -2,7 +2,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  font-family: Arial, sans-serif;
+  overflow: hidden;
 }
 
 .gantt-header {
@@ -47,6 +47,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+
+  z-index: 1;
+  background: var(--surface-0);
+  opacity: 0.8;
+  width: fit-content;
+  border-radius: 0 8px 8px 0;
 }
 
 .gantt-bar {
