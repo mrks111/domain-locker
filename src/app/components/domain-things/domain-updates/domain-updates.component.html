@@ -1,5 +1,5 @@
 <div *ngIf="loading" class="p-progressSpinner"></div>
-<div *ngIf="!loading && (updates$ | async) as updates">
+<div *ngIf="!loading && (updates$ | async) as updates" class="relative">
 
   @if (showFilters) {
     <div class="flex flex-wrap gap-2 mb-4 flex-row">
@@ -30,7 +30,7 @@
     [label]="(showFilters ? 'Hide' : 'Show') + 'Filters'"
     (click)="toggleFilters()"
     size="small"
-    [class]="(showFilters ? 'mb-4' : 'float-right my-4')"
+    [class]="(showFilters ? 'mb-4' : 'float-right my-4 filter-button')"
     icon="pi pi-sliders-h"></button>
 
   <div class="flex flex-col gap-1">
@@ -51,7 +51,7 @@
             -
           }
           @if (update.old_value && update.new_value) {
-            <p class="m-0 flex gap-2">
+            <p class="m-0 flex gap-2 change-summary">
               <span class="text-blue-400">{{ mapChangeKey(update.change) }} updated</span>
               from
               <span class="font-mono">{{ update.old_value || 'N/A' }}</span>
@@ -59,12 +59,12 @@
               <span class="font-mono">{{ update.new_value || 'N/A' }}</span>
             </p>
           } @else if (update.new_value) {
-            <p class="m-0 flex gap-2">
+            <p class="m-0 flex gap-2 change-summary">
               <span class="text-green-400">{{ mapChangeKey(update.change) }} added</span>
               <span class="font-mono">{{ update.new_value || 'N/A' }}</span>
             </p>
           } @else if (update.old_value) {
-            <p class="m-0 flex gap-2">
+            <p class="m-0 flex gap-2 change-summary">
               <span class="text-red-400">{{ mapChangeKey(update.change) }} removed</span>
               <span class="font-mono">{{ update.old_value || 'N/A' }}</span>
             </p>

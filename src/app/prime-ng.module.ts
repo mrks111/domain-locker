@@ -49,6 +49,7 @@ import { ScrollTopModule } from 'primeng/scrolltop';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { SidebarModule } from 'primeng/sidebar';
 import { SplitButtonModule } from 'primeng/splitbutton';
+import { SplitterModule } from 'primeng/splitter';
 import { StepsModule } from 'primeng/steps';
 import { StyleClassModule } from 'primeng/styleclass';
 import { TableModule } from 'primeng/table';
@@ -110,6 +111,7 @@ import { TooltipModule } from 'primeng/tooltip';
     SelectButtonModule,
     SidebarModule,
     SplitButtonModule,
+    SplitterModule,
     StepsModule,
     StyleClassModule,
     TableModule,

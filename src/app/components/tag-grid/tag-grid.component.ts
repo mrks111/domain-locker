@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import DatabaseService from '@services/database.service';
 import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
@@ -6,9 +6,6 @@ import { Router } from '@angular/router';
 
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ContextMenu } from 'primeng/contextmenu';
-import { Tag } from '@/types/Database';
-
-
 
 @Component({
   standalone: true,
@@ -22,7 +19,7 @@ export class TagGridComponent implements OnInit {
   public loading: boolean = true;
   public contextMenuItems: MenuItem[] = [];
   private selectedTag: any;
-
+  @Input() public miniGrid: boolean = false;
   @ViewChild('menu') menu: ContextMenu | undefined;
 
   constructor(

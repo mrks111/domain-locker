@@ -1,7 +1,7 @@
 <p-contextMenu #menu [model]="contextMenuItems" appendTo="body"></p-contextMenu>
 
 @if (tags && tags.length > 0) {
-  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3" *ngIf="!loading">
+  <div class="grid {{ miniGrid ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2' : 'grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3'}}" *ngIf="!loading">
     <a 
       *ngFor="let tag of tags"
       [routerLink]="['/assets/tags', tag.name]"
