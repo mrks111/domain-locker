@@ -13,8 +13,36 @@
   </a>
   <div class="hidden sm:flex sm:items-center">
     <p-menubar [model]="items" [styleClass]="'bg-transparent border-none p-0'"></p-menubar>
-    <button #settingsButton pButton icon="pi pi-cog" (click)="toggleSettings($event)"
-            class="p-button-rounded p-button-text ml-2"></button>
+    <button
+      #settingsButton
+      pButton
+      icon="pi pi-palette"
+      (click)="toggleSettings($event)"
+      pTooltip="Display Options"
+      tooltipPosition="bottom"
+      showDelay="500"
+      class="p-button-rounded p-button-text text-default hover:text-primary">
+    </button>
+    <a routerLink="/notifications">
+      <button
+        pButton
+        icon="pi pi-bell"
+        pTooltip="Notifications"
+        tooltipPosition="bottom"
+        showDelay="500"
+        class="p-button-rounded p-button-text text-default hover:text-primary">
+      </button>
+    </a>
+    <a routerLink="/settings">
+      <button
+        pButton
+        icon="pi pi-wrench"
+        pTooltip="Settings"
+        tooltipPosition="bottom"
+        showDelay="500"
+        class="p-button-rounded p-button-text text-default hover:text-primary">
+      </button>
+    </a>
     <p-overlay [(visible)]="settingsVisible" [target]="settingsButton" [appendTo]="'body'"
                [showTransitionOptions]="'0ms'" [hideTransitionOptions]="'0ms'"
                styleClass="settings-overlay w-60">
