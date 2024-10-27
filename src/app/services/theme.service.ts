@@ -98,6 +98,11 @@ export class ThemeService {
         this.renderer.setAttribute(newLinkElement, 'href', newThemeUrl);
         this.renderer.appendChild(this.document.head, newLinkElement);
       }
+
+      // Set data attributes on the html element
+      const htmlElement = this.document.documentElement;
+      this.renderer.setAttribute(htmlElement, 'data-theme', theme.code);
+      this.renderer.setAttribute(htmlElement, 'data-mode', isDark ? 'dark' : 'light');
     }
   }
 }
