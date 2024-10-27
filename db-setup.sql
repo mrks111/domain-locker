@@ -1,6 +1,6 @@
 -- Enable UUID extension for generating UUIDs
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
+CREATE EXTENSION http with schema extensions;
 
 /* ===========================
    Domains Table and Related Indexes
