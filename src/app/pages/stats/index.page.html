@@ -1,6 +1,3 @@
-
-
-
 <p-splitter 
   [panelSizes]="[25, 75]"
   styleClass="h-[85vh] max-h-screen px-1 py-2 bg-transparent border-none">
@@ -11,8 +8,9 @@
         </a>
         <ul class="list-none p-0 mt-2 flex flex-col gap-0.5 w-fit">
           @for (item of items; track item.label) {
-            <li class="rounded-lg py-2 px-3 transition-all ease-in-out hover:surface-50">
-              <a routerLink="{{ item['routerLink'] }}" class="flex gap-2 align-items-center no-underline text-default text-md">
+            <li class="rounded-lg py-2 px-3 transition-all ease-in-out hover:surface-50
+              {{ isActive(item['routerLink']) ? 'font-bold text-primary' : 'text-default'}}">
+              <a routerLink="{{ item['routerLink'] }}" class="flex gap-2 align-items-center no-underline text-inherit text-md">
                 <i class="{{ item.icon }} opacity-70"></i>
                 <span>{{ item.label }}</span>
               </a>

@@ -4,7 +4,7 @@ import { DomainGanttChartComponent } from '@components/charts/registration-lifes
 @Component({
   standalone: true,
   selector: 'app-index-page',
-  template: '<h1>Registration Timeline</h1><app-domain-gantt-chart />',
+  template: '<h1>Registration Timeline</h1><app-domain-gantt-chart [groupDates]="true" />',
   imports: [DomainGanttChartComponent],
 })
 export default class RegistrationTimelinePage {}
