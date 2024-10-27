@@ -8,4 +8,3 @@ import { DomainGanttChartComponent } from '@components/charts/registration-lifes
   imports: [DomainGanttChartComponent],
 })
 export default class RegistrationTimelinePage {}
-
