@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@services/database.service';
@@ -18,7 +18,7 @@ interface Domain {
   styleUrls: ['./registration-lifespan.component.scss'],
   imports: [PrimeNgModule, CommonModule]
 })
-export class DomainGanttChartComponent implements OnInit {
+export class DomainGanttChartComponent implements OnInit, AfterViewInit {
   @Input() groupDates: boolean = false;
 
   domains: Domain[] = [];
@@ -33,13 +33,18 @@ export class DomainGanttChartComponent implements OnInit {
 
   constructor(
     private databaseService: DatabaseService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.loadDomains();
     this.setYearRange();
+  }
+
+  ngAfterViewInit() {
     this.calculateTodayPosition();
+    this.cdr.detectChanges(); // Trigger change detection after setting values
   }
 
   private loadDomains() {
@@ -73,19 +78,38 @@ export class DomainGanttChartComponent implements OnInit {
       : years.map(year => year.toString());
   }
 
-  calculateBarPosition(domain: Domain): { left: string; width: string } {
+  calculateBarPosition(domain: Domain): { left: string; width: string; pastWidth: string, daysUntilExpiration: number, daysSinceRegistration: number } {
     const startYear = parseInt(this.yearRange[0]);
     const yearsSpan = this.yearRange.length * (this.groupDates ? 5 : 1);
+
     const startPos = ((domain.start.getFullYear() - startYear) / yearsSpan) * 100;
     const duration = ((domain.end.getFullYear() - domain.start.getFullYear()) / yearsSpan) * 100;
-    return { left: `${startPos}%`, width: `${duration}%` };
+
+    const today = new Date();
+
+    const daysSinceRegistration = Math.floor((today.getTime() - domain.start.getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntilExpiration = Math.floor((domain.end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    let pastWidth = '0%';
+    if (today > domain.start) {
+      const pastDuration = (Math.min(today.getTime(), domain.end.getTime()) - domain.start.getTime()) / (domain.end.getTime() - domain.start.getTime());
+      pastWidth = `${Math.round(pastDuration * 100)}%`;
+    }
+
+    return {
+      left: `${Math.round(startPos)}%`,
+      width: `${Math.round(duration)}%`,
+      pastWidth,
+      daysSinceRegistration,
+      daysUntilExpiration,
+    };
   }
 
-  calculateTodayPosition() {
+  private calculateTodayPosition() {
     const startYear = parseInt(this.yearRange[0]);
     const yearsSpan = this.yearRange.length * (this.groupDates ? 5 : 1);
     const currentYear = new Date().getFullYear();
-    this.todayPosition = `${((currentYear - startYear) / yearsSpan) * 100}%`;
+    this.todayPosition = `${Math.round(((currentYear - startYear) / yearsSpan) * 100)}%`;
   }
 
   getBarColor(index: number): string {

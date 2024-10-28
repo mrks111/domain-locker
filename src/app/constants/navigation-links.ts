@@ -11,7 +11,7 @@ export const statsLinks = [
   { label: 'Change Frequency', icon: 'pi pi-history', routerLink: '/stats/change-frequency' },
   { label: 'Payments Chart', icon: 'pi pi-credit-card', routerLink: '/stats/renewal-payments' },
   { label: 'Domain Valuations', icon: 'pi pi-chart-scatter', routerLink: '/stats/cost-analysis' },
-  { label: 'Upcoming Expiries', icon: 'pi pi-clock', routerLink: '/stats/expiring' },
+  { label: 'Upcoming Expiries', icon: 'pi pi-clock', routerLink: '/stats/upcoming-expirations' },
 ];
 
 export const settingsLinks = [

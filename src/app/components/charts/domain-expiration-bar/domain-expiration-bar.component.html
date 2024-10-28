@@ -15,7 +15,7 @@
     </ng-container>
   </div>
 
-  <div class="float-right">
+  <div *ngIf="!showFull" class="float-right">
     <p-button
       (click)="toggleTimeline()"
       [label]="showTimeline ? 'Hide Timeline' : 'Show Timeline'"
@@ -36,8 +36,8 @@
     </ng-container>
   </ng-template>
 
-  <div [@slideInOut]="showTimeline ? 'in' : 'out'" class="overflow-hidden">
-    <p-timeline [value]="timelineEvents" align="left" styleClass="mt-4" *ngIf="showTimeline">
+  <div [@slideInOut]="showTimeline || showFull ? 'in' : 'out'" class="overflow-hidden domain-timeline-thing">
+    <p-timeline [value]="timelineEvents" align="left" styleClass="mt-4" *ngIf="showTimeline || showFull">
       <ng-template pTemplate="content" let-event>
         <small class="p-text-secondary">{{event.date | date:'mediumDate'}}</small>
         <a [routerLink]="'/domains/'+event.domain" class="text-default no-underline"><h5 class="mb-1">{{event.domain}}</h5></a>

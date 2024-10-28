@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MeterItem } from 'primeng/metergroup';
 import { PrimeNgModule } from '../../../prime-ng.module';
@@ -39,6 +39,8 @@ export class DomainExpirationBarComponent implements OnInit {
 
   timelineEvents: any[] = [];
   showTimeline: boolean = false;
+
+  @Input() showFull: boolean = false;
 
   constructor(private databaseService: DatabaseService) {}
 

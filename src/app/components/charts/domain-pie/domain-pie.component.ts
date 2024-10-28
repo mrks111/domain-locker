@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit, PLATFORM_ID, Inject, ElementRef } from "@angular/core";
+import { Component, OnInit, ViewChild, AfterViewInit, PLATFORM_ID, Inject, ElementRef, Input } from "@angular/core";
 import { ChartComponent, NgApexchartsModule } from "ng-apexcharts";
 import { ApexNonAxisChartSeries, ApexChart, ApexResponsive, ApexTheme, ApexLegend, ApexStroke } from "ng-apexcharts";
 import DatabaseService from '@services/database.service';
@@ -32,6 +32,8 @@ export class DomainPieChartsComponent implements OnInit, AfterViewInit {
   @ViewChild("hostChart") hostChart!: ChartComponent;
   @ViewChild('chartContainer', { static: true }) chartContainer!: ElementRef;
 
+  @Input() listMode: boolean = false;
+
   public registrarChartOptions: Partial<ChartOptions> = {};
   public sslIssuerChartOptions: Partial<ChartOptions> = {};
   public hostChartOptions: Partial<ChartOptions> = {};
@@ -57,6 +59,10 @@ export class DomainPieChartsComponent implements OnInit, AfterViewInit {
     if (isPlatformBrowser(this.platformId)) {
       this.setChartColors();
       this.loadRegistrarData();
+      if (this.listMode) {
+        this.loadSslIssuerData();
+        this.loadHostData();
+      }
     }
   }
 

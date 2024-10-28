@@ -59,6 +59,18 @@
   position: absolute;
   height: 20px;
   border-radius: 4px;
-  transition: all 0.3s;
+  display: flex;
   overflow: hidden;
+  transition: all 0.3s;
 }
+
+.gantt-bar-past {
+  height: 100%;
+  opacity: 0.8;
+}
+
+.gantt-bar-future {
+  height: 100%;
+  opacity: 1;
+}
+

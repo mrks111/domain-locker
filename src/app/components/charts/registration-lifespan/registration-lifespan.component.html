@@ -24,10 +24,19 @@
         class="gantt-domain-name no-underline hover:underline cursor-pointer text-primary">
         {{ domain.name }}
       </a>
+      <div class="gantt-bar" [ngStyle]="{ left: calculateBarPosition(domain).left, width: calculateBarPosition(domain).width }">
+      <!-- Past portion -->
       <div 
-        class="gantt-bar"
-        [ngStyle]="{ left: calculateBarPosition(domain).left, width: calculateBarPosition(domain).width, backgroundColor: getBarColor(i) }"
-        pTooltip="{{ domain.name }}: {{ domain.start | date }} - {{ domain.end | date }}">
+        class="gantt-bar-past" 
+        [ngStyle]="{ width: calculateBarPosition(domain).pastWidth, backgroundColor: getBarColor(i) }"
+        pTooltip="{{ domain.name }}: {{ domain.start | date }} - {{ domain.end | date }} (Registered {{ calculateBarPosition(domain).daysSinceRegistration }} days ago)">
+      </div>
+      <!-- Future portion -->
+      <div 
+        class="gantt-bar-future" 
+        [ngStyle]="{ width: 'calc(100% - ' + calculateBarPosition(domain).pastWidth + ')', backgroundColor: getBarColor(i) }"
+        pTooltip="{{ domain.name }}: {{ domain.start | date }} - {{ domain.end | date }} (Expires in {{ calculateBarPosition(domain).daysUntilExpiration }} days)">
+      </div>
       </div>
     </div>
   </div>
