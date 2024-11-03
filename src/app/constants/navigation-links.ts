@@ -93,10 +93,13 @@ export const settingsLinks = [
   { label: 'Privacy and Data', icon: 'pi pi-eye-slash', routerLink: '/settings/privacy-settings' },
   { label: 'Manage Plan', icon: 'pi pi-shop', routerLink: '/settings/manage-plan' },
   { label: 'Developer Options', icon: 'pi pi-code', routerLink: '/settings/developer-options' },
-  { label: 'Announcements', icon: 'pi pi-megaphone', routerLink: '/settings/announcements' },
-  { label: 'Get Help', icon: 'pi pi-question-circle', routerLink: '/settings/get-help' },
-  { label: 'License and Terms', icon: 'pi pi-hammer', routerLink: '/settings/license' },
   { label: 'Danger Zone', icon: 'pi pi-exclamation-triangle', routerLink: '/settings/danger-zone' },
+];
+
+export const aboutLinks = [
+  { label: 'Announcements', icon: 'pi pi-megaphone', routerLink: '/about/announcements' },
+  { label: 'Get Help', icon: 'pi pi-question-circle', routerLink: '/about/get-help' },
+  { label: 'License and Terms', icon: 'pi pi-hammer', routerLink: '/about/license' },
 ];
 
 export const authenticatedNavLinks = [
