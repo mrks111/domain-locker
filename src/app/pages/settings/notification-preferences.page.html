@@ -5,11 +5,12 @@
 <p class="italic opacity-70 m-0">
   You can update which notifications you receive on a per-domain basis by editing the domain
 </p>
+
 <form [formGroup]="notificationForm" *ngIf="notificationForm" class="space-y-6">
   <p-card *ngFor="let channel of notificationChannels" [formGroupName]="channel.formControlName" class="notification-section p-4 shadow-sm rounded-lg">
     <div class="flex items-center justify-between">
       <div class="flex gap-2 items-center flex-1">
-        <dl-icon [icon]="channel.formControlName" class="!w-6 h-5"  color="var(--surface-200)"></dl-icon>
+        <dl-icon [icon]="channel.formControlName" class="!w-6 h-5" color="var(--surface-200)"></dl-icon>
         <h3 class="font-semibold text-lg m-0">{{ channel.name }}</h3>
       </div>
       <p-toggleButton
@@ -72,7 +73,16 @@
           </div>
         </div>
       </div>
-
     </div>
   </p-card>
+
+  <!-- Save Button -->
+  <div class="flex justify-end">
+    <button pButton
+      type="button"
+      label="Save"
+      icon="pi pi-save"
+      severity="primary"
+      (click)="savePreferences()"></button>
+  </div>
 </form>

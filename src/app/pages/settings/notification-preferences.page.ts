@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DlIconComponent } from '@components/misc/svg-icon.component';
+import { MessageService } from 'primeng/api';
+import { GlobalMessageService } from '@services/messaging.service';
 
 interface NotificationChannel {
   name: string;
@@ -17,6 +19,7 @@ interface NotificationChannel {
   templateUrl: './notification-preferences.page.html',
   standalone: true,
   imports: [CommonModule, PrimeNgModule, ReactiveFormsModule, DlIconComponent],
+  providers: [MessageService],
   styles: ['::ng-deep .p-card-content { padding: 0; } '],
 })
 export default class NotificationPreferencesPage implements OnInit {
@@ -114,7 +117,8 @@ export default class NotificationPreferencesPage implements OnInit {
   ];
 
   constructor(
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private globalMessageService: GlobalMessageService,
   ) {}
 
   ngOnInit() {
@@ -140,5 +144,56 @@ export default class NotificationPreferencesPage implements OnInit {
     }, {});
 
     this.notificationForm = this.fb.group(formGroupConfig);
+  }
+
+  savePreferences() {
+    let isValid = true;
+
+    this.notificationChannels.forEach(channel => {
+      const channelForm = this.notificationForm.get(channel.formControlName) as FormGroup;
+      const isEnabled = channelForm.get('enabled')?.value;
+
+      if (isEnabled) {
+        // Check for required fields
+        channel.requires.forEach(field => {
+          const control = channelForm.get(field.name);
+          if (control && control.invalid) {
+            control.markAsTouched();
+            isValid = false;
+          }
+        });
+
+        // Check for provider-specific fields
+        if (channel.providers) {
+          const selectedProvider = channelForm.get('provider')?.value;
+          const provider = channel.providers.find(p => p.value === selectedProvider);
+
+          provider?.fields.forEach(field => {
+            const control = channelForm.get(field.name);
+            if (control && control.invalid) {
+              control.markAsTouched();
+              isValid = false;
+            }
+          });
+        }
+      }
+    });
+
+    if (isValid) {
+      // Proceed with saving if valid
+      this.globalMessageService.showMessage({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Preferences saved successfully'
+      });
+      // Save functionality placeholder
+    } else {
+      // Show an error message if there are validation issues
+      this.globalMessageService.showMessage({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Please complete all required fields for enabled notifications'
+      });
+    }
   }
 }
