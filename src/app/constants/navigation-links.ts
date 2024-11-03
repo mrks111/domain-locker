@@ -89,12 +89,13 @@ export const statsLinks = [
 export const settingsLinks = [
   { label: 'Account Settings', icon: 'pi pi-user-edit', routerLink: '/settings/account' },
   { label: 'Notification Preferences', icon: 'pi pi-bell', routerLink: '/settings/notification-preferences' },
-  { label: 'Display Modes', icon: 'pi pi-palette', routerLink: '/settings/display-modes' },
+  { label: 'Display Options', icon: 'pi pi-palette', routerLink: '/settings/display-options' },
   { label: 'Privacy and Data', icon: 'pi pi-eye-slash', routerLink: '/settings/privacy-settings' },
   { label: 'Manage Plan', icon: 'pi pi-shop', routerLink: '/settings/manage-plan' },
   { label: 'Developer Options', icon: 'pi pi-code', routerLink: '/settings/developer-options' },
   { label: 'Announcements', icon: 'pi pi-megaphone', routerLink: '/settings/announcements' },
   { label: 'Get Help', icon: 'pi pi-question-circle', routerLink: '/settings/get-help' },
+  { label: 'License and Terms', icon: 'pi pi-hammer', routerLink: '/settings/license' },
   { label: 'Danger Zone', icon: 'pi pi-exclamation-triangle', routerLink: '/settings/danger-zone' },
 ];
 

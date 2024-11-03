@@ -4,14 +4,26 @@ import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DlIconComponent } from '@components/misc/svg-icon.component';
-import { MessageService } from 'primeng/api';
 import { GlobalMessageService } from '@services/messaging.service';
+
+interface NotificationChannelField {
+  label: string;
+  name: string;
+  placeholder?: string;
+  validator?: any;
+}
+
+interface NotificationChannelProvider {
+  label: string;
+  value: string;
+  fields: NotificationChannelField[];
+}
 
 interface NotificationChannel {
   name: string;
   formControlName: string;
-  requires: { label: string; name: string; placeholder?: string; validator?: any }[];
-  providers?: { label: string; value: string; fields: { label: string; name: string; placeholder?: string; validator?: any }[] };
+  requires: NotificationChannelField[];
+  providers?: NotificationChannelProvider[];
 }
 
 @Component({
@@ -19,7 +31,7 @@ interface NotificationChannel {
   templateUrl: './notification-preferences.page.html',
   standalone: true,
   imports: [CommonModule, PrimeNgModule, ReactiveFormsModule, DlIconComponent],
-  providers: [MessageService],
+  providers: [],
   styles: ['::ng-deep .p-card-content { padding: 0; } '],
 })
 export default class NotificationPreferencesPage implements OnInit {
@@ -78,7 +90,7 @@ export default class NotificationPreferencesPage implements OnInit {
           label: 'Custom',
           value: 'custom',
           fields: [
-            { label: 'Headers', name: 'headers', placeholder: 'Specified as valid JSON', value: '{}' }
+            { label: 'Headers', name: 'headers', placeholder: 'Specified as valid JSON' }
           ]
         }
       ],
@@ -126,69 +138,99 @@ export default class NotificationPreferencesPage implements OnInit {
   }
 
   private initializeForm() {
-    const formGroupConfig = this.notificationChannels.reduce((config, channel) => {
-      const channelConfig: any = { enabled: [false] };
-      channel.requires.forEach(requirement => {
-        channelConfig[requirement.name] = ['', requirement.validator || []];
-      });
-      if (channel.providers) {
-        channelConfig.provider = [''];
-        channel.providers.forEach(provider => {
-          provider.fields.forEach(field => {
-            channelConfig[field.name] = ['', field.validator || []];
-          });
+    const formGroupConfig: Record<string, FormGroup> = this.notificationChannels.reduce((config, channel) => {
+        const channelConfig: { [key: string]: any } = { enabled: [false] };
+        channel.requires.forEach(requirement => {
+            channelConfig[requirement.name] = ['', requirement.validator || []];
         });
-      }
-      config[channel.formControlName] = this.fb.group(channelConfig);
-      return config;
-    }, {});
+
+        if (channel.providers) {
+            channelConfig['provider'] = [''];
+            channel.providers.forEach((provider: NotificationChannelProvider) => {
+                provider.fields.forEach((field: NotificationChannelField) => {
+                    channelConfig[field.name] = ['', field.validator || []];
+                });
+            });
+        }
+        config[channel.formControlName] = this.fb.group(channelConfig) as FormGroup;
+        return config;
+    }, {} as Record<string, FormGroup>);
 
     this.notificationForm = this.fb.group(formGroupConfig);
-  }
+}
+
 
   savePreferences() {
     let isValid = true;
-
     this.notificationChannels.forEach(channel => {
       const channelForm = this.notificationForm.get(channel.formControlName) as FormGroup;
       const isEnabled = channelForm.get('enabled')?.value;
 
       if (isEnabled) {
-        // Check for required fields
+        // Apply required validation to each field in enabled sections
         channel.requires.forEach(field => {
           const control = channelForm.get(field.name);
-          if (control && control.invalid) {
-            control.markAsTouched();
-            isValid = false;
+          if (control) {
+            control.setValidators([Validators.required].concat(field.validator || []));
+            control.updateValueAndValidity();
+            if (control.invalid) {
+              control.markAsTouched();
+              isValid = false;
+            }
           }
         });
 
-        // Check for provider-specific fields
+        // Apply required validation to provider-specific fields if a provider is selected
         if (channel.providers) {
           const selectedProvider = channelForm.get('provider')?.value;
           const provider = channel.providers.find(p => p.value === selectedProvider);
 
           provider?.fields.forEach(field => {
             const control = channelForm.get(field.name);
-            if (control && control.invalid) {
-              control.markAsTouched();
-              isValid = false;
+            if (control) {
+              control.setValidators([Validators.required].concat(field.validator || []));
+              control.updateValueAndValidity();
+              if (control.invalid) {
+                control.markAsTouched();
+                isValid = false;
+              }
             }
+          });
+        }
+      } else {
+        // Clear validators if the section is disabled
+        channel.requires.forEach(field => {
+          const control = channelForm.get(field.name);
+          if (control) {
+            control.clearValidators();
+            control.updateValueAndValidity();
+          }
+        });
+
+        if (channel.providers) {
+          channel.providers.forEach(provider => {
+            provider.fields.forEach(field => {
+              const control = channelForm.get(field.name);
+              if (control) {
+                control.clearValidators();
+                control.updateValueAndValidity();
+              }
+            });
           });
         }
       }
     });
 
+    // Log the entire form data to the console
+    console.log('Form Data:', this.notificationForm.value);
+
     if (isValid) {
-      // Proceed with saving if valid
       this.globalMessageService.showMessage({
         severity: 'success',
         summary: 'Success',
         detail: 'Preferences saved successfully'
       });
-      // Save functionality placeholder
     } else {
-      // Show an error message if there are validation issues
       this.globalMessageService.showMessage({
         severity: 'error',
         summary: 'Error',
