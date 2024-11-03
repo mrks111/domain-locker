@@ -3,13 +3,14 @@ import { PrimeNgModule } from '../../prime-ng.module';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { SupabaseService } from '../../services/supabase.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   standalone: true,
   selector: 'app-settings',
-  templateUrl: './index.page.html',
+  templateUrl: './account.page.html',
   styleUrls: ['./index.page.scss'],
-  imports: [PrimeNgModule, ReactiveFormsModule],
+  imports: [PrimeNgModule, ReactiveFormsModule, CommonModule],
   providers: [MessageService, ConfirmationService]
 })
 export default class UserSettingsComponent implements OnInit {

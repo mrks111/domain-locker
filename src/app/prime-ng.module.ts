@@ -56,6 +56,7 @@ import { TableModule } from 'primeng/table';
 import { TabViewModule } from 'primeng/tabview';
 import { TagModule } from 'primeng/tag';
 import { TimelineModule } from 'primeng/timeline';
+import { ToggleButtonModule } from 'primeng/togglebutton';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 
@@ -118,6 +119,7 @@ import { TooltipModule } from 'primeng/tooltip';
     TabViewModule,
     TagModule,
     TimelineModule,
+    ToggleButtonModule,
     ToastModule,
     TooltipModule,
   ]

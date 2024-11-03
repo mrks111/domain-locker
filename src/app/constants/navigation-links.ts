@@ -87,7 +87,7 @@ export const statsLinks = [
 ];
 
 export const settingsLinks = [
-  { label: 'User Settings', icon: 'pi pi-user-edit', routerLink: '/settings/user-settings' },
+  { label: 'Account Settings', icon: 'pi pi-user-edit', routerLink: '/settings/account' },
   { label: 'Notification Preferences', icon: 'pi pi-bell', routerLink: '/settings/notification-preferences' },
   { label: 'Display Modes', icon: 'pi pi-palette', routerLink: '/settings/display-modes' },
   { label: 'Manage Plan', icon: 'pi pi-shop', routerLink: '/settings/manage-plan' },
