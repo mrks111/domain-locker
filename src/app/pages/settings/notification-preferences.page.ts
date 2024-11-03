@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { ReactiveFormsModule } from '@angular/forms';
+import { DlIconComponent } from '@components/misc/svg-icon.component';
 
 interface NotificationChannel {
   name: string;
@@ -15,7 +16,7 @@ interface NotificationChannel {
   selector: 'app-notification-preferences',
   templateUrl: './notification-preferences.page.html',
   standalone: true,
-  imports: [CommonModule, PrimeNgModule, ReactiveFormsModule],
+  imports: [CommonModule, PrimeNgModule, ReactiveFormsModule, DlIconComponent],
   styles: ['::ng-deep .p-card-content { padding: 0; } '],
 })
 export default class NotificationPreferencesPage implements OnInit {
@@ -68,6 +69,13 @@ export default class NotificationPreferencesPage implements OnInit {
           value: 'pushbullet',
           fields: [
             { label: 'Access Token', name: 'accessToken', placeholder: 'Enter access token' }
+          ]
+        },
+        {
+          label: 'Custom',
+          value: 'custom',
+          fields: [
+            { label: 'Headers', name: 'headers', placeholder: 'Specified as valid JSON', value: '{}' }
           ]
         }
       ],

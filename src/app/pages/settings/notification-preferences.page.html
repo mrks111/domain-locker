@@ -1,14 +1,17 @@
 <h2 class="text-2xl font-semibold my-2">Notification Preferences</h2>
 <p class="italic text-lg opacity-70 m-0">
-  Configure how you would like to receive notifications and alerts.
+  Configure how you would like to receive notifications and alerts for domain activity
 </p>
 <p class="italic opacity-70 m-0">
-  Note: You can update which notifications you receive on a per-domain basis by editing the domain.
+  You can update which notifications you receive on a per-domain basis by editing the domain
 </p>
 <form [formGroup]="notificationForm" *ngIf="notificationForm" class="space-y-6">
   <p-card *ngFor="let channel of notificationChannels" [formGroupName]="channel.formControlName" class="notification-section p-4 shadow-sm rounded-lg">
     <div class="flex items-center justify-between">
-      <h3 class="font-semibold text-lg m-0">{{ channel.name }}</h3>
+      <div class="flex gap-2 items-center flex-1">
+        <dl-icon [icon]="channel.formControlName" class="!w-6 h-5"  color="var(--surface-200)"></dl-icon>
+        <h3 class="font-semibold text-lg m-0">{{ channel.name }}</h3>
+      </div>
       <p-toggleButton
         formControlName="enabled"
         onLabel="Enabled"
@@ -16,16 +19,15 @@
         [onIcon]="'pi pi-check-circle'"
         offIcon="pi pi-minus-circle"
         [style]="{
-          'background-color': notificationForm.get(channel.formControlName + '.enabled')?.value ? 'var(--green-400)' : 'var(--red-400)'
+          'background-color': notificationForm.get(channel.formControlName + '.enabled')?.value ? 'var(--green-400)' : 'var(--gray-400)'
         }"
-        class="ml-auto"
       ></p-toggleButton>
     </div>
 
     <div *ngIf="notificationForm.get(channel.formControlName + '.enabled')?.value" class="mt-3 space-y-4">
       <div *ngIf="channel.requires">
         <div *ngFor="let field of channel.requires">
-          <label [for]="field.name" class="block text-sm font-medium mb-1">{{ field.label }}</label>
+          <label [for]="field.name" class="block text-sm font-medium mb-1 mt-2">{{ field.label }}</label>
           <input
             pInputText
             [formControlName]="field.name"
