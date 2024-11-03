@@ -5,11 +5,11 @@ import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { DbDomain } from '@/types/Database';
-import { PrimeNgModule } from '../../prime-ng.module';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 import { NgFor, DatePipe, CommonModule } from '@angular/common';
 import { DomainUtils } from '@services/domain-utils.service';
 import { DomainFaviconComponent } from '@components/misc/favicon.component';
-import { type FieldOption } from '@components/domain-filters/domain-filters.component';
+import { type FieldOption } from '@/app/components/domain-things/domain-filters/domain-filters.component';
 import DatabaseService from '@services/database.service';
 import { GlobalMessageService } from '@services/messaging.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';

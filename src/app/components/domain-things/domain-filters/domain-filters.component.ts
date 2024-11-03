@@ -1,8 +1,8 @@
 import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DomainFaviconComponent } from '../../components/misc/favicon.component';
-import { PrimeNgModule } from '../../prime-ng.module';
+import { DomainFaviconComponent } from '../../misc/favicon.component';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 
 export interface FieldOption {
   label: string;

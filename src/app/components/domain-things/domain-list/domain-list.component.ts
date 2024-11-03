@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { DbDomain } from '@/types/Database';
-import { PrimeNgModule } from '../../prime-ng.module';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 import { NgFor, NgSwitch, NgSwitchCase, DatePipe, CommonModule } from '@angular/common';
 import { DomainFaviconComponent } from '@components/misc/favicon.component';
 import { DomainUtils } from '@services/domain-utils.service';

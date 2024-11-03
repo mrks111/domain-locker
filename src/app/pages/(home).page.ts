@@ -8,7 +8,7 @@ import { DbDomain } from '@/types/Database';
 import { MessageService } from 'primeng/api';
 import AssetListComponent from '@components/misc/asset-list.component';
 import { DomainExpirationBarComponent } from '@components/charts/domain-expiration-bar/domain-expiration-bar.component';
-import { DomainCollectionComponent } from '@components/domain-collection/domain-collection.component';
+import { DomainCollectionComponent } from '@components/domain-things/domain-collection/domain-collection.component';
 import { Subscription } from 'rxjs';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { WelcomeComponent } from '@components/getting-started/welcome.component';

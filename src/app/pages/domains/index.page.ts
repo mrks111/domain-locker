@@ -4,7 +4,7 @@ import { PrimeNgModule } from '../../prime-ng.module';
 import DatabaseService from '@services/database.service';
 import { DbDomain } from '@/types/Database';
 import { MessageService } from 'primeng/api';
-import { DomainCollectionComponent } from '@components/domain-collection/domain-collection.component';
+import { DomainCollectionComponent } from '@components/domain-things/domain-collection/domain-collection.component';
 import { LoadingComponent } from '@components/misc/loading.component';
 
 @Component({
