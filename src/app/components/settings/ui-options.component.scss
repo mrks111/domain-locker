@@ -1,0 +1,23 @@
+::ng-deep .scale-select .p-button {
+  justify-content: center;
+  width: 100%;
+}
+
+.logged-in-options-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  a, button {
+    width: 100%;
+    margin: 0.25rem 0;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.stand-alone {
+  ::ng-deep .ui-settings-section {
+    @extend .p-card !optional;
+  }
+}

@@ -47,66 +47,7 @@
                [showTransitionOptions]="'0ms'" [hideTransitionOptions]="'0ms'"
                styleClass="settings-overlay w-60">
       <ng-template pTemplate="content">
-        <div class="p-4 surface-card border-round shadow-2">
-          <!-- Light/Dark Mode Section -->
-          <div class="mb-4">
-            <h3 class="text-sm font-semibold mb-2">
-              <i class="pi pi-sun mr-2"></i>Light/Dark Mode
-            </h3>
-            <p-selectButton [options]="darkModeOptions" [(ngModel)]="isDarkTheme"
-                (onChange)="onDarkModeChange()" optionLabel="label"
-                optionValue="value" styleClass="text-sm flex justify-center">
-              <ng-template let-option pTemplate>
-                <i [class]="option.icon"></i>
-              </ng-template>
-            </p-selectButton>
-          </div>
-          <!-- Theme Section -->
-          <div class="mb-4">
-            <h3 class="text-sm font-semibold mb-2">
-              <i class="pi pi-palette mr-2"></i>Theme
-            </h3>
-            <div class="flex flex-column">
-              <p-radioButton *ngFor="let theme of themes" [value]="theme"
-                             [(ngModel)]="selectedTheme" (onClick)="onThemeChange(theme)"
-                             [label]="theme.name" styleClass="mb-2">
-              </p-radioButton>
-            </div>
-          </div>
-          <!-- Scale (size) options -->
-           <div class="mb-4">
-              <h3 class="text-sm font-semibold mb-2">
-                <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center mr-2"></i>UI Scale
-              </h3>
-              <p-selectButton [options]="scaleOptions" [(ngModel)]="scale"
-                  (onChange)="onScaleChange()" optionLabel="label"
-                  class="scale-select"
-                  optionValue="value" styleClass="text-sm flex justify-center">
-                <ng-template let-option pTemplate>
-                  <i [class]="option.icon"></i>
-                </ng-template>
-              </p-selectButton>
-           </div>
-          <!-- Language Section (Placeholder) -->
-          <div class="mb-4">
-            <h3 class="text-sm font-semibold mb-2">
-              <i class="pi pi-globe mr-2"></i>Language
-            </h3>
-            <p class="text-sm text-gray-500">Language options coming soon</p>
-          </div>
-          <!-- User Settings Section -->
-          <div class="logged-in-options-wrap" *ngIf="isAuthenticated">
-            <a routerLink="/settings" class="p-button text-sm no-underline">
-              <i class="pi pi-user mr-2"></i>User Settings
-            </a>
-            <button pButton
-              type="button"
-              label="Logout"
-              icon="pi pi-sign-out"
-              class="p-button-text text-sm"
-              (click)="signOut()"></button>
-          </div>
-        </div>
+        <app-ui-settings [isAuthenticated]="isAuthenticated" />
       </ng-template>
     </p-overlay>
   </div>

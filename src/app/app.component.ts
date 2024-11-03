@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -34,8 +35,6 @@ import { NgApexchartsModule } from 'ng-apexcharts';
       <!-- Global components -->
       <p-scrollTop />
       <p-toast />
-      <!-- <p-confirmDialog /> -->
-      <!-- <p-confirmPopup /> -->
     </div>
   `,
   styles: [`
@@ -47,7 +46,7 @@ import { NgApexchartsModule } from 'ng-apexcharts';
   `],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  private subscription: Subscription;
+  private subscription: Subscription | undefined;
   private publicRoutes: string[] = ['/', '/home', '/about', '/login'];
   public loading: boolean = true;
 
@@ -56,6 +55,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private supabaseService: SupabaseService,
     private messageService: MessageService,
     private globalMessageService: GlobalMessageService,
+    private themeService: ThemeService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 
