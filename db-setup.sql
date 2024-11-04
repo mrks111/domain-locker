@@ -407,6 +407,39 @@ CREATE INDEX idx_domain_updates_user_id ON domain_updates(user_id);
 
 
 /* ===========================
+   User Info Table
+=========================== */
+
+-- Create the user_info table with a JSON field for notification channels
+CREATE TABLE user_info (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users (id) ON DELETE CASCADE,
+  notification_channels JSONB DEFAULT '{}'::JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Add a unique constraint to ensure each user only has one row
+ALTER TABLE user_info
+ADD CONSTRAINT unique_user_id UNIQUE (user_id);
+
+-- Enable RLS on the user_info table
+ALTER TABLE user_info ENABLE ROW LEVEL SECURITY;
+  
+-- Create a policy to allow users to access their own data
+CREATE POLICY select_own_info ON user_info
+FOR SELECT USING (auth.uid() = user_id);
+
+-- Create a policy to allow users to insert or update their own data
+CREATE POLICY modify_own_info ON user_info
+FOR ALL USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Apply the policies
+ALTER TABLE user_info FORCE ROW LEVEL SECURITY;
+
+
+/* ===========================
    Functions
 =========================== */
 
