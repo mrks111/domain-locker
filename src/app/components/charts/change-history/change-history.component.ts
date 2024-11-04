@@ -25,7 +25,7 @@ export type ChartOptions = {
 })
 export class ChangeHistoryChartComponent implements OnInit {
   @Input() domainName?: string;
-  @Input() days: number = 7; // Default to 7 days
+  @Input() days: number = 14;
 
   public chartOptions: Partial<ChartOptions> | undefined;
   public loading = true;

@@ -1,8 +1,8 @@
 <h2>User Settings</h2>
 
-<div class="p-4 grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-4 grid-flow-dense auto-rows-auto">
+<div class="p-4 grid grid-cols-1 xl:grid-cols-2 gap-4 grid-flow-dense auto-rows-auto">
   <!-- Email Settings Panel -->
-  <p-fieldset legend="Email Settings">
+  <p-card header="Email Settings">
     <form [formGroup]="emailForm" (ngSubmit)="updateEmail()">
       <div class="p-field">
         <label for="email">Email</label>
@@ -15,10 +15,10 @@
       </div>
       <p-button type="submit" label="Update Email" [disabled]="emailForm.invalid || loading"></p-button>
     </form>
-  </p-fieldset>
+  </p-card>
 
 <!-- Password Settings Panel (spans multiple rows) -->
-  <p-fieldset legend="Password Settings" class="row-span-2">
+  <p-card header="Password Settings" class="row-span-2">
     <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()" class="flex flex-col gap-2">
       <div class="p-field">
         <label for="currentPassword">Current Password</label>
@@ -37,10 +37,10 @@
       </small>
       <p-button type="submit" label="Update Password" [disabled]="passwordForm.invalid || loading"></p-button>
     </form>
-  </p-fieldset>
+  </p-card>
 
 <!-- Multi-Factor Authentication Panel (spans multiple rows) -->
-  <p-fieldset legend="Multi-Factor Authentication" class="row-span-2">
+  <p-card header="Multi-Factor Authentication" class="row-span-2">
     <p-button label="Enable MFA" (click)="enableMFA()" [disabled]="loading"></p-button>
     <form [formGroup]="mfaForm" (ngSubmit)="verifyMFA()" class="my-4">
       <div class="p-field">
@@ -50,10 +50,10 @@
       <p-button type="submit" label="Verify MFA" [disabled]="mfaForm.invalid || loading"></p-button>
     </form>
     <p-button label="Download Backup Codes" (click)="downloadBackupCodes()" [disabled]="loading"></p-button>
-  </p-fieldset>
+  </p-card>
 
 <!-- Session Settings Panel -->
-  <p-fieldset legend="Session Settings">
+  <p-card header="Session Settings">
     <form [formGroup]="sessionForm" (ngSubmit)="updateSessionTimeout()">
       <div class="p-field">
         <label for="sessionTimeout">Session Timeout (minutes)</label>
@@ -61,13 +61,13 @@
       </div>
       <p-button type="submit" label="Update Session Timeout" [disabled]="sessionForm.invalid || loading"></p-button>
     </form>
-  </p-fieldset>
+  </p-card>
 
 <!-- Account Actions Panel -->
-  <p-fieldset legend="Account Actions">
+  <p-card header="Account Actions">
     <div class="flex gap-2">
       <p-button label="Export Data" (click)="exportData()" [disabled]="loading"></p-button>
       <p-button label="Delete Account" (click)="confirmDeleteAccount()" styleClass="p-button-danger"></p-button>
     </div>
-  </p-fieldset>
+  </p-card>
 </div>

@@ -1398,4 +1398,40 @@ export default class SupabaseDatabaseService extends DatabaseService {
       })
     );
   }
+
+  // Fetch notification preferences for the logged-in user
+  async getNotificationPreferences() {
+    const { data, error } = await this.supabase.supabase
+      .from('user_info')
+      .select('notification_channels')
+      .single();
+
+    if (error) {
+      console.error('Error fetching preferences:', error);
+      throw error;
+    }
+    return data?.notification_channels || null;
+  }
+
+// Update notification preferences for the logged-in user
+async updateNotificationPreferences(preferences: any) {
+  const userId = await this.supabase.getCurrentUser().then(user => user?.id);
+
+  const { error } = await this.supabase.supabase
+    .from('user_info')
+    .upsert(
+      {
+        user_id: userId,
+        notification_channels: preferences,
+      },
+      { onConflict: 'user_id' }
+    );
+
+  if (error) {
+    console.error('Error updating preferences:', error);
+    throw error;
+  }
+  return true;
+}
+
 }

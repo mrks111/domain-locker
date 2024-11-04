@@ -6,7 +6,7 @@ import { ConfirmationService } from 'primeng/api';
 import { DbDomain } from '@/types/Database';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
-import { DomainCollectionComponent } from '@/app/components/domain-collection/domain-collection.component';
+import { DomainCollectionComponent } from '@/app/components/domain-things/domain-collection/domain-collection.component';
 import { TagEditorComponent } from '@/app/components/forms/tag-editor/tag-editor.component';
 import { TagPickListComponent } from '@/app/components/forms/tag-picklist/tag-picklist.component';
 import { type Tag } from '@/types/common';

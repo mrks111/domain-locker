@@ -23,7 +23,7 @@
       showDelay="500"
       class="p-button-rounded p-button-text text-default hover:text-primary">
     </button>
-    <a routerLink="/notifications">
+    <a routerLink="/notifications" *ngIf="isAuthenticated">
       <button
         pButton
         icon="pi pi-bell"
@@ -33,7 +33,7 @@
         class="p-button-rounded p-button-text text-default hover:text-primary">
       </button>
     </a>
-    <a routerLink="/settings">
+    <a routerLink="/settings"  *ngIf="isAuthenticated">
       <button
         pButton
         icon="pi pi-wrench"

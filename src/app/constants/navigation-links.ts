@@ -91,9 +91,9 @@ export const settingsLinks = [
   { label: 'Notification Preferences', icon: 'pi pi-bell', routerLink: '/settings/notification-preferences' },
   { label: 'Display Options', icon: 'pi pi-palette', routerLink: '/settings/display-options' },
   { label: 'Privacy and Data', icon: 'pi pi-eye-slash', routerLink: '/settings/privacy-settings' },
-  { label: 'Manage Plan', icon: 'pi pi-shop', routerLink: '/settings/manage-plan' },
+  { label: 'Manage Plan', icon: 'pi pi-shop', routerLink: '/settings/upgrade' },
   { label: 'Developer Options', icon: 'pi pi-code', routerLink: '/settings/developer-options' },
-  { label: 'Danger Zone', icon: 'pi pi-exclamation-triangle', routerLink: '/settings/danger-zone' },
+  { label: 'Danger Zone', icon: 'pi pi-exclamation-triangle', routerLink: '/settings/delete-account' },
 ];
 
 export const aboutLinks = [
@@ -202,4 +202,26 @@ export const authenticatedNavLinks = [
     //   { label: 'View All', items: statsLinks }
     // ],
   },
+];
+
+export const unauthenticatedNavLinks = [
+  {
+    label: 'About',
+    icon: 'pi pi-fw pi-info-circle',
+    items: [
+      {
+        label: 'Overview',
+        routerLink: '/about'
+      },
+      {
+        label: 'Pricing',
+        routerLink: '/about/pricing'
+      },
+    ],
+  },
+  {
+    label: 'Login',
+    icon: 'pi pi-fw pi-sign-in',
+    routerLink: '/login'
+  }
 ];

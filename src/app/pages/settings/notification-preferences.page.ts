@@ -5,6 +5,8 @@ import { PrimeNgModule } from '../../prime-ng.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DlIconComponent } from '@components/misc/svg-icon.component';
 import { GlobalMessageService } from '@services/messaging.service';
+import DatabaseService from '@services/database.service';
+import { SupabaseService } from '@/app/services/supabase.service';
 
 interface NotificationChannelField {
   label: string;
@@ -131,10 +133,13 @@ export default class NotificationPreferencesPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private globalMessageService: GlobalMessageService,
+    private databaseService: DatabaseService,
+    private supabaseService: SupabaseService,
   ) {}
 
   ngOnInit() {
     this.initializeForm();
+    this.loadNotificationPreferences();
   }
 
   private initializeForm() {
@@ -157,8 +162,24 @@ export default class NotificationPreferencesPage implements OnInit {
     }, {} as Record<string, FormGroup>);
 
     this.notificationForm = this.fb.group(formGroupConfig);
-}
+  }
 
+  private async loadNotificationPreferences() {
+    const userEmail = (await this.supabaseService.getCurrentUser())?.email || '';
+    try {
+      const preferences = await this.databaseService.getNotificationPreferences();
+
+      if (preferences) {
+        this.notificationForm.patchValue(preferences);
+      } else {
+        // Set default: Email enabled with user's auth email if it exists
+        this.notificationForm.get('email')?.patchValue({ enabled: true, address: userEmail });
+      }
+    } catch (error) {
+      console.error('Error loading notification preferences:', error);
+      this.notificationForm.get('email')?.patchValue({ enabled: true, address: userEmail });
+    }
+  }
 
   savePreferences() {
     let isValid = true;
@@ -167,7 +188,6 @@ export default class NotificationPreferencesPage implements OnInit {
       const isEnabled = channelForm.get('enabled')?.value;
 
       if (isEnabled) {
-        // Apply required validation to each field in enabled sections
         channel.requires.forEach(field => {
           const control = channelForm.get(field.name);
           if (control) {
@@ -180,7 +200,6 @@ export default class NotificationPreferencesPage implements OnInit {
           }
         });
 
-        // Apply required validation to provider-specific fields if a provider is selected
         if (channel.providers) {
           const selectedProvider = channelForm.get('provider')?.value;
           const provider = channel.providers.find(p => p.value === selectedProvider);
@@ -197,39 +216,26 @@ export default class NotificationPreferencesPage implements OnInit {
             }
           });
         }
-      } else {
-        // Clear validators if the section is disabled
-        channel.requires.forEach(field => {
-          const control = channelForm.get(field.name);
-          if (control) {
-            control.clearValidators();
-            control.updateValueAndValidity();
-          }
-        });
-
-        if (channel.providers) {
-          channel.providers.forEach(provider => {
-            provider.fields.forEach(field => {
-              const control = channelForm.get(field.name);
-              if (control) {
-                control.clearValidators();
-                control.updateValueAndValidity();
-              }
-            });
-          });
-        }
       }
     });
 
-    // Log the entire form data to the console
-    console.log('Form Data:', this.notificationForm.value);
-
     if (isValid) {
-      this.globalMessageService.showMessage({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Preferences saved successfully'
-      });
+      this.databaseService.updateNotificationPreferences(this.notificationForm.value)
+        .then(() => {
+          this.globalMessageService.showMessage({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Preferences saved successfully'
+          });
+        })
+        .catch(error => {
+          console.error('Error saving preferences:', error);
+          this.globalMessageService.showMessage({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to save notification preferences'
+          });
+        });
     } else {
       this.globalMessageService.showMessage({
         severity: 'error',

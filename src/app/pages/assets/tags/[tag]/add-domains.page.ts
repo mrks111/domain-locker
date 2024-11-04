@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { DbDomain, Tag } from '@/types/Database';
-import { DomainCollectionComponent } from '@/app/components/domain-collection/domain-collection.component';
+import { DomainCollectionComponent } from '@/app/components/domain-things/domain-collection/domain-collection.component';
 import { TagPickListComponent } from '@/app/components/forms/tag-picklist/tag-picklist.component';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';

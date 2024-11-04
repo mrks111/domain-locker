@@ -10,7 +10,7 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { OverlayModule } from 'primeng/overlay';
 import { Subscription } from 'rxjs';
-import { authenticatedNavLinks } from '@/app/constants/navigation-links';
+import { authenticatedNavLinks, unauthenticatedNavLinks } from '@/app/constants/navigation-links';
 import { UiSettingsComponent } from '@components/settings/ui-options.component';
 
 @Component({
@@ -98,25 +98,7 @@ export class NavbarComponent implements OnInit {
     if (this.isAuthenticated) {
       this.items = authenticatedNavLinks;
     } else {
-      this.items.push({
-        label: 'About',
-        icon: 'pi pi-fw pi-info-circle',
-        items: [
-          {
-            label: 'Overview',
-            routerLink: '/about'
-          },
-          {
-            label: 'Pricing',
-            routerLink: '/about/pricing'
-          },
-        ],
-      });
-      this.items.push({
-        label: 'Login',
-        icon: 'pi pi-fw pi-sign-in',
-        routerLink: '/login'
-      });
+      this.items = unauthenticatedNavLinks;
     }
   }
 

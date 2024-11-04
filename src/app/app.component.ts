@@ -27,7 +27,7 @@ import { ThemeService } from './services/theme.service';
   template: `
     <!-- Navbar -->
     <app-navbar></app-navbar>
-    <div class="content-container">
+    <div class="content-container {{ isFullWidth ? 'full' : '' }}">
       <!-- While initializing, show loading spinner -->
       <loading *ngIf="loading" />
       <!-- Create router outlet -->
@@ -48,14 +48,17 @@ import { ThemeService } from './services/theme.service';
 export class AppComponent implements OnInit, OnDestroy {
   private subscription: Subscription | undefined;
   private publicRoutes: string[] = ['/', '/home', '/about', '/login'];
+  private fullWidthRoutes: string[] = ['/about', '/settings', '/stats'];
+
   public loading: boolean = true;
+  public isFullWidth: boolean = false;
 
   constructor(
     private router: Router,
     private supabaseService: SupabaseService,
     private messageService: MessageService,
     private globalMessageService: GlobalMessageService,
-    private themeService: ThemeService,
+    private _themeService: ThemeService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 
@@ -66,7 +69,10 @@ export class AppComponent implements OnInit, OnDestroy {
           this.loading = true;
 
           const currentRoute = event.urlAfterRedirects || event.url;
-          if (this.publicRoutes.includes(currentRoute)) {
+
+          this.isFullWidth = this.fullWidthRoutes.some(route => currentRoute.includes(route));
+
+          if (this.publicRoutes.includes(currentRoute) || currentRoute.startsWith('/about')) {
             this.loading = false;
             return;
           }

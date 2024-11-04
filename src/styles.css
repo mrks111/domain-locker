@@ -62,7 +62,17 @@ h1 {
   max-width: 1280px;
   margin: 0 auto;
   width: 100%;
+  &.full {
+    margin: 0;
+    width: 100vw;
+    padding: 0;
+    display: block;
+    height: 100%;
+    min-height: 90vh;
+  }
 }
+
+.grid { margin: 0; }
 
 /* Create new variable, --surface-25 */
 :root {
