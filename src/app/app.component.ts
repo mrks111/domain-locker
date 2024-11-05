@@ -48,7 +48,7 @@ import { ThemeService } from './services/theme.service';
 export class AppComponent implements OnInit, OnDestroy {
   private subscription: Subscription | undefined;
   private publicRoutes: string[] = ['/', '/home', '/about', '/login'];
-  private fullWidthRoutes: string[] = ['/about', '/settings', '/stats'];
+  private fullWidthRoutes: string[] = ['/settings', '/stats'];
 
   public loading: boolean = true;
   public isFullWidth: boolean = false;

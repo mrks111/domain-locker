@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs';
-import { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag } from './common';
+import { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag, Notification } from './common';
 import { type SecurityCategory } from '@/app/constants/security-categories';
 
-export { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag };
+export { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag, Notification };
 
 export interface DbDomain extends Timestamps {
   id: string;
@@ -30,7 +30,7 @@ export interface IpAddress extends Timestamps {
   isIpv6: boolean;
 }
 
-export interface Notification extends Timestamps {
+export interface NotificationOptions extends Timestamps {
   id: string;
   domainId: string;
   type: string;
@@ -50,23 +50,23 @@ export interface SaveDomainData {
 }
 
 export abstract class DatabaseService {
-  abstract saveDomain(data: SaveDomainData): Observable<DbDomain>;
-  abstract getDomain(domainName: string): Observable<DbDomain>;
-  abstract updateDomain(id: string, domain: Partial<DbDomain>): Observable<DbDomain>;
-  abstract deleteDomain(id: string): Observable<void>;
-  abstract listDomains(userId: string): Observable<DbDomain[]>;
-  abstract listDomainNames(): Observable<string[]>;
-  abstract addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'created_at' | 'updated_at'>): Observable<IpAddress>;
-  abstract getIpAddresses(isIpv6: boolean): Observable<{ip_address: string, domains: string[]}[]>;
-  abstract updateIpAddress(id: string, ipAddress: Partial<IpAddress>): Observable<IpAddress>;
-  abstract deleteIpAddress(id: string): Observable<void>;
-  abstract addTag(tag: Omit<Tag, 'id'>): Observable<Tag>;
-  abstract getTags(): Observable<Tag[]>;
-  abstract deleteTag(id: string): Observable<void>;
-  abstract addNotification(notification: Omit<Notification, 'id' | 'created_at' | 'updated_at'>): Observable<Notification>;
-  abstract getNotifications(domainId: string): Observable<Notification[]>;
-  abstract updateNotification(id: string, notification: Partial<Notification>): Observable<Notification>;
-  abstract deleteNotification(id: string): Observable<void>;
+  // abstract saveDomain(data: SaveDomainData): Observable<DbDomain>;
+  // abstract getDomain(domainName: string): Observable<DbDomain>;
+  // abstract updateDomain(id: string, domain: Partial<DbDomain>): Observable<DbDomain>;
+  // abstract deleteDomain(id: string): Observable<void>;
+  // abstract listDomains(userId: string): Observable<DbDomain[]>;
+  // abstract listDomainNames(): Observable<string[]>;
+  // abstract addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'created_at' | 'updated_at'>): Observable<IpAddress>;
+  // abstract getIpAddresses(isIpv6: boolean): Observable<{ip_address: string, domains: string[]}[]>;
+  // abstract updateIpAddress(id: string, ipAddress: Partial<IpAddress>): Observable<IpAddress>;
+  // abstract deleteIpAddress(id: string): Observable<void>;
+  // abstract addTag(tag: Omit<Tag, 'id'>): Observable<Tag>;
+  // abstract getTags(): Observable<Tag[]>;
+  // abstract deleteTag(id: string): Observable<void>;
+  // abstract addNotification(notification: Omit<NotificationOptions, 'id' | 'created_at' | 'updated_at'>): Observable<NotificationOptions>;
+  // abstract getNotifications(domainId: string): Observable<Notification[]>;
+  // abstract updateNotification(id: string, notification: Partial<Notification>): Observable<Notification>;
+  // abstract deleteNotification(id: string): Observable<void>;
 }
 
 

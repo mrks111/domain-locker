@@ -802,20 +802,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
-  getNotifications(domainId: string): Observable<Notification[]> {
-    return from(this.supabase.supabase
-      .from('notification_preferences')
-      .select('*')
-      .eq('domain_id', domainId)
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data as Notification[];
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
   updateNotification(id: string, notification: Partial<Notification>): Observable<Notification> {
     return from(this.supabase.supabase
       .from('notification_preferences')
@@ -1413,25 +1399,109 @@ export default class SupabaseDatabaseService extends DatabaseService {
     return data?.notification_channels || null;
   }
 
-// Update notification preferences for the logged-in user
-async updateNotificationPreferences(preferences: any) {
-  const userId = await this.supabase.getCurrentUser().then(user => user?.id);
+  // Update notification preferences for the logged-in user
+  async updateNotificationPreferences(preferences: any) {
+    const userId = await this.supabase.getCurrentUser().then(user => user?.id);
 
-  const { error } = await this.supabase.supabase
-    .from('user_info')
-    .upsert(
-      {
-        user_id: userId,
-        notification_channels: preferences,
-      },
-      { onConflict: 'user_id' }
-    );
+    const { error } = await this.supabase.supabase
+      .from('user_info')
+      .upsert(
+        {
+          user_id: userId,
+          notification_channels: preferences,
+        },
+        { onConflict: 'user_id' }
+      );
 
-  if (error) {
-    console.error('Error updating preferences:', error);
-    throw error;
+    if (error) {
+      console.error('Error updating preferences:', error);
+      throw error;
+    }
+    return true;
   }
-  return true;
-}
+
+   
+  // getNotifications(): Observable<(Notification & { domain_name: string })[]> {
+  //   return from(
+  //     this.supabase.supabase
+  //       .from('notifications')
+  //       .select(`
+  //         id,
+  //         domain_id,
+  //         change_type,
+  //         message,
+  //         sent,
+  //         read,
+  //         created_at,
+  //         domains ( domain_name )
+  //       `)
+  //       .order('created_at', { ascending: false })
+  //   ).pipe(
+  //     map(({ data, error }) => {
+  //       if (error) {
+  //         console.error('Error fetching notifications:', error);
+  //         throw error;
+  //       }
+  //       // Transform data to include domain_name directly
+  //       return (data || []).map(notification => ({
+  //         ...notification,
+  //         domain_name: notification.domains[0]?.domain_name || ''
+  //       }));
+  //     }),
+  //     catchError((error) => {
+  //       console.error('Error in getNotifications:', error);
+  //       return of([] as (Notification & { domain_name: string })[]);
+  //     })
+  //   );
+  // }
+
+  getUserNotifications(): Observable<(Notification & { domain_name: string })[]> {
+    return from(
+      this.supabase.supabase
+        .from('notifications')
+        .select(`
+          id,
+          change_type,
+          message,
+          sent,
+          read,
+          created_at,
+          domain_id,
+          domains ( domain_name )
+        `)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching notifications:', error);
+          throw error;
+        }
+        return (data || []).map(notification => ({
+          id: notification.id,
+          change_type: notification.change_type,
+          message: notification.message,
+          sent: notification.sent,
+          read: notification.read,
+          created_at: notification.created_at,
+          domain_id: notification.domain_id,
+          // Messy workaround to access domain_name, I don't know why it thinks it's an array :/
+          domain_name: ((notification.domains as unknown) as { domain_name: string; }).domain_name
+        } as unknown as Notification & { domain_name: string }));
+      }),
+      catchError((error) => {
+        console.error('Error in getUserNotifications:', error);
+        return of([] as (Notification & { domain_name: string })[]);
+      })
+    );
+  }
+
+  markNotificationReadStatus(notificationId: string, readStatus: boolean) {
+    return from(
+      this.supabase.supabase
+        .from('notifications')
+        .update({ read: readStatus })
+        .eq('id', notificationId)
+    );
+  }
 
 }

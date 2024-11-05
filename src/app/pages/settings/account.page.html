@@ -45,7 +45,7 @@
     <form [formGroup]="mfaForm" (ngSubmit)="verifyMFA()" class="my-4">
       <div class="p-field">
         <label for="otpCode">OTP Code</label>
-        <p-inputOtp id="otpCode" formControlName="otpCode" [numberOfInputs]="6"></p-inputOtp>
+        <p-inputOtp id="otpCode" formControlName="otpCode" [length]="6"></p-inputOtp>
       </div>
       <p-button type="submit" label="Verify MFA" [disabled]="mfaForm.invalid || loading"></p-button>
     </form>

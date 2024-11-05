@@ -2,7 +2,7 @@
   [panelSizes]="[25, 75]"
   styleClass="h-full min-h-[90vh] px-1 py-2 bg-transparent border-none">
     <ng-template pTemplate>
-      <nav #sidebarNav class="border-surface-50 border-2 w-full rounded-l p-1 !border-r-0 bg-surface-25">
+      <nav #sidebarNav class="border-surface-50 border-2 w-full rounded-l p-1 !border-r-0 bg-surface-25 relative">
         <a routerLink="/settings" class="no-underline text-default transition-all hover:text-primary">
           <h3 class="m-3">Settings</h3>
         </a>
@@ -20,6 +20,7 @@
             </li>
           }
         </ul>
+        <p-button label="Logout" icon="pi pi-sign-out" (click)="logout()" class="w-full mt-4 absolute bottom-4 text-center"></p-button>
       </nav>
     </ng-template>
     <ng-template pTemplate>

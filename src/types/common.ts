@@ -3,6 +3,18 @@ export interface Timestamps {
   updated_at: string;
 }
 
+export interface Notification {
+  id: string;
+  userId: string;
+  domainId: string;
+  domainName: string;
+  change_type: string;
+  message: string;
+  sent: boolean;
+  read: boolean;
+  created_at: string;
+}
+
 export interface Tag {
   id: string;
   name: string;

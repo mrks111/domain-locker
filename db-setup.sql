@@ -286,6 +286,11 @@ CREATE TABLE notifications (
 -- Enable RLS on notifications table
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
+CREATE POLICY "Allow users to update their notifications"
+  ON notifications
+  FOR UPDATE
+  USING (user_id = auth.uid());
+
 -- RLS policy to allow access for the correct user
 CREATE POLICY select_notifications_policy ON notifications
   FOR SELECT

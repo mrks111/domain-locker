@@ -4,23 +4,22 @@ import { PrimeNgModule } from '../prime-ng.module';
 import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { settingsLinks } from '@/app/constants/navigation-links';
+import { SupabaseService } from '@/app/services/supabase.service';
 
 @Component({
   standalone: true,
   imports: [CommonModule, RouterOutlet, PrimeNgModule],
   templateUrl: './settings/index.page.html',
-  // styles: ['::ng-deep .content-container { max-width: 1600px; }']
 })
 export default class SettingsIndexPage implements OnInit {
   items: MenuItem[] | undefined;
   hideSideBar = false;
   @ViewChild('sidebarNav', { static: false }) sidebarNav!: ElementRef;
   hideTextLabels = false;
-  private resizeObserver!: ResizeObserver;
 
   constructor(
     private router: Router,
-    private cdr: ChangeDetectorRef
+    public supabaseService: SupabaseService,
   ) {}
 
   ngOnInit() {
@@ -29,5 +28,10 @@ export default class SettingsIndexPage implements OnInit {
 
   isActive(link: string): boolean {
     return this.router.url === link;
+  }
+
+  async logout() {
+    await this.supabaseService.signOut();
+    window.location.href = '/login';
   }
 }
