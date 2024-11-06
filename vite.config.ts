@@ -61,7 +61,7 @@ export default defineConfig( ({ mode }) => {
       setupFiles: ['src/test.ts'],
       include: ['**/*.spec.ts'],
     },
-    envPrefix: ['VITE_', 'SUPABASE_'],
+    envPrefix: ['VITE_', 'SUPABASE_', 'DL_'],
     define: {
       'import.meta.vitest': mode !== 'production',
       // 'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env['VITE_SUPABASE_URL']),
