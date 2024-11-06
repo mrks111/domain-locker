@@ -1,5 +1,5 @@
 // src/app/components/navbar/navbar.component.ts
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, ViewChild, AfterViewInit } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -14,6 +14,7 @@ import { authenticatedNavLinks, unauthenticatedNavLinks } from '@/app/constants/
 import { UiSettingsComponent } from '@components/settings/ui-options.component';
 import { NotificationsListComponent } from '@components/notifications-list/notifications-list.component';
 import { OverlayPanel } from 'primeng/overlaypanel';
+import DatabaseService from '@/app/services/database.service';
 
 @Component({
   selector: 'app-navbar',
@@ -30,50 +31,23 @@ import { OverlayPanel } from 'primeng/overlaypanel';
     NotificationsListComponent,
   ],
   templateUrl: './navbar.component.html',
-  styles: [`
-    ::ng-deep .scale-select .p-button {
-      justify-content: center;
-      width: 100%;
-    }
-    ::ng-deep .custom-menubar .p-menubar-root-list {
-      display: flex;
-      align-items: center;
-    }
-    ::ng-deep .custom-menubar .p-menuitem-link {
-      padding: 0.5rem 0.75rem;
-    }
-    ::ng-deep .custom-menubar .p-menuitem-icon {
-      margin-right: 0.5rem;
-    }
-    ::ng-deep .p-sidebar {
-      max-width: 100%;
-    }
-    ::ng-deep .settings-overlay .p-selectbutton .p-button {
-      padding: 0.5rem;
-    }
-    ::ng-deep p-menubar {
-      display: flex;
-    }
-    .logged-in-options-wrap {
-      @apply flex items-center flex-col;
-      a, button {
-        @apply flex items-center w-full flex justify-center my-1;
-      }
-    }
-  `]
+  styleUrls: ['./navbar.component.scss'],
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, AfterViewInit {
   @ViewChild('notificationsOverlay') notificationsOverlay!: OverlayPanel;
+  notificationsVisible: boolean = false;
   items: MenuItem[] = [];
   sidebarVisible: boolean = false;
   settingsVisible: boolean = false;
   isAuthenticated: boolean = false;
+  unreadNotificationsCount: number = 0;
 
   private subscriptions: Subscription = new Subscription(); 
   private platformId = inject(PLATFORM_ID);
 
   constructor(
     public supabaseService: SupabaseService,
+    private databaseService: DatabaseService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -89,6 +63,16 @@ export class NavbarComponent implements OnInit {
     // Initial check for auth status
     this.checkAuthStatus();
 
+  }
+
+  ngAfterViewInit() {
+    this.loadUnreadNotificationCount();
+  }
+
+  loadUnreadNotificationCount() {
+    this.databaseService.getUnreadNotificationCount().subscribe(
+      (count) => this.unreadNotificationsCount = count,
+    );
   }
 
   async checkAuthStatus() {
@@ -115,7 +99,9 @@ export class NavbarComponent implements OnInit {
   }
   
   toggleNotifications(event: Event) {
+    this.notificationsVisible = true;
     this.notificationsOverlay.toggle(event);
+    this.unreadNotificationsCount = 0;
   }
 
   toggleSettings(event: Event) {

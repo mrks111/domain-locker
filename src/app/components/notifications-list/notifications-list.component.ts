@@ -1,50 +1,80 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import DatabaseService from '@/app/services/database.service';
 import { Notification } from '@/types/Database';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { DomainFaviconComponent } from '@components/misc/favicon.component';
 import { CommonModule } from '@angular/common';
+import { PaginatorModule } from 'primeng/paginator';
 
 @Component({
   standalone: true,
   selector: 'app-notifications-list',
-  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent ],
-
-  templateUrl: './notifications-list.component.html'
+  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, PaginatorModule],
+  templateUrl: './notifications-list.component.html',
+  styleUrls: ['./notifications-list.component.scss'],
 })
 export class NotificationsListComponent implements OnInit {
   notifications: (Notification & { domain_name: string })[] = [];
-
+  totalNotifications = 0;
   @Input() isInModal = false;
+  rowsPerPage = 25;
+  unreadNotificationsCount = 0;
 
-  constructor(private databaseService: DatabaseService) {}
+  constructor(private databaseService: DatabaseService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadNotifications();
   }
 
-  loadNotifications() {
-    this.databaseService.getUserNotifications().subscribe(
-      (notifications) => {
+  loadNotifications(page = 0) {
+    const limit = this.isInModal ? this.rowsPerPage : undefined;
+    const offset = page * this.rowsPerPage;
+
+    this.databaseService.getUserNotifications(limit, offset).subscribe(
+      ({ notifications, total }) => {
         this.notifications = notifications;
+        if (this.isInModal) this.notifications = this.sortByUnreadFirst(this.notifications);
+        this.totalNotifications = total;
+        this.updateUnreadCount();
       },
-      (error) => {
-        console.error('Error loading notifications:', error);
-      }
+      (error) => console.error('Error loading notifications:', error)
     );
+  }
+
+  sortByUnreadFirst(notifications: Notification[]) {
+    return notifications.sort((a: Notification, b: Notification) => {
+      if (a.read && !b.read) return 1;
+      if (!a.read && b.read) return -1;
+      return 0;
+    });
+  }
+
+  updateUnreadCount() {
+    this.unreadNotificationsCount = this.notifications.filter((n) => !n.read).length;
+    this.cdr.detectChanges();
   }
 
   markAsRead(notificationId: string) {
     this.databaseService.markNotificationReadStatus(notificationId, true).subscribe(() => {
-      const notification = this.notifications.find(n => n.id === notificationId);
+      const notification = this.notifications.find((n) => n.id === notificationId);
       if (notification) notification.read = true;
+      this.updateUnreadCount();
     });
   }
 
   markAsUnread(notificationId: string) {
     this.databaseService.markNotificationReadStatus(notificationId, false).subscribe(() => {
-      const notification = this.notifications.find(n => n.id === notificationId);
+      const notification = this.notifications.find((n) => n.id === notificationId);
       if (notification) notification.read = false;
+      this.updateUnreadCount();
+    });
+  }
+
+  async markAllAsRead(read = true) {
+    (await this.databaseService.markAllNotificationsRead(read)).subscribe(() => {
+      this.notifications.forEach((notification) => (notification.read = read));
+      this.updateUnreadCount();
+      this.cdr.detectChanges();
     });
   }
 }

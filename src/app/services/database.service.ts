@@ -1419,46 +1419,68 @@ export default class SupabaseDatabaseService extends DatabaseService {
     }
     return true;
   }
-
-  getUserNotifications(): Observable<(Notification & { domain_name: string })[]> {
-    return from(
-      this.supabase.supabase
-        .from('notifications')
-        .select(`
-          id,
-          change_type,
-          message,
-          sent,
-          read,
-          created_at,
-          domain_id,
-          domains ( domain_name )
-        `)
-        .order('created_at', { ascending: false })
-    ).pipe(
-      map(({ data, error }) => {
+  
+  getUserNotifications(limit?: number, offset = 0): Observable<{ notifications: (Notification & { domain_name: string })[]; total: number }> {
+    const query = this.supabase.supabase
+      .from('notifications')
+      .select(`
+        id,
+        change_type,
+        message,
+        sent,
+        read,
+        created_at,
+        domain_id,
+        domains ( domain_name )
+      `, { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .limit(limit || 25)
+      .range(offset, offset + (limit || 25));
+  
+    return from(query).pipe(
+      map(({ data, count, error }) => {
         if (error) {
           console.error('Error fetching notifications:', error);
           throw error;
         }
-        return (data || []).map(notification => ({
+        
+        const notifications = (data || []).map((notification): Notification & { domain_name: string } => ({
           id: notification.id,
+          domainId: notification.domain_id,
           change_type: notification.change_type,
           message: notification.message,
           sent: notification.sent,
           read: notification.read,
           created_at: notification.created_at,
-          domain_id: notification.domain_id,
-          // Messy workaround to access domain_name, I don't know why it thinks it's an array :/
-          domain_name: ((notification.domains as unknown) as { domain_name: string; }).domain_name
-        } as unknown as Notification & { domain_name: string }));
+          domain_name: ((notification.domains as unknown) as { domain_name: string }).domain_name
+        }));
+        
+        return { notifications, total: count || 0 };
       }),
       catchError((error) => {
         console.error('Error in getUserNotifications:', error);
-        return of([] as (Notification & { domain_name: string })[]);
+        return of({ notifications: [], total: 0 });
       })
     );
   }
+  
+  
+  async markAllNotificationsRead(read = true): Promise<Observable<void>> {
+    const userId = await this.supabase.getCurrentUser().then(user => user?.id);
+    return from(
+      this.supabase.supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', userId)
+    ).pipe(
+      map(({ error }) => {
+        if (error) {
+          console.error('Error marking all notifications as read:', error);
+          throw error;
+        }
+      })
+    );
+  }  
 
   markNotificationReadStatus(notificationId: string, readStatus: boolean) {
     return from(
@@ -1466,6 +1488,27 @@ export default class SupabaseDatabaseService extends DatabaseService {
         .from('notifications')
         .update({ read: readStatus })
         .eq('id', notificationId)
+    );
+  }
+
+  getUnreadNotificationCount(): Observable<number> {
+    return from(
+      this.supabase.supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('read', false)
+    ).pipe(
+      map(({ count, error }) => {
+        if (error) {
+          console.error('Error fetching unread notifications count:', error);
+          return 0;
+        }
+        return count || 0;
+      }),
+      catchError((error) => {
+        console.error('Error in getUnreadNotificationCount:', error);
+        return of(0);
+      })
     );
   }
 

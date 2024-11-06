@@ -23,22 +23,31 @@
       showDelay="500"
       class="p-button-rounded p-button-text text-default hover:text-primary">
     </button>
-    <button
-      pButton
+    <p-button
       icon="pi pi-bell"
       (click)="toggleNotifications($event)"
       pTooltip="Notifications"
       tooltipPosition="bottom"
       showDelay="500"
-      class="p-button-rounded p-button-text text-default hover:text-primary">
-    </button>
+      [text]="true"
+      severity="contrast"
+      class="notification-button text-default hover:text-primary">
+      <p-badge
+        *ngIf="unreadNotificationsCount"
+        [value]="unreadNotificationsCount"
+        severity="danger"
+        class="absolute top-0 right-px"
+      />
+    </p-button>
 
     <p-overlayPanel
       #notificationsOverlay
       [showTransitionOptions]="'200ms'"
       [hideTransitionOptions]="'200ms'"
       [dismissable]="true">
-      <app-notifications-list [isInModal]="true" />
+      <div class="w-80">
+        <app-notifications-list *ngIf="notificationsVisible" [isInModal]="true" />
+      </div>
     </p-overlayPanel>
     <a routerLink="/settings"  *ngIf="isAuthenticated">
       <button

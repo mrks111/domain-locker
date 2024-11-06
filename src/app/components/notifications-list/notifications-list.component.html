@@ -1,6 +1,38 @@
-<div *ngIf="notifications.length; else noNotifications" [class]="isInModal ? 'max-w-64 max-h-96 overflow-y-scroll overflow-x-hidden' : ''">
+
+@if (!isInModal) {
+  <div class="flex justify-between items-center mb-4 flex-wrap">
+    <h2 class="mb-3">
+      Notifications
+      {{unreadNotificationsCount ? '('+unreadNotificationsCount+')' : ''}}
+    </h2>
+    <div class="flex gap-2 flex-wrap">
+      <p-button *ngIf="!isInModal" label="View Full Change History" icon="pi pi-history" routerLink="/domains/change-history" severity="secondary" />
+      
+      @if (unreadNotificationsCount && !isInModal) {
+        <p-button
+          label="Mark All as Read"
+          icon="pi pi-check"
+          (click)="markAllAsRead()"
+          severity="info"
+          [badge]="unreadNotificationsCount < 10 ? unreadNotificationsCount.toString() : '10+'"
+        />
+      } @else if (notifications.length && !isInModal) {
+        <p-button
+          label="Mark All as Unread"
+          icon="pi pi-eye-slash"
+          (click)="markAllAsRead(false)"
+          severity="warning"
+          [badge]="(notifications.length - unreadNotificationsCount).toString()"
+        />
+      }
+    </div>
+  </div>
+}
+
+<div *ngIf="notifications.length; else noNotifications" [class]="isInModal ? 'max-w-80 max-h-[48rem] overflow-y-scroll overflow-x-hidden' : ''">
   <div *ngFor="let notification of notifications"
-       class="p-2 flex justify-between items-center border-b-2 border-surface-400 {{ !notification.read ? 'bg-surface-100' : '' }} hover:bg-surface-200">
+       class="notification-row {{ notification.read ? '' : 'unread' }} p-2 flex justify-between items-center border-b-2 border-surface-400"
+       >
     <div>
       <h4 class="flex items-center gap-2">
         <app-domain-favicon [domain]="notification.domain_name" [size]="20"></app-domain-favicon>
@@ -13,13 +45,48 @@
       <small class="text-xs opacity-70">{{ notification.created_at | date:'short' }}</small>
     </div>
     <div>
-      @if (!notification.read) {
-        <p-button [text]="true" icon="pi pi-eye" (click)="markAsRead(notification.id)" pTooltip="Mark as read" />
-      } @else {
-        <p-button [text]="true" icon="pi pi-eye-slash" (click)="markAsUnread(notification.id)" pTooltip="Mark as unread" />
-      }
+      <p-button *ngIf="!notification.read" [text]="true" icon="pi pi-eye" (click)="markAsRead(notification.id)" pTooltip="Mark as read"></p-button>
+      <p-button *ngIf="notification.read" [text]="true" icon="pi pi-eye-slash" (click)="markAsUnread(notification.id)" pTooltip="Mark as unread"></p-button>
     </div>
   </div>
+
+  <!-- View All Button in Modal -->
+  <div *ngIf="isInModal && notifications.length === rowsPerPage" class="text-center mt-2">
+    <p-button
+      label="View All"
+      icon="pi pi-arrow-up-right"
+      routerLink="/notifications"
+      [text]="true"
+      size="small"
+      styleClass="py-2 px-4 my-2"
+    />
+  </div>
+
+  @if (!isInModal) {
+    <!-- Pagination in Full Page -->
+    <p-paginator
+      [rows]="rowsPerPage"
+      [totalRecords]="totalNotifications"
+      (onPageChange)="loadNotifications($event.page)"
+      styleClass="mt-4"
+    />
+
+    <div class="flex gap-2 my-4 mx-auto justify-end flex-wrap">
+      <p-button
+        label="Edit Notification Events"
+        icon="pi pi-check-square"
+        severity="secondary"
+        routerLink="/notifications/events"
+      />
+      <p-button
+        label="Edit Notification Channels"
+        icon="pi pi-telegram"
+        severity="secondary"
+        routerLink="/settings/notification-preferences"
+      />
+    </div>
+  }
+
 </div>
 
 <ng-template #noNotifications>

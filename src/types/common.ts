@@ -5,9 +5,8 @@ export interface Timestamps {
 
 export interface Notification {
   id: string;
-  userId: string;
   domainId: string;
-  domainName: string;
+  domain_name: string;
   change_type: string;
   message: string;
   sent: boolean;
