@@ -1,0 +1,27 @@
+<div *ngIf="notifications.length; else noNotifications" [class]="isInModal ? 'max-w-64 max-h-96 overflow-y-scroll overflow-x-hidden' : ''">
+  <div *ngFor="let notification of notifications"
+       class="p-2 flex justify-between items-center border-b-2 border-surface-400 {{ !notification.read ? 'bg-surface-100' : '' }} hover:bg-surface-200">
+    <div>
+      <h4 class="flex items-center gap-2">
+        <app-domain-favicon [domain]="notification.domain_name" [size]="20"></app-domain-favicon>
+        <a [routerLink]="'/domains/' + notification.domain_name" class="text-primary no-underline">
+          {{ notification.domain_name }}
+        </a>
+        <span class="opacity-70 font-normal">{{ notification.change_type }}</span>
+      </h4>
+      <p class="mx-0 my-1">{{ notification.message }}</p>
+      <small class="text-xs opacity-70">{{ notification.created_at | date:'short' }}</small>
+    </div>
+    <div>
+      @if (!notification.read) {
+        <p-button [text]="true" icon="pi pi-eye" (click)="markAsRead(notification.id)" pTooltip="Mark as read" />
+      } @else {
+        <p-button [text]="true" icon="pi pi-eye-slash" (click)="markAsUnread(notification.id)" pTooltip="Mark as unread" />
+      }
+    </div>
+  </div>
+</div>
+
+<ng-template #noNotifications>
+  <p class="text-center mt-4 opacity-70">You have no notifications.</p>
+</ng-template>

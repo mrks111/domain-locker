@@ -1,5 +1,5 @@
 // src/app/components/navbar/navbar.component.ts
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -12,6 +12,8 @@ import { OverlayModule } from 'primeng/overlay';
 import { Subscription } from 'rxjs';
 import { authenticatedNavLinks, unauthenticatedNavLinks } from '@/app/constants/navigation-links';
 import { UiSettingsComponent } from '@components/settings/ui-options.component';
+import { NotificationsListComponent } from '@components/notifications-list/notifications-list.component';
+import { OverlayPanel } from 'primeng/overlaypanel';
 
 @Component({
   selector: 'app-navbar',
@@ -25,6 +27,7 @@ import { UiSettingsComponent } from '@components/settings/ui-options.component';
     RadioButtonModule,
     OverlayModule,
     UiSettingsComponent,
+    NotificationsListComponent,
   ],
   templateUrl: './navbar.component.html',
   styles: [`
@@ -60,12 +63,13 @@ import { UiSettingsComponent } from '@components/settings/ui-options.component';
   `]
 })
 export class NavbarComponent implements OnInit {
+  @ViewChild('notificationsOverlay') notificationsOverlay!: OverlayPanel;
   items: MenuItem[] = [];
   sidebarVisible: boolean = false;
   settingsVisible: boolean = false;
   isAuthenticated: boolean = false;
 
-  private subscriptions: Subscription = new Subscription();
+  private subscriptions: Subscription = new Subscription(); 
   private platformId = inject(PLATFORM_ID);
 
   constructor(
@@ -108,6 +112,10 @@ export class NavbarComponent implements OnInit {
 
   closeSidebar() {
     this.sidebarVisible = false;
+  }
+  
+  toggleNotifications(event: Event) {
+    this.notificationsOverlay.toggle(event);
   }
 
   toggleSettings(event: Event) {

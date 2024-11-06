@@ -23,17 +23,23 @@
       showDelay="500"
       class="p-button-rounded p-button-text text-default hover:text-primary">
     </button>
-    <a routerLink="/notifications" *ngIf="isAuthenticated">
-      <!-- TODO: Show notifications overlay pannel when the user clicks here -->
-      <button
-        pButton
-        icon="pi pi-bell"
-        pTooltip="Notifications"
-        tooltipPosition="bottom"
-        showDelay="500"
-        class="p-button-rounded p-button-text text-default hover:text-primary">
-      </button>
-    </a>
+    <button
+      pButton
+      icon="pi pi-bell"
+      (click)="toggleNotifications($event)"
+      pTooltip="Notifications"
+      tooltipPosition="bottom"
+      showDelay="500"
+      class="p-button-rounded p-button-text text-default hover:text-primary">
+    </button>
+
+    <p-overlayPanel
+      #notificationsOverlay
+      [showTransitionOptions]="'200ms'"
+      [hideTransitionOptions]="'200ms'"
+      [dismissable]="true">
+      <app-notifications-list [isInModal]="true" />
+    </p-overlayPanel>
     <a routerLink="/settings"  *ngIf="isAuthenticated">
       <button
         pButton

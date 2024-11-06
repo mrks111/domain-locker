@@ -1420,41 +1420,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
     return true;
   }
 
-   
-  // getNotifications(): Observable<(Notification & { domain_name: string })[]> {
-  //   return from(
-  //     this.supabase.supabase
-  //       .from('notifications')
-  //       .select(`
-  //         id,
-  //         domain_id,
-  //         change_type,
-  //         message,
-  //         sent,
-  //         read,
-  //         created_at,
-  //         domains ( domain_name )
-  //       `)
-  //       .order('created_at', { ascending: false })
-  //   ).pipe(
-  //     map(({ data, error }) => {
-  //       if (error) {
-  //         console.error('Error fetching notifications:', error);
-  //         throw error;
-  //       }
-  //       // Transform data to include domain_name directly
-  //       return (data || []).map(notification => ({
-  //         ...notification,
-  //         domain_name: notification.domains[0]?.domain_name || ''
-  //       }));
-  //     }),
-  //     catchError((error) => {
-  //       console.error('Error in getNotifications:', error);
-  //       return of([] as (Notification & { domain_name: string })[]);
-  //     })
-  //   );
-  // }
-
   getUserNotifications(): Observable<(Notification & { domain_name: string })[]> {
     return from(
       this.supabase.supabase
