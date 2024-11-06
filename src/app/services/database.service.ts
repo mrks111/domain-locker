@@ -466,7 +466,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
     await this.updateTags(domainId, tags);
   
     // Handle notifications
-    await this.updateNotifications(domainId, notifications);
+    await this.updateNotificationTypes(domainId, notifications);
   
     return this.getDomainById(domainId);
   }
@@ -529,7 +529,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
   
   // Method to update notifications
-  private async updateNotifications(domainId: string, notifications: { notification_type: string; is_enabled: boolean }[]): Promise<void> {
+  private async updateNotificationTypes(domainId: string, notifications: { notification_type: string; is_enabled: boolean }[]): Promise<void> {
     for (const notification of notifications) {
       const { data: existingNotification, error: notificationError } = await this.supabase.supabase
         .from('notification_preferences')
@@ -1386,7 +1386,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
 
   // Fetch notification preferences for the logged-in user
-  async getNotificationPreferences() {
+  async getNotificationChannels() {
     const { data, error } = await this.supabase.supabase
       .from('user_info')
       .select('notification_channels')
@@ -1400,7 +1400,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
 
   // Update notification preferences for the logged-in user
-  async updateNotificationPreferences(preferences: any) {
+  async updateNotificationChannels(preferences: any) {
     const userId = await this.supabase.getCurrentUser().then(user => user?.id);
 
     const { error } = await this.supabase.supabase
@@ -1419,6 +1419,45 @@ export default class SupabaseDatabaseService extends DatabaseService {
     }
     return true;
   }
+
+  getNotificationPreferences(): Observable<{ domain_id: string; notification_type: string; is_enabled: boolean }[]> {
+    return from(this.supabase.supabase.from('notification_preferences').select('domain_id, notification_type, is_enabled')).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching notification preferences:', error);
+          throw error;
+        }
+        return data;
+      }),
+      catchError((error) => {
+        console.error('Error in getNotificationPreferences:', error);
+        return of([]);
+      })
+    );
+  }
+  
+
+  updateBulkNotificationPreferences(preferences: { domain_id: string; notification_type: string; is_enabled: boolean }[]): Observable<void> {
+    const updates = preferences.map(pref =>
+      this.supabase.supabase
+        .from('notification_preferences')
+        .upsert({
+          domain_id: pref.domain_id,
+          notification_type: pref.notification_type,
+          is_enabled: pref.is_enabled,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'domain_id,notification_type' })
+    );
+  
+    return forkJoin(updates).pipe(
+      map(() => undefined), // Return void type after all updates
+      catchError(error => {
+        console.error('Error in updateBulkNotificationPreferences:', error);
+        throw error;
+      })
+    );
+  }
+  
   
   getUserNotifications(limit?: number, offset = 0): Observable<{ notifications: (Notification & { domain_name: string })[]; total: number }> {
     const query = this.supabase.supabase

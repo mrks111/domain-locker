@@ -1,0 +1,24 @@
+<h2 class="text-2xl font-semibold my-2">Bulk Notification Preferences</h2>
+<p class="italic text-lg opacity-70 m-0">
+  Manage notifications for each domain and notification type.
+</p>
+
+<form [formGroup]="notificationForm" class="space-y-6 mt-4" *ngIf="!loading">
+  <div *ngFor="let type of notificationTypes" class="p-card p-4 shadow-sm rounded-lg mb-4">
+    <h3>{{ type.label }}</h3>
+    <p>{{ type.description }}</p>
+    <p *ngIf="type.note" class="text-yellow-500">{{ type.note }}</p>
+
+    <p-multiSelect 
+      [options]="domains" 
+      optionLabel="domain_name" 
+      optionValue="id" 
+      [formControlName]="type.key"
+      placeholder="Select domains" 
+      display="chip" 
+      styleClass="w-full mt-2"
+    />
+  </div>
+
+  <button pButton label="Save Preferences" icon="pi pi-save" class="p-button-primary" (click)="savePreferences()"></button>
+</form>

@@ -85,4 +85,19 @@
       severity="primary"
       (click)="savePreferences()"></button>
   </div>
+  
+  <p-card class="notification-section p-4">
+    <div class="flex items-center justify-between">
+      <h3 class="font-semibold text-lg m-0">Notification Channels</h3>
+      <p-button
+        label="Edit Notification Events"
+        icon="pi pi-external-link"
+        severity="info"
+        routerLink="/notifications/edit-events"
+      />
+    </div>
+    <p class="opacity-70 m-0">
+      Select which notifications you would like to receive for each domain
+    </p>
+  </p-card>
 </form>

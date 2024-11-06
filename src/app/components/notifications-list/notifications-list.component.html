@@ -1,12 +1,19 @@
 
 @if (!isInModal) {
-  <div class="flex justify-between items-center mb-4 flex-wrap">
+  <div class="flex justify-between items-center mb-2 flex-wrap">
     <h2 class="mb-3">
       Notifications
       {{unreadNotificationsCount ? '('+unreadNotificationsCount+')' : ''}}
     </h2>
     <div class="flex gap-2 flex-wrap">
-      <p-button *ngIf="!isInModal" label="View Full Change History" icon="pi pi-history" routerLink="/domains/change-history" severity="secondary" />
+      <p-button
+        *ngIf="!isInModal"
+        label="View Full Change History"
+        icon="pi pi-history"
+        routerLink="/domains/change-history"
+        severity="success"
+        styleClass="min-w-72"
+      />
       
       @if (unreadNotificationsCount && !isInModal) {
         <p-button
@@ -15,6 +22,7 @@
           (click)="markAllAsRead()"
           severity="info"
           [badge]="unreadNotificationsCount < 10 ? unreadNotificationsCount.toString() : '10+'"
+          styleClass="min-w-72"
         />
       } @else if (notifications.length && !isInModal) {
         <p-button
@@ -23,9 +31,26 @@
           (click)="markAllAsRead(false)"
           severity="warning"
           [badge]="(notifications.length - unreadNotificationsCount).toString()"
+          styleClass="min-w-72"
         />
       }
     </div>
+  </div>
+  <div class="flex gap-2 mb-4 mx-auto justify-end flex-wrap">
+    <p-button
+      label="Edit Notification Events"
+      icon="pi pi-check-square"
+      severity="secondary"
+      routerLink="/notifications/edit-events"
+      styleClass="min-w-72"
+    />
+    <p-button
+      label="Edit Notification Channels"
+      icon="pi pi-telegram"
+      severity="secondary"
+      routerLink="/settings/notification-preferences"
+      styleClass="min-w-72"
+    />
   </div>
 }
 
@@ -62,29 +87,14 @@
     />
   </div>
 
+  <!-- Pagination in Full Page -->
   @if (!isInModal) {
-    <!-- Pagination in Full Page -->
     <p-paginator
       [rows]="rowsPerPage"
       [totalRecords]="totalNotifications"
       (onPageChange)="loadNotifications($event.page)"
       styleClass="mt-4"
     />
-
-    <div class="flex gap-2 my-4 mx-auto justify-end flex-wrap">
-      <p-button
-        label="Edit Notification Events"
-        icon="pi pi-check-square"
-        severity="secondary"
-        routerLink="/notifications/events"
-      />
-      <p-button
-        label="Edit Notification Channels"
-        icon="pi pi-telegram"
-        severity="secondary"
-        routerLink="/settings/notification-preferences"
-      />
-    </div>
   }
 
 </div>

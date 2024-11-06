@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import DatabaseService from '@services/database.service';
-import { DbDomain, SaveDomainData } from '@/types/Database';
+import { DbDomain } from '@/types/Database';
 import { notificationTypes, NotificationType } from '@/app/constants/notification-types';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
@@ -20,7 +20,7 @@ import { GlobalMessageService } from '@services/messaging.service';
 })
 export default class EditDomainComponent implements OnInit {
   domainForm: FormGroup;
-  domain: DbDomain;
+  domain: DbDomain | undefined;
   notificationTypes: NotificationType[] = notificationTypes;
   public isLoading = true;
   
@@ -64,7 +64,7 @@ export default class EditDomainComponent implements OnInit {
       error: (error) => {
         console.error('Error loading domain:', error);
         this.globalMessageService.showMessage({ severity: 'error', summary: 'Error', detail: 'Failed to load domain' });
-        this.router.navigate(['/domains', this.domain.domain_name]);
+        this.router.navigate(['/domains', this.domain!.domain_name]);
         this.isLoading = false;
       }
     });
@@ -73,15 +73,15 @@ export default class EditDomainComponent implements OnInit {
   populateForm() {
     // Set the main form values
     this.domainForm.patchValue({
-      registrar: this.domain.registrar.name,
-      expiryDate: new Date(this.domain.expiry_date),
-      tags: this.domain.tags,
-      notes: this.domain.notes
+      registrar: this.domain!.registrar?.name,
+      expiryDate: new Date(this.domain!.expiry_date),
+      tags: this.domain!.tags,
+      notes: this.domain!.notes
     });
   
     // Set the notification values within the form group
     const notificationsFormGroup = this.domainForm.get('notifications') as FormGroup;
-    (this.domain.notification_preferences || []).forEach((notification: { notification_type: string, is_enabled: boolean }) => {
+    (this.domain!.notification_preferences || []).forEach((notification: { notification_type: string, is_enabled: boolean }) => {
       const notificationControl = notificationsFormGroup.get(notification.notification_type);
       if (notificationControl) {
         notificationControl.setValue(notification.is_enabled);
@@ -95,24 +95,24 @@ export default class EditDomainComponent implements OnInit {
       const formValue = this.domainForm.value;
   
       // Prepare updated domain data
-      const updatedDomain: SaveDomainData = {
+      const updatedDomain: any = {
         domain: {
-          domain_name: this.domain.domain_name,
+          domain_name: this.domain!.domain_name,
           registrar: formValue.registrar,
           expiry_date: formValue.expiryDate,
           notes: formValue.notes,
         },
         tags: formValue.tags,
         notifications: Object.entries(formValue.notifications)
-          .map(([type, isEnabled]) => ({ notification_type: type, is_enabled: isEnabled as boolean }))
+          .map(([notification_type, is_enabled]) => ({ notification_type: notification_type, is_enabled: is_enabled as boolean }))
       };
   
       // Call the database service to update the domain
-      this.databaseService.updateDomain(this.domain.id, updatedDomain).subscribe({
+      this.databaseService.updateDomain(this.domain!.id, updatedDomain).subscribe({
         next: () => {
           this.globalMessageService.showMessage({ severity: 'success', summary: 'Success', detail: 'Domain updated successfully' });
           this.isLoading = false;
-          this.router.navigate(['/domains', this.domain.domain_name]);
+          this.router.navigate(['/domains', this.domain!.domain_name]);
         },
         error: (err) => {
           console.error('Error updating domain:', err);

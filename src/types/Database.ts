@@ -3,6 +3,8 @@ import { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation,
 import { type SecurityCategory } from '@/app/constants/security-categories';
 
 export { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag, Notification };
+import { NotificationType } from '@/app/constants/notification-types';
+
 
 export interface DbDomain extends Timestamps {
   id: string;
@@ -21,6 +23,7 @@ export interface DbDomain extends Timestamps {
   dns: Dns;
   statuses?: SecurityCategory[];
   domain_costings?: Valuation;
+  notification_preferences?: { notification_type: string; is_enabled: boolean; }[];
 }
 
 export interface IpAddress extends Timestamps {
@@ -41,7 +44,7 @@ export interface SaveDomainData {
   domain: Omit<DbDomain, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
   ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'created_at' | 'updated_at'>[];
   tags: string[];
-  notifications: { type: string; isEnabled: boolean }[];
+  notifications: { notification_type: string; is_enabled: boolean; }[];
   ssl?: Ssl;
   whois?: Contact;
   dns?: Dns;
