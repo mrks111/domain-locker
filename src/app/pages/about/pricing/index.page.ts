@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
-import { pricingFeatures, selfHostedFeatures, billingFaq } from '@/app/constants/pricing-features';
+import { trigger, transition, style, animate } from '@angular/animations';
+import { pricingFeatures, selfHostedFeatures, enterpriseFeatures, billingFaq } from '@/app/constants/pricing-features';
 
 @Component({
   standalone: true,
@@ -9,11 +10,25 @@ import { pricingFeatures, selfHostedFeatures, billingFaq } from '@/app/constants
   templateUrl: './index.page.html',
   // styleUrls: ['./index.page.css'],
   imports: [CommonModule, PrimeNgModule],
+  animations: [
+    trigger('slideDown', [
+      transition(':enter', [
+        style({ height: 0, opacity: 0 }),
+        animate('300ms ease-out', style({ height: '*', opacity: 1 })),
+      ]),
+      transition(':leave', [
+        animate('300ms ease-in', style({ height: 0, opacity: 0 })),
+      ]),
+    ]),
+  ],
 })
 export default class PricingPage {
   pricingPlans = pricingFeatures;
   selfHostedFeatures = selfHostedFeatures;
+  enterpriseFeatures = enterpriseFeatures;
   billingFaq = billingFaq;
+
+  showEnterprise = false;
   
   isAnnual = true;
   billingCycleOptions = [

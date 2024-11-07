@@ -56,7 +56,7 @@ export class ErrorHandlerService {
   /* Determines whether to enable GlitchTip (if enabled at server-level, and not disabled by user) */
   private shouldEnableGlitchTip(): boolean {
     if (!isPlatformBrowser(this.platformId)) return false; // Don't run on server-side
-    const glitchTipDsn = process.env[this.glitchTipDsnKey]; // Check if the env var is set
+    const glitchTipDsn = import.meta.env[this.glitchTipDsnKey]; // Check if the env var is set
     const disabledByUser = localStorage.getItem(this.lsKey) !== null; // Check if user disabled error tracking
     const isLocal = isDevMode(); // Check if we are running in development mode
 
@@ -75,7 +75,7 @@ export class ErrorHandlerService {
   /* Initializes GlitchTip error tracking (if not disabled by user or admin) */
   private initializeGlitchTip(): void {
     if (!this.glitchTipEnabled) return;
-    const glitchTipDsn = process.env[this.glitchTipDsnKey];
+    const glitchTipDsn = import.meta.env[this.glitchTipDsnKey];
     Sentry.init({
       dsn: glitchTipDsn,
       integrations: [ Sentry.browserTracingIntegration() ],
@@ -85,7 +85,7 @@ export class ErrorHandlerService {
 
   /* Gets the user ID from local storage (if available) */
   private getUserId(): string | null {
-    const projectName = process.env['DL_SUPABASE_PROJECT'];
+    const projectName = import.meta.env['DL_SUPABASE_PROJECT'];
     let userId: string | null = null;
     if (projectName && typeof localStorage !== 'undefined') {
       const authObject = localStorage.getItem(`sb-${projectName}-auth-token`);

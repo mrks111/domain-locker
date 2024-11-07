@@ -16,6 +16,7 @@ export interface PricingFeature {
   priceAnnual: string;
   features: string[];
   antiFeatures?: string[];
+  suggested?: boolean;
 };
 
 export const pricingFeatures = [
@@ -56,7 +57,8 @@ export const pricingFeatures = [
       'Domain Monitoring',
       'Custom Branding',
       'Support',
-    ]
+    ],
+    suggested: true,
   },
 ];
 
@@ -73,6 +75,22 @@ export const selfHostedFeatures =  {
     'You provision and maintain your own infrastructure',
     'You\'re responsible for server security, backups and availability',
     'Community support only',
+  ],
+};
+
+export const enterpriseFeatures =  {
+  title: 'Enterprise',
+  priceMonth: '500',
+  priceAnnual: '500', 
+  features: [
+    'Includes all Pro plan features',
+    'Commercial use rights',
+    'SSO (with OIDC, SAML 2.0, Okta or G-Workspace)',
+    'Data residency options (UK, EU, US)',
+    'Custom domain and branded appearance',
+    'Compliance and audit logging capabilities',
+    'Premium support with SLA and onboarding',
+    'Custom integrations and features (additional cost)',
   ],
 };
 

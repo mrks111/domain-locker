@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from '@components/navbar/navbar.component';
+import { FooterComponent } from '@components/footer/footer.component';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { PrimeNgModule } from './prime-ng.module';
 import { GlobalMessageService } from '@services/messaging.service';
@@ -12,6 +13,9 @@ import { Subscription } from 'rxjs';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { ThemeService } from './services/theme.service';
 
+import { HitCountingService } from '@/app/services/hit-counting.service';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -21,13 +25,15 @@ import { ThemeService } from './services/theme.service';
     NgApexchartsModule,
     CommonModule,
     NavbarComponent,
+    FooterComponent,
     LoadingComponent,
   ],
-  providers: [MessageService],
+  providers: [MessageService, ErrorHandlerService],
   template: `
     <!-- Navbar -->
-    <app-navbar></app-navbar>
-    <div class="content-container {{ isFullWidth ? 'full' : '' }}">
+    <app-navbar />
+    <!-- Main content container -->
+    <div class="content-container" [ngClass]="{ 'full': isFullWidth }">
       <!-- While initializing, show loading spinner -->
       <loading *ngIf="loading" />
       <!-- Create router outlet -->
@@ -36,12 +42,19 @@ import { ThemeService } from './services/theme.service';
       <p-scrollTop />
       <p-toast />
     </div>
+    <!-- Footer -->
+     <app-footer />
   `,
   styles: [`
     :host {
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+    }
+    ::ng-deep app-root {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
   `],
 })
@@ -59,6 +72,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private globalMessageService: GlobalMessageService,
     private _themeService: ThemeService,
+    private hitCountingService: HitCountingService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 

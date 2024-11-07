@@ -15,14 +15,20 @@ export class HitCountingService {
     }
   }
 
+  /* Read Plausible config from environmental variables */
+  private getCredentials() {
+    const plausibleUrl = import.meta.env['DL_PLAUSIBLE_URL'];
+    const plausibleSite = import.meta.env['DL_PLAUSIBLE_SITE'];
+    return { plausibleUrl, plausibleSite };
+  }
+
   /* Checks if Plausible analytics should be enabled */
   private shouldEnablePlausible(): boolean {
     // Ensure we are running in the browser environment
     if (!isPlatformBrowser(this.platformId)) return false;
 
     // Check for required environment variables
-    const plausibleUrl = process.env['DL_PLAUSIBLE_URL'];
-    const plausibleSite = process.env['DL_PLAUSIBLE_SITE'];
+    const { plausibleUrl, plausibleSite } = this.getCredentials();
     const analyticsDisabled = localStorage.getItem(this.analyticsKey) === 'true';
 
     // Return false if user disabled, admin disabled or any missing values
@@ -35,14 +41,13 @@ export class HitCountingService {
 
   /* Initializes Plausible Analytics */
   private initializePlausible(): void {
-    const plausibleUrl = process.env['DL_PLAUSIBLE_URL'] as string;
-    const plausibleSite = process.env['DL_PLAUSIBLE_SITE'] as string;
+    const { plausibleUrl, plausibleSite } = this.getCredentials();
 
     // Insert the Plausible script into the document head
     const script = document.createElement('script');
     script.setAttribute('async', 'true');
     script.setAttribute('defer', 'true');
-    script.setAttribute('data-domain', plausibleSite);
+    script.setAttribute('data-domain', plausibleSite as string);
     script.src = `${plausibleUrl}/js/plausible.js`;
     document.head.appendChild(script);
 
