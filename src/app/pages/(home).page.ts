@@ -19,6 +19,7 @@ import { EppStatusChartComponent } from '@components/charts/domain-epp-status/do
 import { DomainGanttChartComponent } from '@components/charts/registration-lifespan/registration-lifespan.component';
 import { TagGridComponent } from '@components/tag-grid/tag-grid.component';
 
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   standalone: true,
@@ -36,6 +37,7 @@ import { TagGridComponent } from '@components/tag-grid/tag-grid.component';
     DomainTagCloudComponent,
     DomainGanttChartComponent,
     TagGridComponent,
+    TranslateModule,
   ],
   templateUrl: './home.page.html',
   styles: [`

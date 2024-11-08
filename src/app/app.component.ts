@@ -1,18 +1,26 @@
+// Angular
 import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
-import { NavbarComponent } from '@components/navbar/navbar.component';
-import { FooterComponent } from '@components/footer/footer.component';
-import { LoadingComponent } from '@components/misc/loading.component';
-import { PrimeNgModule } from './prime-ng.module';
-import { GlobalMessageService } from '@services/messaging.service';
-import { isPlatformBrowser } from '@angular/common';
-import { SupabaseService } from './services/supabase.service';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+
+// Dependencies
 import { MessageService } from 'primeng/api';
-import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { ThemeService } from './services/theme.service';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 
+// PrimeNG module importing required components
+import { PrimeNgModule } from '@/app/prime-ng.module';
+
+// Furniture Components
+import { NavbarComponent } from '@/app/components/navbar/navbar.component';
+import { FooterComponent } from '@/app/components/footer/footer.component';
+import { LoadingComponent } from '@/app/components/misc/loading.component';
+
+// Services
+import { ThemeService } from '@/app/services/theme.service';
+import { GlobalMessageService } from '@/app/services/messaging.service';
+import { SupabaseService } from '@/app/services/supabase.service';
 import { HitCountingService } from '@/app/services/hit-counting.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
@@ -27,6 +35,8 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
     NavbarComponent,
     FooterComponent,
     LoadingComponent,
+    TranslatePipe,
+    TranslateDirective,
   ],
   providers: [MessageService, ErrorHandlerService],
   template: `
@@ -71,12 +81,14 @@ export class AppComponent implements OnInit, OnDestroy {
     private supabaseService: SupabaseService,
     private messageService: MessageService,
     private globalMessageService: GlobalMessageService,
-    private _themeService: ThemeService,
-    private hitCountingService: HitCountingService,
+    public _themeService: ThemeService,
+    public _hitCountingService: HitCountingService,
+    // private _translationService: TranslationService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 
   ngOnInit() {
+    // Check auth state
     if (isPlatformBrowser(this.platformId)) {
       this.router.events.subscribe((event) => {
         if (event instanceof NavigationEnd) {
@@ -88,10 +100,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
           if (this.publicRoutes.includes(currentRoute) || currentRoute.startsWith('/about')) {
             this.loading = false;
-            return;
+            return; // No auth needed for public routes
           }
 
-          // If the user is not authenticated, redirect to login
+          // Auth needed, check if user authenticated, redirect to login if not
           if (!this.supabaseService.getToken()) {
             this.router.navigate(['/login']).then(() => {
               this.loading = false;
@@ -102,6 +114,7 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
     }
+    // Initialize the global message service for showing toasts
     this.subscription = this.globalMessageService.getMessage().subscribe(message => {
       if (message) {
         this.messageService.add(message);
@@ -110,6 +123,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     });
   }
+
   ngOnDestroy() {
     if (this.subscription) {
       this.subscription.unsubscribe();
