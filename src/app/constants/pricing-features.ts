@@ -26,8 +26,8 @@ export const pricingFeatures = [
     priceAnnual: '0',
     features: [
       '5 Domains',
+      'Domain Info',
       'Expiry Notifications',
-      'Basic Statistics',
     ]
   },
   {
@@ -36,6 +36,7 @@ export const pricingFeatures = [
     priceAnnual: '5',
     features: [
       '20 Domains',
+      'Detailed Domain Info',
       'Expiry Notifications',
       'Change Notifications',
       'Domain Change History',
@@ -49,6 +50,7 @@ export const pricingFeatures = [
     priceAnnual: '20', 
     features: [
       '100 Domains',
+      'Detailed Domain Info',
       'Expiry Notifications',
       'Change Notifications',
       'Domain Change History',

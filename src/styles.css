@@ -161,6 +161,9 @@ h1 {
 .bg-highlight {
   background-color: var(--highlight-bg);
 }
+.hover:bg-highlight :hover {
+  background-color: var(--highlight-bg) !important;
+}
 .bg-mask {
   background-color: var(--mask-bg);
 }
