@@ -14,7 +14,7 @@
     </tr>
   </ng-template>
   <ng-template pTemplate="body" let-tag>
-    <tr class="{{ tag.color ? 'hover:bg-'+tag.color+'-900' : 'hover:bg-primary-900'}}">
+    <tr class="hover:bg-highlight">
       <td class="border-l-4 border-l-{{tag.color}}-400">
         <a
           [routerLink]="['/assets/tags', tag.name]"

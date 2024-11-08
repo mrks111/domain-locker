@@ -20,7 +20,14 @@
             </li>
           }
         </ul>
-        <p-button label="Logout" icon="pi pi-sign-out" (click)="logout()" class="w-full mt-4 absolute bottom-4 text-center"></p-button>
+        <p-button
+          label="Logout"
+          icon="pi pi-sign-out"
+          (click)="logout()"
+          size="small"
+          [outlined]="true"
+          class="w-full mt-4 flex justify-center"
+        />
       </nav>
     </ng-template>
     <ng-template pTemplate>

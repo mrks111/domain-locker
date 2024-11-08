@@ -25,7 +25,7 @@ export default class DeleteAccountPage {
   dangerCards: DangerCard[] = [
     {
       title: 'Leave Feedback',
-      body: 'If you\'re facing any issues we\'d love to hear your feedback, so that we can improve.',
+      body: 'Considering closing your account, or facing issues with Domain Locker? We\'d love to hear your feedback, so that we can improve.',
       buttonLabel: 'Leave Feedback',
       buttonLink: '/about/feedback',
       buttonIcon: 'pi pi-comment',

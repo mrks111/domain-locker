@@ -59,7 +59,7 @@
       <h3 class="font-semibold text-lg m-0">GraphQL API</h3>
       <div class="flex gap-2">
         <p-button
-          label="GraphQL Documentation"
+          label="GraphQL Spec"
           icon="pi pi-external-link"
           styleClass="px-3 py-2"
           severity="secondary"
@@ -84,7 +84,7 @@
       <h3 class="font-semibold text-lg m-0">Prometheus Exporter</h3>
       <div class="flex gap-2">
         <p-button
-          label="Prometheus Documentation"
+          label="Exporter Docs"
           icon="pi pi-external-link"
           styleClass="px-3 py-2"
           severity="secondary"
@@ -106,10 +106,10 @@
   </div>
   <div class="p-card p-4">
     <div class="flex justify-between w-full items-center">
-      <h3 class="font-semibold text-lg m-0">RSS Feed</h3>
+      <h3 class="font-semibold text-lg m-0">Domain Updates RSS Feed</h3>
       <div class="flex gap-2">
         <p-button
-          label="RSS Documentation"
+          label="RSS Docs"
           icon="pi pi-external-link"
           styleClass="px-3 py-2"
           severity="secondary"
@@ -127,6 +127,31 @@
       <p class="opacity-85 m-0 mt-2">
         Enable the RSS Feed to get updates about your domain names and their status
         in your favorite RSS reader.
+      </p>
+  </div>
+  <div class="p-card p-4">
+    <div class="flex justify-between w-full items-center">
+      <h3 class="font-semibold text-lg m-0">Embeddable Widgets</h3>
+      <div class="flex gap-2">
+        <p-button
+          label="Widget Docs"
+          icon="pi pi-external-link"
+          styleClass="px-3 py-2"
+          severity="secondary"
+        ></p-button>
+        <p-toggleButton
+          formControlName="rssFeed"
+          onLabel="Enabled"
+          offLabel="Disabled"
+          styleClass="px-3 py-2"
+          [onIcon]="'pi pi-check-circle'"
+          [offIcon]="'pi pi-minus-circle'"
+        />
+      </div>
+    </div>
+      <p class="opacity-85 m-0 mt-2">
+        Embed summaries of domain names, statuses, changes and charts within your dashboard,
+        a website or any third-party application.
       </p>
   </div>
 </div>
