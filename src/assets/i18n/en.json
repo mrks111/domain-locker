@@ -1,5 +1,114 @@
 {
-  "HOME": "Home",
-  "ABOUT": "About",
-  "CHANGE_LANGUAGE": "Change Language"
+  "NAV": {
+    "DOMAINS": "Domains",
+    "INVENTORY": "Inventory",
+    "VALUATION": "Valuation",
+    "CHANGE_HISTORY": "Change History",
+    "CATEGORIES": "Categories",
+    "ADD_DOMAIN": "Add Domain",
+    "MOVE_DATA": "Move Data",
+    "BULK_IMPORT": "Bulk Import",
+    "BULK_EXPORT": "Bulk Export",
+    "ASSETS": "Assets",
+    "STATISTICS": "Statistics",
+    "REGISTRARS": "Registrars",
+    "HOSTS": "Hosts",
+    "CERTIFICATES": "Certificates",
+    "IPS": "IPs",
+    "DNS": "DNS",
+    "TAGS": "Tags",
+    "SECURITY": "Security"
+  },
+  
+  "HOME": {
+    "SUBHEADINGS": {
+      "DASHBOARD": "Dashboard",
+      "DOMAINS": "Domains",
+      "CATEGORIES": "Categories",
+      "ASSETS": "Assets"
+    }
+  },
+
+  "STATS": {
+    "BUTTONS": {
+      "SHOW_STATS": "Show Stats",
+      "HIDE_STATS": "Hide Stats",
+      "SHOW_MORE_INSIGHTS": "Show more insights"
+    },
+    "CHARTS": {
+      "DOMAIN_PROVIDERS": "Domain Providers",
+      "SECURITY_PROFILE": "Security Profile",
+      "HOST_GEOGRAPHY": "Host Geography",
+      "TAGS": "Tags",
+      "REGISTRATION_TIMELINE": "Registration Timeline",
+      "UPCOMING_EXPIRATIONS": "Upcoming Expirations"
+    }
+  },
+
+  "FOOTER": {
+    "COPYRIGHT": "© Domain Locker 2024 Licensed under MIT, view",
+    "SOURCE_ON_GITHUB": "Source on GitHub"
+  },
+
+  "TAGS": {
+    "SUMMARY": "Showing {count} tags -",
+    "VIEW_ALL_TAGS": "View All Tags",
+    "RIGHT_CLICK_INFO": "Right-click on a tag to view options."
+  },
+
+  "DOMAINS": {
+    "FILTER_FORM": {
+      "FILTER": "Filter",
+      "FIELDS": "Fields",
+      "SORT": "Sort",
+      "LAYOUT": "Layout"
+    },
+    "BUTTONS": {
+      "ADD_DOMAIN": "Add Domain"
+    }
+  },
+
+  "ASSETS": {
+    "CARDS": {
+      "REGISTRARS": {
+        "SINGLE": "Registrar",
+        "PLURAL": "Registrars",
+        "COUNT": "{count} Registrars"
+      },
+      "IP_ADDRESSES": {
+        "SINGLE": "IP Address",
+        "PLURAL": "IP Addresses",
+        "COUNT": "{count} IP Addresses"
+      },
+      "SSL_CERTIFICATES": {
+        "SINGLE": "SSL Certificate",
+        "PLURAL": "SSL Certificates",
+        "COUNT": "{count} SSL Certificates"
+      },
+      "HOSTS": {
+        "SINGLE": "Host",
+        "PLURAL": "Hosts",
+        "COUNT": "{count} Hosts"
+      },
+      "DNS_RECORDS": {
+        "SINGLE": "DNS Record",
+        "PLURAL": "DNS Records",
+        "COUNT": "{count} DNS Records"
+      },
+      "TAGS": {
+        "SINGLE": "Tag",
+        "PLURAL": "Tags",
+        "COUNT": "{count} Tags"
+      }
+    }
+  },
+
+  "GLOBAL": {
+    "COPY": "Copy",
+    "CANCEL": "Cancel",
+    "OK": "OK",
+    "SAVE": "Save",
+    "DELETE": "Delete",
+    "CONFIRM": "Are you sure?"
+  }
 }

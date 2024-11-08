@@ -42,6 +42,21 @@
     <h3 class="text-sm font-semibold mb-2">
       <i class="pi pi-globe mr-2"></i>Language
     </h3>
+    <p-selectButton
+      [options]="languages"
+      [(ngModel)]="selectedLanguage"
+      optionLabel="flag"
+      optionValue="code"
+      (onChange)="onLanguageChange($event.value)"
+      class="language-select"
+    >
+      <ng-template let-option pTemplate="item">
+        <span
+          [pTooltip]="option.name"
+          class="text-xl px-1"
+          >{{ option.flag }}</span>
+      </ng-template>
+    </p-selectButton>
     <p class="text-sm text-gray-500">Language options coming soon</p>
   </div>
   <!-- User Settings Section -->

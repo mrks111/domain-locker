@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ThemeService, Theme } from '@services/theme.service';
 import { SupabaseService } from '@services/supabase.service';
+import { TranslationService } from '@services/translation.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -33,10 +34,13 @@ export class UiSettingsComponent implements OnInit {
   scale: 'small' | 'medium' | 'large' = 'medium';
 
   private subscriptions: Subscription = new Subscription();
+  languages: any[] = [];
+  selectedLanguage: string = 'en';
 
   constructor(
     public supabaseService: SupabaseService,
     private themeService: ThemeService,
+    private languageService: TranslationService,
     private cdr: ChangeDetectorRef,
   ) {
     this.themes = this.themeService.getThemes();
@@ -45,6 +49,9 @@ export class UiSettingsComponent implements OnInit {
 
 
   ngOnInit(): void {
+    this.languages = this.languageService.availableLanguages;
+    this.selectedLanguage = this.languageService.translateService.currentLang;
+    
     this.subscriptions.add(
       this.themeService.isDarkTheme$.subscribe(isDark => {
         this.isDarkTheme = isDark;
@@ -60,24 +67,23 @@ export class UiSettingsComponent implements OnInit {
     );
   }
 
-  onDarkModeChange() {
-    this.themeService.toggleDarkMode();
+  onLanguageChange(langCode: string) {
+    this.languageService.switchLanguage(langCode);
   }
 
-  onScaleChange() {
-    this.setScale(this.scale);
-    localStorage.setItem('scale', this.scale);
+  onDarkModeChange() {
+    this.themeService.toggleDarkMode();
   }
 
   onThemeChange(theme: Theme) {
     this.themeService.setTheme(theme);
   }
 
-  setScale(scale: 'small' | 'medium' | 'large') {
+  onScaleChange() {
     const scales = { small: '14px', medium: '16px', large: '18px' };
-    document.documentElement.style.fontSize = scales[scale] || scales.medium;
+    document.documentElement.style.fontSize = scales[this.scale] || scales.medium;
+    localStorage.setItem('scale', this.scale);
   }
-
 
   async signOut() {
     await this.supabaseService.signOut();
