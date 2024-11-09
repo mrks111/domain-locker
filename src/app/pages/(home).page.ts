@@ -20,6 +20,7 @@ import { DomainGanttChartComponent } from '@components/charts/registration-lifes
 import { TagGridComponent } from '@components/tag-grid/tag-grid.component';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 @Component({
   standalone: true,
@@ -57,6 +58,7 @@ export default class HomePageComponent implements OnInit {
     private databaseService: DatabaseService,
     private messageService: MessageService,
     public supabaseService: SupabaseService,
+    private errorHandlerService: ErrorHandlerService,
   ) {}
 
   ngOnInit() {

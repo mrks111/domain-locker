@@ -35,6 +35,7 @@
       <p-badge
         *ngIf="unreadNotificationsCount"
         [value]="unreadNotificationsCount"
+        (click)="toggleNotifications($event)"
         severity="danger"
         class="absolute top-0 right-px"
       />

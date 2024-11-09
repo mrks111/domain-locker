@@ -13,7 +13,7 @@ import { TranslateService } from '@ngx-translate/core';
   styles: []
 })
 export class FooterComponent {
-  @Input() public big: boolean = true;
+  @Input() public big: boolean = false;
   public year: number = new Date().getFullYear();
 
   public fc: any = {};

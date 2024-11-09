@@ -53,7 +53,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
       <p-toast />
     </div>
     <!-- Footer -->
-     <app-footer />
+     <app-footer [big]="isBigFooter" />
   `,
   styles: [`
     :host {
@@ -75,6 +75,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   public loading: boolean = true;
   public isFullWidth: boolean = false;
+  public isBigFooter: boolean = false;
 
   constructor(
     private router: Router,
@@ -107,6 +108,7 @@ export class AppComponent implements OnInit, OnDestroy {
           if (!this.supabaseService.getToken()) {
             this.router.navigate(['/login']).then(() => {
               this.loading = false;
+              this.isBigFooter = true;
             });
           } else {
             this.loading = false;
