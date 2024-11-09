@@ -49,7 +49,7 @@ export class DomainValuationChartComponent implements OnInit {
             x: domain.current_value ?? domain.purchase_price,
             y: domain.renewal_cost,
             z: Math.abs((domain.current_value ?? domain.purchase_price) - domain.purchase_price),
-            domainName: domain.domains.domain_name,
+            domainName: domain.domain_name,
             tooltipInfo: {
               purchasePrice: domain.purchase_price,
               currentValue: domain.current_value,

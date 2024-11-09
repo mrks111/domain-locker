@@ -734,25 +734,40 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
 
    // Get all domains with costings info
-  getDomainCostings(): Observable<any[]> {
+   getDomainCostings(): Observable<any[]> {
     return from(this.supabase.supabase
       .from('domain_costings')
       .select(`
         domain_id, 
-        domains(domain_name), 
         purchase_price, 
         current_value, 
         renewal_cost, 
-        auto_renew
+        auto_renew, 
+        domains (
+          domain_name, 
+          expiry_date, 
+          registrar_id, 
+          registrars (name)
+        )
       `)
     ).pipe(
       map(({ data, error }) => {
         if (error) throw error;
-        return data;
+  
+        return data.map((item) => ({
+          domain_id: item.domain_id,
+          domain_name: item.domains?.domain_name,
+          expiry_date: item.domains?.expiry_date,
+          registrar: item.domains?.registrars?.name,
+          purchase_price: item.purchase_price,
+          current_value: item.current_value,
+          renewal_cost: item.renewal_cost,
+          auto_renew: item.auto_renew
+        }));
       }),
       catchError(error => this.handleError(error))
     );
-  }
+  }  
 
   // Update costings for all edited domains
   updateDomainCostings(updates: any[]): Observable<void> {

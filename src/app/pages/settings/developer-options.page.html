@@ -104,6 +104,32 @@
         and their status, to be consumed by Prometheus or other monitoring tools.
       </p>
   </div>
+
+  <div class="p-card p-4">
+    <div class="flex justify-between w-full items-center">
+      <h3 class="font-semibold text-lg m-0">Expiry Calendar</h3>
+      <div class="flex gap-2">
+        <p-button
+          label="iCal Docs"
+          icon="pi pi-external-link"
+          styleClass="px-3 py-2"
+          severity="secondary"
+        ></p-button>
+        <p-toggleButton
+          formControlName="prometheus"
+          onLabel="Enabled"
+          offLabel="Disabled"
+          styleClass="px-3 py-2"
+          [onIcon]="'pi pi-check-circle'"
+          [offIcon]="'pi pi-minus-circle'"
+        />
+      </div>
+    </div>
+      <p class="opacity-85 m-0 mt-2">
+        Subscribe to the iCal feed to have your domain names' expiry dates in your calendar
+      </p>
+  </div>
+
   <div class="p-card p-4">
     <div class="flex justify-between w-full items-center">
       <h3 class="font-semibold text-lg m-0">Domain Updates RSS Feed</h3>
