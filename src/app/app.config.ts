@@ -43,6 +43,12 @@ export const appConfig: ApplicationConfig = {
     MessageService,
     
     // Translation Module, and language initialization
+    {
+      provide: APP_INITIALIZER,
+      useFactory: languageInitializerFactory,
+      deps: [TranslateService, PLATFORM_ID],
+      multi: true,
+    },
     importProvidersFrom(
       TranslateModule.forRoot({
         useDefaultLang: true,
@@ -56,11 +62,5 @@ export const appConfig: ApplicationConfig = {
         },
       })
     ),
-    {
-      provide: APP_INITIALIZER,
-      useFactory: languageInitializerFactory,
-      deps: [TranslateService, PLATFORM_ID],
-      multi: true,
-    },
   ],
 };

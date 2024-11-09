@@ -1,6 +1,8 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
@@ -9,19 +11,34 @@ import {
   MissingTranslationHandler,
   MissingTranslationHandlerParams,
 } from '@ngx-translate/core';
-import { environment } from '@/app/environments/environment';
 
 @Injectable()
 export class ServerSafeTranslateLoader implements TranslateLoader {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
+  private fallbackLang = 'en';
 
-  /** Loads translations from the server or client-side based on the platform */
   getTranslation(lang: string): Observable<any> {
-    const langRequestUrl = isPlatformBrowser(this.platformId) ?
-      `/i18n/${lang}.json`
-      : `${environment.BASE_URL}/api/translations?lang=${lang}`;
-    return this.http.get(langRequestUrl).pipe(catchError(() => of({})));
+    // Client-Side: Use HttpClient to fetch translations from /i18n/
+    if (isPlatformBrowser(this.platformId)) {
+      const langRequestUrl = `/i18n/${lang}.json`;
+      return this.http.get(langRequestUrl).pipe(catchError(() => of({})));
+    }
+
+    // Server-Side: Use fs to read translation files directly
+    if (isPlatformServer(this.platformId)) {
+      try {
+        const filePath = path.join(process.cwd(), 'src/assets/i18n', `${lang}.json`);
+        const data = fs.readFileSync(filePath, 'utf8');
+        return of(JSON.parse(data));
+      } catch (error) {
+        console.error(`Error loading translation file for language "${lang}":`, error);
+        return of({});
+      }
+    }
+
+    // Fallback: Return an empty object if neither condition is met
+    return of({});
   }
 }
 
@@ -41,7 +58,7 @@ export function languageInitializerFactory(translate: TranslateService, platform
     if (isPlatformBrowser(platformId)) {
       const savedLanguage = localStorage?.getItem('language') || defaultLang;
       translate.setDefaultLang(defaultLang);
-      translate.use(savedLanguage);
+      translate.use(savedLanguage); 
     } else {
       translate.setDefaultLang(defaultLang);
     }

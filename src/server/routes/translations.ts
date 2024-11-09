@@ -9,7 +9,7 @@ import { join } from 'path';
 export default defineEventHandler((event) => {
   const query = getQuery(event);
   const lang = query['lang'] || 'en';
-  const filePath = join(process.cwd(), `src/assets/i18n/${lang}.json`);
+  const filePath = join(process.cwd(), `src/assets/i18n/${lang}.json`)
   try {
     const translations = JSON.parse(readFileSync(filePath, 'utf8'));
     return { translations };

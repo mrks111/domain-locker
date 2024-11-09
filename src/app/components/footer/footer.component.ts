@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   standalone: true,
@@ -14,42 +15,64 @@ import { Router } from '@angular/router';
 export class FooterComponent {
   @Input() public big: boolean = true;
   public year: number = new Date().getFullYear();
-  constructor(private router: Router) {}
 
-  public fc = {
-    name: 'Domain Locker',
-    description: 'The all-on-one domain management tool',
-    ctas: [
-      {
-        label: 'Sign Up',
-        click: () => this.router.navigate(['/signup']),
-        icon: 'pi pi-sparkles',
-        isPrimary: true,
-      },
-      {
-        label: 'Get the Code',
-        click: () => window.open('https://github.com/lissy93/domain-locker', '_blank'),
-        icon: 'pi pi-github',
-        isPrimary: false,
-      },
-    ],
-    left: [
-      { label: 'Features', link: '/features' },
-      { label: 'Pricing', link: '/pricing' },
-      { label: 'Self-Hosting', link: '' },
-      { label: 'Alternatives', link: '' },
-    ],
-    middle: [
-      { label: 'GitHub', link: 'https://github.com/lissy93/domain-locker' },
-      { label: 'More Apps...', link: 'https://as93.net' },
-      { label: 'Support', link: '/about/get-help' },
-      { label: 'Attributions', link: '/about/attributions' },
-    ],
-    right: [
-      { label: 'License', link: '/about/legal/license' },
-      { label: 'Security', link: '/about/legal/security' },
-      { label: 'Privacy Policy', link: '/about/legal/privacy' },
-      { label: 'Terms of Service', link: '/about/legal/terms' },
-    ],
-  };
+  public fc: any = {};
+
+  constructor(private router: Router, private translate: TranslateService) {
+    this.translate.get([
+      'FOOTER.NAME',
+      'FOOTER.DESCRIPTION',
+      'FOOTER.CTAS.SIGN_UP',
+      'FOOTER.CTAS.GET_CODE',
+      'FOOTER.LINKS.LEFT.FEATURES',
+      'FOOTER.LINKS.LEFT.PRICING',
+      'FOOTER.LINKS.LEFT.SELF_HOSTING',
+      'FOOTER.LINKS.LEFT.ALTERNATIVES',
+      'FOOTER.LINKS.MIDDLE.GITHUB',
+      'FOOTER.LINKS.MIDDLE.MORE_APPS',
+      'FOOTER.LINKS.MIDDLE.SUPPORT',
+      'FOOTER.LINKS.MIDDLE.ATTRIBUTIONS',
+      'FOOTER.LINKS.RIGHT.LICENSE',
+      'FOOTER.LINKS.RIGHT.SECURITY',
+      'FOOTER.LINKS.RIGHT.PRIVACY_POLICY',
+      'FOOTER.LINKS.RIGHT.TERMS_OF_SERVICE'
+    ]).subscribe(translations => {
+      this.fc = {
+        name: translations['FOOTER.NAME'],
+        description: translations['FOOTER.DESCRIPTION'],
+        ctas: [
+          {
+            label: translations['FOOTER.CTAS.SIGN_UP'],
+            click: () => this.router.navigate(['/signup']),
+            icon: 'pi pi-sparkles',
+            isPrimary: true,
+          },
+          {
+            label: translations['FOOTER.CTAS.GET_CODE'],
+            click: () => window.open('https://github.com/lissy93/domain-locker', '_blank'),
+            icon: 'pi pi-github',
+            isPrimary: false,
+          },
+        ],
+        left: [
+          { label: translations['FOOTER.LINKS.LEFT.FEATURES'], link: '/about/features' },
+          { label: translations['FOOTER.LINKS.LEFT.PRICING'], link: '/about/pricing' },
+          { label: translations['FOOTER.LINKS.LEFT.SELF_HOSTING'], link: '' },
+          { label: translations['FOOTER.LINKS.LEFT.ALTERNATIVES'], link: '' },
+        ],
+        middle: [
+          { label: translations['FOOTER.LINKS.MIDDLE.GITHUB'], link: 'https://github.com/lissy93/domain-locker' },
+          { label: translations['FOOTER.LINKS.MIDDLE.MORE_APPS'], link: 'https://as93.net' },
+          { label: translations['FOOTER.LINKS.MIDDLE.SUPPORT'], link: '/about/get-help' },
+          { label: translations['FOOTER.LINKS.MIDDLE.ATTRIBUTIONS'], link: '/about/attributions' },
+        ],
+        right: [
+          { label: translations['FOOTER.LINKS.RIGHT.LICENSE'], link: '/about/legal/license' },
+          { label: translations['FOOTER.LINKS.RIGHT.SECURITY'], link: '/about/legal/security' },
+          { label: translations['FOOTER.LINKS.RIGHT.PRIVACY_POLICY'], link: '/about/legal/privacy' },
+          { label: translations['FOOTER.LINKS.RIGHT.TERMS_OF_SERVICE'], link: '/about/legal/terms' },
+        ],
+      };
+    });
+  }
 }

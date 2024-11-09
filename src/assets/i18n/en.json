@@ -44,12 +44,34 @@
       "UPCOMING_EXPIRATIONS": "Upcoming Expirations"
     }
   },
-
   "FOOTER": {
-    "COPYRIGHT": "© Domain Locker 2024 Licensed under MIT, view",
-    "SOURCE_ON_GITHUB": "Source on GitHub"
+    "NAME": "Domain Locker",
+    "DESCRIPTION": "The all-on-one domain management tool",
+    "CTAS": {
+      "SIGN_UP": "Sign Up",
+      "GET_CODE": "Get the Code"
+    },
+    "LINKS": {
+      "LEFT": {
+        "FEATURES": "Features",
+        "PRICING": "Pricing",
+        "SELF_HOSTING": "Self-Hosting",
+        "ALTERNATIVES": "Alternatives"
+      },
+      "MIDDLE": {
+        "GITHUB": "GitHub",
+        "MORE_APPS": "More Apps...",
+        "SUPPORT": "Support",
+        "ATTRIBUTIONS": "Attributions"
+      },
+      "RIGHT": {
+        "LICENSE": "License",
+        "SECURITY": "Security",
+        "PRIVACY_POLICY": "Privacy Policy",
+        "TERMS_OF_SERVICE": "Terms of Service"
+      }
+    }
   },
-
   "TAGS": {
     "SUMMARY": "Showing {count} tags -",
     "VIEW_ALL_TAGS": "View All Tags",
