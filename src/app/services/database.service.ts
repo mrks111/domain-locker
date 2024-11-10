@@ -52,7 +52,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
 
   private async saveDomainInternal(data: SaveDomainData): Promise<DbDomain> {
-    const { domain, ipAddresses, tags, notifications, dns, ssl, whois, registrar, host } = data;
+    const { domain, ipAddresses, tags, notifications, dns, ssl, whois, registrar, host, statuses, subdomains } = data;
   
     const dbDomain: Partial<DbDomain> = {
       domain_name: domain.domain_name,
@@ -81,11 +81,22 @@ export default class SupabaseDatabaseService extends DatabaseService {
       this.saveWhoisInfo(insertedDomain.id, whois),
       this.saveRegistrar(insertedDomain.id, registrar),
       this.saveHost(insertedDomain.id, host),
-      this.saveStatuses(insertedDomain.id, data.statuses),
+      this.saveStatuses(insertedDomain.id, statuses),
+      this.saveSubdomains(insertedDomain.id, subdomains),
     ]);
   
     return this.getDomainById(insertedDomain.id);
   }
+  
+  private async saveSubdomains(domainId: string, subdomains: string[]): Promise<void> {
+    if (!subdomains || subdomains.length === 0) return;
+    const formattedSubdomains = subdomains.map(name => ({ domain_id: domainId, name }));
+    const { error: subdomainError } = await this.supabase.supabase
+      .from('sub_domains')
+      .insert(formattedSubdomains);
+    if (subdomainError) throw subdomainError;
+  }
+  
 
   private async getDomainById(id: string): Promise<DbDomain> {
     const { data, error } = await this.supabase.supabase
@@ -111,7 +122,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
       domain_hosts (hosts (ip, lat, lon, isp, org, as_number, city, region, country)),
       dns_records (record_type, record_value),
       domain_statuses (status_code),
-      domain_costings (purchase_price, current_value, renewal_cost, auto_renew)
+      domain_costings (purchase_price, current_value, renewal_cost, auto_renew),
+      sub_domains (name)
     `;
   }  
   
@@ -363,6 +375,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
     if (error) throw error;
   }
 
+  
+
   getDomain(domainName: string): Observable<DbDomain> {
     return from(this.supabase.supabase
       .from('domains')
@@ -445,8 +459,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
   
   private async updateDomainInternal(domainId: string, data: SaveDomainData): Promise<DbDomain> {
-    const { domain, tags, notifications } = data;
-  
+    const { domain, tags, notifications, subdomains } = data; // Include subdomains in destructuring
+
     // Update domain's basic information
     const { data: updatedDomain, error: updateError } = await this.supabase.supabase
       .from('domains')
@@ -458,16 +472,19 @@ export default class SupabaseDatabaseService extends DatabaseService {
       .eq('id', domainId)
       .select()
       .single();
-  
+
     if (updateError) throw updateError;
     if (!updatedDomain) throw new Error('Failed to update domain');
-  
+
     // Handle tags
     await this.updateTags(domainId, tags);
-  
+
     // Handle notifications
     await this.updateNotificationTypes(domainId, notifications);
-  
+
+    // Handle subdomains
+    await this.updateSubdomains(domainId, subdomains);
+
     return this.getDomainById(domainId);
   }
   
@@ -495,6 +512,41 @@ export default class SupabaseDatabaseService extends DatabaseService {
     }
   }
   
+  private async updateSubdomains(domainId: string, subdomains: string[]): Promise<void> {
+    // Get existing subdomains from the database
+    const { data: existingData, error } = await this.supabase.supabase
+      .from('sub_domains')
+      .select('name')
+      .eq('domain_id', domainId);
+
+    if (error) throw error;
+
+    const existingSubdomains = (existingData || []).map((sd: { name: string }) => sd.name);
+
+    // Determine which subdomains to add and remove
+    const subdomainsToAdd = subdomains.filter(sd => !existingSubdomains.includes(sd));
+    const subdomainsToRemove = existingSubdomains.filter(sd => !subdomains.includes(sd));
+
+    // Insert new subdomains
+    if (subdomainsToAdd.length > 0) {
+      const { error: insertError } = await this.supabase.supabase
+        .from('sub_domains')
+        .insert(subdomainsToAdd.map(name => ({ domain_id: domainId, name })));
+      if (insertError) throw insertError;
+    }
+
+    // Remove old subdomains
+    if (subdomainsToRemove.length > 0) {
+      const { error: deleteError } = await this.supabase.supabase
+        .from('sub_domains')
+        .delete()
+        .eq('domain_id', domainId)
+        .in('name', subdomainsToRemove);
+      if (deleteError) throw deleteError;
+    }
+  }
+
+
   // Method to update tags
   private async updateTags(domainId: string, tags: string[]): Promise<void> {
     // Delete existing domain tags

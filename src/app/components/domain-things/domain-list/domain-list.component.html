@@ -60,6 +60,11 @@
               {{ip.ip_address}} ({{ip.is_ipv6 ? 'IPv6' : 'IPv4'}})<br>
             </ng-container>
           </span>
+          <span *ngSwitchCase="'sub_domains'">
+            <ng-container *ngFor="let subdomain of domain.sub_domains">
+              {{subdomain.name}}.{{domain.domain_name}}<br>
+            </ng-container>
+          </span>
           <span *ngSwitchCase="'renewal_cost'">
             <p>${{ domain.domain_costings.renewal_cost }}</p>
           </span>

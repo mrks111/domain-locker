@@ -42,7 +42,8 @@ export class DomainCollectionComponent implements OnInit {
     { field: 'ssl', header: 'SSL', width: 200 },
     { field: 'whois', header: 'WHOIS', width: 200 },
     { field: 'host', header: 'Host Info', width: 200 },
-    { field: 'dns', header: 'DNS Records', width: 200 }
+    { field: 'dns', header: 'DNS Records', width: 200 },
+    { field: 'sub_domains', header: 'Sub-Domains', width: 200 },
   ];
 
   visibleColumns: any[] = [];
@@ -105,7 +106,8 @@ export class DomainCollectionComponent implements OnInit {
       'sslCertificate': 'ssl',
       'whoisRecord': 'whois',
       'hostInfo': 'host',
-      'dnsRecords': 'dns'
+      'dnsRecords': 'dns',
+      'subDomains': 'sub_domains',
     };
     return fieldToColumnMap[fieldValue] || fieldValue;
   }

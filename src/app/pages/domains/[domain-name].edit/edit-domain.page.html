@@ -34,6 +34,13 @@
       </div>
     </div>
 
+    <div class="field">
+      <label for="subdomains">Subdomains</label>
+      <div class="input-wrap">
+        <p-chips id="subdomains" formControlName="subdomains" separator="," [addOnBlur]="true" class="w-full"></p-chips>
+      </div>
+    </div>    
+
     <div formGroupName="notifications" class="">
       <label>Notifications</label>
       <div *ngFor="let type of notificationTypes" class="flex align-items-center gap-1 pb-0 mb-0 field">

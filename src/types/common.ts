@@ -22,6 +22,12 @@ export interface Tag {
   description?: string;
 }
 
+export interface Subdomain {
+  id: string;
+  domainId: string;
+  name: string;
+}
+
 export interface Valuation {
   auto_renew: boolean;
   current_value: number;

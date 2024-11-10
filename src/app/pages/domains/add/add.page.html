@@ -101,6 +101,13 @@
             </div>
           </div>
           
+          <div class="field">
+            <label for="subdomains">Subdomains</label>
+            <div class="input-wrap">
+              <p-chips id="subdomains" formControlName="subdomains" separator="," [addOnBlur]="true" class="w-full"></p-chips>
+            </div>
+          </div>    
+
           <p-inplace>
             <ng-template pTemplate="display">
               <div class="inline-flex items-center my-4">

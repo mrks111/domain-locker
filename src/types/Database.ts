@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs';
-import { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag, Notification } from './common';
+import { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag, Notification, Subdomain } from './common';
 import { type SecurityCategory } from '@/app/constants/security-categories';
 
-export { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag, Notification };
+export { Timestamps, IpAddresses, Registrar, Contact, Dns, Ssl, Host, Valuation, Tag, Notification, Subdomain };
 import { NotificationType } from '@/app/constants/notification-types';
 
 
@@ -24,6 +24,7 @@ export interface DbDomain extends Timestamps {
   statuses?: SecurityCategory[];
   domain_costings?: Valuation;
   notification_preferences?: { notification_type: string; is_enabled: boolean; }[];
+  sub_domains?: Subdomain[];
 }
 
 export interface IpAddress extends Timestamps {
@@ -50,6 +51,7 @@ export interface SaveDomainData {
   dns?: Dns;
   registrar: Registrar;
   host?: Host;
+  subdomains: string[];
 }
 
 export abstract class DatabaseService {

@@ -51,6 +51,16 @@
     </a>
   </div>
 
+  <!-- Sub Domains -->
+  <div *ngIf="domain.sub_domains?.length && isVisible('subDomains')" class="flex flex-col gap-1">
+    <h4 class="text-surface-400 m-0 mb-2 uppercase text-sm font-bold">Sub Domains</h4>
+    <ul class="list-none p-0 m-0">
+      <li *ngFor="let subDomain of domain.sub_domains" class="font-mono text-xs">
+        {{ subDomain.name }}.{{ domain.domain_name }}
+      </li>
+    </ul>
+  </div>
+
   <!-- Security Statuses -->
   <p-panel *ngIf="domain.statuses?.length && isVisible('statuses')" [toggleable]="true" class="custom-pannel">
     <ng-template pTemplate="header">

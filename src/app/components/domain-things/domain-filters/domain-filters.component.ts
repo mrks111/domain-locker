@@ -30,6 +30,7 @@ export class FieldVisibilityFilterComponent implements OnInit {
     { label: 'Host Info', value: 'hostInfo' },
     { label: 'DNS Records', value: 'dnsRecords' },
     { label: 'Renewal Cost', value: 'renewalCost' },
+    { label: 'Sub-Domains', value: 'subDomains' },
   ];
   @Input() sortOptions: FieldOption[] = [
     { label: 'Date Added', value: 'date' },

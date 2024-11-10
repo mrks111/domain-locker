@@ -85,7 +85,8 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
       expiryDate: ['', Validators.required],
       tags: [[], [this.tagsValidator()]],
       notes: ['', [Validators.maxLength(255), Validators.pattern(/^[a-zA-Z0-9\s.,!?'"()-]+$/)]],
-      notifications: this.fb.group(notificationControls)
+      notifications: this.fb.group(notificationControls),
+      subdomains: [[]],
     });
 
     // Revalidate domainName when existingDomains is updated
@@ -266,6 +267,13 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
         .replace(/\/.*$/, '');
 }
 
+  private cleanSubdomain(subdomain: string): string {
+    return subdomain
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('.')[0];
+  }
+
   /**
    * Handles form submission
    */  
@@ -273,6 +281,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     if (this.domainForm.valid) {
       try {
         const formValue = this.domainForm.value;
+        const subdomains = formValue.subdomains.map((sd: string) => this.cleanSubdomain(sd));
         const domainData: SaveDomainData = {
           domain: {
             domain_name: this.formatDomainName(formValue.domainName),
@@ -294,6 +303,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
           ssl: this.domainInfo?.ssl,
           host: this.domainInfo?.host,
           registrar: this.domainInfo?.registrar as Registrar,
+          subdomains,
         };
 
         if (formValue.registrar) {

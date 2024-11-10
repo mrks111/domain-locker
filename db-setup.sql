@@ -244,6 +244,31 @@ CREATE POLICY ip_addresses_policy ON ip_addresses
 -- Index for ip_addresses
 CREATE INDEX idx_ip_addresses_domain_id ON ip_addresses(domain_id);
 
+/* ===========================
+   Sub-Domains Table
+=========================== */
+
+-- Table to store sub-domains associated with each domain
+CREATE TABLE sub_domains (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  domain_id UUID NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enable RLS on sub_domains table
+ALTER TABLE sub_domains ENABLE ROW LEVEL SECURITY;
+
+-- RLS policy for sub_domains table
+CREATE POLICY sub_domains_policy ON sub_domains
+  USING (EXISTS (SELECT 1 FROM domains WHERE domains.id = sub_domains.domain_id AND domains.user_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM domains WHERE domains.id = sub_domains.domain_id AND domains.user_id = auth.uid()));
+
+-- Unique constraint for domain_id and name in sub_domains table
+ALTER TABLE sub_domains
+  ADD CONSTRAINT sub_domains_domain_id_name_unique UNIQUE (domain_id, name);
+
 
 /* ===========================
    Notification Preferences Table
@@ -548,7 +573,8 @@ BEGIN
   DELETE FROM ssl_certificates WHERE ssl_certificates.domain_id = $1;
   DELETE FROM whois_info WHERE whois_info.domain_id = $1;
   DELETE FROM domain_hosts WHERE domain_hosts.domain_id = $1;
-  DELETE FROM domain_costings WHERE domain_costings.domain_id = $1; -- Delete costings
+  DELETE FROM domain_costings WHERE domain_costings.domain_id = $1;
+  DELETE FROM sub_domains WHERE sub_domains.domain_id = $1;
 
   -- Delete the domain itself
   DELETE FROM domains WHERE domains.id = $1;
@@ -559,6 +585,7 @@ BEGIN
   DELETE FROM registrars WHERE registrars.id NOT IN (SELECT DISTINCT registrar_id FROM domains);
 END;
 $$;
+
 
 -- Function to get EPP statuses with domain counts
 CREATE OR REPLACE FUNCTION get_statuses_with_domain_counts()

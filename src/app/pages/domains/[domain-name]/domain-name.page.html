@@ -115,7 +115,22 @@
       </ul>
     </p-card>
 
-    <!-- IP Addresses -->
+    <!-- Subdomains -->
+    <p-card *ngIf="domain.sub_domains && domain.sub_domains.length" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Sub-Domains</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="subdomains" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <ul class="list-none p-0 m-0">
+        <li *ngFor="let subdomain of domain.sub_domains" class="mb-2 truncate">
+          {{ subdomain.name }}.{{domain.domain_name}}
+        </li>
+      </ul>
+    </p-card>
+
+    <!-- Valuation -->
     <p-card *ngIf="domain.domain_costings" class="mb-6">
       <ng-template pTemplate="header">
         <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Value</h4>

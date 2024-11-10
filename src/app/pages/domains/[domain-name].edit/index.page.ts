@@ -23,7 +23,7 @@ export default class EditDomainComponent implements OnInit {
   domain: DbDomain | undefined;
   notificationTypes: NotificationType[] = notificationTypes;
   public isLoading = true;
-  
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -36,7 +36,8 @@ export default class EditDomainComponent implements OnInit {
       expiryDate: [null, Validators.required],
       tags: [[]],
       notes: [''],
-      notifications: this.fb.group({})
+      notifications: this.fb.group({}),
+      subdomains: [[]],
     });
 
     this.notificationTypes.forEach(type => {
@@ -71,15 +72,15 @@ export default class EditDomainComponent implements OnInit {
   }
 
   populateForm() {
-    // Set the main form values
     this.domainForm.patchValue({
       registrar: this.domain!.registrar?.name,
       expiryDate: new Date(this.domain!.expiry_date),
       tags: this.domain!.tags,
-      notes: this.domain!.notes
+      notes: this.domain!.notes,
+      subdomains: this.domain!.sub_domains?.map((sd: { name: string }) => sd.name) || [],
     });
-  
-    // Set the notification values within the form group
+
+    // Set notification values
     const notificationsFormGroup = this.domainForm.get('notifications') as FormGroup;
     (this.domain!.notification_preferences || []).forEach((notification: { notification_type: string, is_enabled: boolean }) => {
       const notificationControl = notificationsFormGroup.get(notification.notification_type);
@@ -89,13 +90,22 @@ export default class EditDomainComponent implements OnInit {
     });
   }
 
+  cleanSubdomain(subdomain: string): string {
+    return subdomain
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('.')[0];
+  }
+
   onSubmit() {
     if (this.domainForm.valid) {
       this.isLoading = true;
       const formValue = this.domainForm.value;
-  
+
+      const subdomains = formValue.subdomains.map((sd: string) => this.cleanSubdomain(sd));
+
       // Prepare updated domain data
-      const updatedDomain: any = {
+      const updatedDomain = {
         domain: {
           domain_name: this.domain!.domain_name,
           registrar: formValue.registrar,
@@ -103,10 +113,13 @@ export default class EditDomainComponent implements OnInit {
           notes: formValue.notes,
         },
         tags: formValue.tags,
-        notifications: Object.entries(formValue.notifications)
-          .map(([notification_type, is_enabled]) => ({ notification_type: notification_type, is_enabled: is_enabled as boolean }))
+        notifications: Object.entries(formValue.notifications).map(([notification_type, is_enabled]) => ({
+          notification_type,
+          is_enabled: is_enabled as boolean
+        })),
+        subdomains,
       };
-  
+
       // Call the database service to update the domain
       this.databaseService.updateDomain(this.domain!.id, updatedDomain).subscribe({
         next: () => {
@@ -124,5 +137,5 @@ export default class EditDomainComponent implements OnInit {
       this.globalMessageService.showMessage({ severity: 'warn', summary: 'Validation Error', detail: 'Please fill all required fields correctly' });
     }
   }
-  
+
 }
