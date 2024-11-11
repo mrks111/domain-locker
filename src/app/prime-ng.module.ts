@@ -37,6 +37,7 @@ import { MessageModule } from 'primeng/message';
 import { MessagesModule } from 'primeng/messages';
 import { MeterGroupModule } from 'primeng/metergroup';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { OrganizationChartModule } from 'primeng/organizationchart';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { OverlayModule } from 'primeng/overlay';
 import { PaginatorModule } from 'primeng/paginator';
@@ -101,6 +102,7 @@ import { TooltipModule } from 'primeng/tooltip';
     MessagesModule,
     MeterGroupModule,
     MultiSelectModule,
+    OrganizationChartModule,
     OverlayPanelModule,
     OverlayModule,
     PaginatorModule,

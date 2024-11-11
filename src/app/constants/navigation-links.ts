@@ -45,7 +45,7 @@ export const statsLinks = [
   { 
     label: 'Subdomain Map',
     icon: 'pi pi-sitemap',
-    routerLink: '/stats/tld-and-sub',
+    routerLink: '/stats/tld-sub-map',
     description: 'Organisational chart listing subdomains for each domain',
     color: 'teal',
   },
