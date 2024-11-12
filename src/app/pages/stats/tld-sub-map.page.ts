@@ -9,7 +9,7 @@ import { TldOrganizationChartComponent } from '@components/charts/domain-hierarc
     <app-tld-organization-chart />
   `,
   imports: [TldOrganizationChartComponent],
-  styles: ['']
+  styles: [`::ng-deep app-tld-organization-chart {max-width: 100%; display: block; overflow-x: scroll;}`]
 })
 export default class HostMapPage {}
 
