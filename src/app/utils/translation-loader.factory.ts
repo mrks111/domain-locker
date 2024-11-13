@@ -16,7 +16,6 @@ import {
 export class ServerSafeTranslateLoader implements TranslateLoader {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
-  private fallbackLang = 'en';
 
   getTranslation(lang: string): Observable<any> {
     // Client-Side: Use HttpClient to fetch translations from /i18n/

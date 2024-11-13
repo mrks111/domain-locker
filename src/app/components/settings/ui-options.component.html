@@ -55,9 +55,9 @@
           [pTooltip]="option.name"
           class="text-xl px-1"
           >{{ option.flag }}</span>
+          <span *ngIf="standAlone" class="ml-2">{{ option.name }}</span>
       </ng-template>
     </p-selectButton>
-    <p class="text-sm text-gray-500">Language options coming soon</p>
   </div>
   <!-- User Settings Section -->
   <div class="logged-in-options-wrap ui-settings-section {{ standAlone ? 'p-card' : '' }}" *ngIf="isAuthenticated">

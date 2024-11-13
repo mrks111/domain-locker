@@ -11,7 +11,7 @@ import { CommonModule, NgOptimizedImage } from '@angular/common';
     </ng-container>
     <img 
       *ngIf="faviconLoaded !== false"
-      [ngSrc]="apiBaseUrl + sanitizedDomain + '?s=' + size"
+      [ngSrc]="domainIcon || (apiBaseUrl + sanitizedDomain + '?s=' + size)"
       [width]="size" 
       [height]="size"
       (load)="onFaviconLoad()"
@@ -36,6 +36,7 @@ export class DomainFaviconComponent implements OnInit, OnDestroy {
   @Input() domain!: string;
   @Input() size: number = 24;
   @Input() styleClass: string = '';
+  @Input() domainIcon: string = '';
   apiBaseUrl = 'https://favicon.twenty.com/'; // https://favicone.com/
 
   sanitizedDomain: string = '';
@@ -45,7 +46,6 @@ export class DomainFaviconComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.sanitizedDomain = this.getSanitizedDomain(this.domain);
-    this.faviconLoaded = undefined;
     this.startSpinningTimeout();
   }
 

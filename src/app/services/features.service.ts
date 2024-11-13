@@ -79,7 +79,7 @@ export class FeatureConfigService {
       const featureValue = await flagsmith.getValue(featureKey);
       return featureValue !== undefined ? featureValue : null;
     } catch (error) {
-      console.warn(`Flagsmith unavailable: ${error.message}`);
+      console.warn(`Flagsmith unavailable: ${error instanceof Error ? error.message : 'Unknown Error'}`);
       return null;
     }
   }

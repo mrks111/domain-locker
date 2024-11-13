@@ -7,7 +7,6 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MessageService } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 
 // PrimeNG module importing required components
 import { PrimeNgModule } from '@/app/prime-ng.module';
@@ -35,8 +34,6 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
     NavbarComponent,
     FooterComponent,
     LoadingComponent,
-    TranslatePipe,
-    TranslateDirective,
   ],
   providers: [MessageService, ErrorHandlerService],
   template: `

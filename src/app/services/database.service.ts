@@ -1,15 +1,9 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '../../types/Database';
+import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '@/types/Database';
 import { catchError, from, map, Observable, throwError, retry, forkJoin, switchMap, of, concatMap } from 'rxjs';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
-
-class DatabaseError extends Error {
-  constructor(message: string, public originalError: any) {
-    super(message);
-    this.name = 'DatabaseError';
-  }
-}
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 export interface DomainExpiration {
   domain: string;
@@ -17,16 +11,24 @@ export interface DomainExpiration {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export default class SupabaseDatabaseService extends DatabaseService {
 
-  constructor(private supabase: SupabaseService) {
+  constructor(
+    private supabase: SupabaseService,
+    private errorHandler: ErrorHandlerService,
+  ) {
     super();
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('An error occurred:', error);
+    this.errorHandler.handleError({
+      error,
+      message: 'Failed to execute DB query',
+      location: 'database.service',
+      showToast: false,
+    });
     return throwError(() => new Error('An error occurred while processing your request.'));
   }
 
@@ -39,9 +41,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      throw error;
+      this.handleError(error);
     }
-
     return !!data;
   }
 
@@ -69,8 +70,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
       .select()
       .single();
   
-    if (domainError) throw domainError;
-    if (!insertedDomain) throw new Error('Failed to insert domain');
+    if (domainError) this.handleError(domainError);
+    if (!insertedDomain) this.handleError(new Error('Failed to insert domain'));
   
     await Promise.all([
       this.saveIpAddresses(insertedDomain.id, ipAddresses),
@@ -84,7 +85,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
       this.saveStatuses(insertedDomain.id, statuses),
       this.saveSubdomains(insertedDomain.id, subdomains),
     ]);
-  
     return this.getDomainById(insertedDomain.id);
   }
   
@@ -94,7 +94,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
     const { error: subdomainError } = await this.supabase.supabase
       .from('sub_domains')
       .insert(formattedSubdomains);
-    if (subdomainError) throw subdomainError;
+    if (subdomainError) this.handleError(subdomainError);
   }
   
 
@@ -458,7 +458,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
   
-  private async updateDomainInternal(domainId: string, data: SaveDomainData): Promise<DbDomain> {
+  private async updateDomainInternal(domainId: string, data: any): Promise<DbDomain> {
     const { domain, tags, notifications, subdomains } = data; // Include subdomains in destructuring
 
     // Update domain's basic information
@@ -714,10 +714,10 @@ export default class SupabaseDatabaseService extends DatabaseService {
     ).pipe(
       map(({ data, error }) => {
         if (error) throw error;
-        return data.map(item => ({
+        return data.map((item: { status_code: string, domain_count: number }) => ({
           eppCode: item.status_code,
           description: '',
-          // description: this.getDescriptionForStatus(item.status_code),  // Retrieve description from your constant
+          // description: this.getDescriptionForStatus(item.status_code),
           domainCount: item.domain_count
         }));
       }),
@@ -806,7 +806,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       map(({ data, error }) => {
         if (error) throw error;
   
-        return data.map((item) => ({
+        return data.map((item: any) => ({
           domain_id: item.domain_id,
           domain_name: item.domains?.domain_name,
           expiry_date: item.domains?.expiry_date,

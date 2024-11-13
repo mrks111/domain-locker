@@ -59,8 +59,8 @@ export interface Contact {
   street: string;
   city: string;
   country: string;
-  stateProvince: string;
-  postalCode: string;
+  state: string;
+  postal_code: string;
 }
 
 export interface Abuse {
@@ -77,13 +77,13 @@ export interface Dns {
 
 export interface Ssl {
   issuer: string;
-  issuerCountry: string;
-  validFrom: string;
-  validTo: string;
+  issuer_country: string;
+  valid_from: string;
+  valid_to: string;
   subject: string;
   fingerprint: string;
-  keySize: number;
-  signatureAlgorithm: string;
+  key_size: number;
+  signature_algorithm: string;
 }
 
 export interface Host {
