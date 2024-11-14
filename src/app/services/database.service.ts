@@ -153,38 +153,50 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
 
   private async saveTags(domainId: string, tags: string[]): Promise<void> {
-    if (tags.length === 0) return;
 
+    if (tags.length === 0) return;
+  
+    const userId = await this.supabase.getCurrentUser().then(user => user?.id);
+    if (!userId) throw new Error('User must be authenticated to save tags.');
+  
     for (const tag of tags) {
+      // Try to insert the tag with the user_id
       const { data: savedTag, error: tagError } = await this.supabase.supabase
         .from('tags')
-        .insert({ name: tag })
+        .insert({ name: tag, user_id: userId })
         .select('id')
         .single();
-
-      if (tagError && tagError.code !== '23505') throw tagError;
+  
       let tagId: string;
-
+  
       if (savedTag) {
         tagId = savedTag.id;
       } else {
-        const { data: existingTag, error: fetchError } = await this.supabase.supabase
-          .from('tags')
-          .select('id')
-          .eq('name', tag)
-          .single();
-        if (fetchError) throw fetchError;
-        if (!existingTag) throw new Error(`Failed to insert or fetch tag: ${tag}`);
-        tagId = existingTag.id;
+        // If the tag already exists, fetch its ID
+        if (tagError?.code === '23505') { // Duplicate key violation
+          const { data: existingTag, error: fetchError } = await this.supabase.supabase
+            .from('tags')
+            .select('id')
+            .eq('name', tag)
+            .eq('user_id', userId) // Ensure the existing tag belongs to the user
+            .single();
+          if (fetchError) throw fetchError;
+          if (!existingTag) throw new Error(`Failed to fetch existing tag: ${tag}`);
+          tagId = existingTag.id;
+        } else {
+          throw tagError;
+        }
       }
-
+  
+      // Link the tag to the domain
       const { error: linkError } = await this.supabase.supabase
         .from('domain_tags')
         .insert({ domain_id: domainId, tag_id: tagId });
-
+  
       if (linkError) throw linkError;
     }
   }
+  
 
   private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Promise<void> {
     if (!dns) return;
@@ -1074,16 +1086,24 @@ export default class SupabaseDatabaseService extends DatabaseService {
 
   getHostsWithDomainCounts(): Observable<(Host & { domainCount: number })[]> {
     return from(this.supabase.supabase
-      .rpc('get_hosts_with_domain_counts')
+      .from('hosts')
+      .select(`
+        *,
+        domain_hosts (domain_id),
+        domains!inner(user_id)
+      `)
     ).pipe(
       map(({ data, error }) => {
         if (error) throw error;
-        return data as (Host & { domainCount: number })[];
+        return data.map(host => ({
+          ...host,
+          domainCount: host.domain_hosts.length,
+        }));
       }),
       catchError(error => this.handleError(error))
     );
   }
-
+  
   getSslIssuersWithDomainCounts(): Observable<{ issuer: string; domainCount: number }[]> {
     return from(this.supabase.supabase
       .rpc('get_ssl_issuers_with_domain_counts')
@@ -1351,17 +1371,21 @@ export default class SupabaseDatabaseService extends DatabaseService {
 
   createTag(tag: Tag): Observable<any> {
     return from(
-      this.supabase.supabase
-        .from('tags')
-        .insert([{ 
-          name: tag.name, 
-          color: tag.color || null, 
-          icon: tag.icon || null, 
-          description: tag.notes || null 
-        }], { })
-        .single()
+      this.supabase.getCurrentUser().then((user) => {
+        if (!user) throw new Error('User must be authenticated to create a tag.');
+        return this.supabase.supabase
+          .from('tags')
+          .insert([{
+            name: tag.name,
+            color: tag.color || null,
+            icon: tag.icon || null,
+            description: tag.description || null,
+            user_id: user.id,
+          }])
+          .single();
+      })
     );
-  }
+  }  
   
   updateTag(tag: any): Observable<void> {
     return from(
@@ -1408,13 +1432,26 @@ export default class SupabaseDatabaseService extends DatabaseService {
   getTagsWithDomainCounts(): Observable<any[]> {
     return from(
       this.supabase.supabase
-        .rpc('get_tags_with_domain_counts')
-        .then((response) => {
-          if (response.error) {
-            throw response.error;
-          }
-          return response.data;
-        })
+        .from('tags')
+        .select(`
+          id,
+          name,
+          color,
+          icon,
+          description,
+          domain_tags (
+            domain_id
+          )
+        `)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data.map(tag => ({
+          ...tag,
+          domain_count: tag.domain_tags.length,
+        }));
+      }),
+      catchError(error => this.handleError(error))
     );
   }
   
