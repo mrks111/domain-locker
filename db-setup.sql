@@ -1,13 +1,13 @@
 -- Enable UUID extension for generating UUIDs
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION http with schema extensions;
+CREATE EXTENSION IF NOT EXISTS http with schema extensions;
 
 /* ===========================
    Domains Table and Related Indexes
 =========================== */
 
 -- Domains table
-CREATE TABLE domains (
+CREATE TABLE IF NOT EXISTS domains (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL,
   domain_name TEXT NOT NULL,
@@ -47,18 +47,22 @@ CREATE TABLE IF NOT EXISTS tags (
   color TEXT,
   description TEXT,
   icon TEXT,
-  UNIQUE(name)
+  user_id UUID REFERENCES auth.users (id) NOT NULL,
+  UNIQUE(name, user_id)
 );
 
 -- Enable RLS on tags table
 ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
 
--- Policies for tags table (select for all, modify for authenticated users)
-CREATE POLICY tags_select_policy ON tags FOR SELECT USING (true);
-CREATE POLICY tags_modify_policy ON tags USING (auth.role() = 'authenticated');
+-- Policies for tags table
+CREATE POLICY tags_select_policy ON tags
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY tags_modify_policy ON tags
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK  (auth.uid() = user_id);
 
 -- Domain Tags (junction table for many-to-many relationship between domains and tags)
-CREATE TABLE domain_tags (
+CREATE TABLE IF NOT EXISTS domain_tags (
   domain_id UUID REFERENCES domains(id),
   tag_id UUID REFERENCES tags(id),
   PRIMARY KEY (domain_id, tag_id)
@@ -74,64 +78,70 @@ CREATE POLICY domain_tags_policy ON domain_tags
 
 
 /* ===========================
-   Registrars and Hosts Tables
+   Registrars Table
 =========================== */
 
 -- Registrars table
-CREATE TABLE registrars (
+CREATE TABLE IF NOT EXISTS registrars (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   url TEXT,
-  UNIQUE(name)
+  user_id UUID REFERENCES auth.users (id) NOT NULL,
+  UNIQUE(name, user_id) -- Ensure uniqueness per user
 );
 
 -- Enable RLS on registrars table
 ALTER TABLE registrars ENABLE ROW LEVEL SECURITY;
 
--- Policies for registrars table (select for all, modify for authenticated users)
-CREATE POLICY registrars_select_policy ON registrars FOR SELECT USING (true);
-CREATE POLICY registrars_modify_policy ON registrars USING (auth.role() = 'authenticated');
+-- Policy for registrars table
+CREATE POLICY registrars_policy ON registrars
+  USING (registrars.user_id = auth.uid())
+  WITH CHECK (registrars.user_id = auth.uid());
 
--- Hosts table
-CREATE TABLE hosts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  ip INET NOT NULL,
-  lat NUMERIC,
-  lon NUMERIC,
-  isp TEXT,
-  org TEXT,
-  as_number TEXT,
-  city TEXT,
-  region TEXT,
-  country TEXT,
-  UNIQUE(ip)
-);
+/* ===========================
+   Hosts Table
+=========================== */
 
--- Enable RLS on hosts table
+-- Step 1: Create the `hosts` table with `user_id`
+CREATE TABLE IF NOT EXISTS hosts (
+  id uuid NOT NULL DEFAULT extensions.uuid_generate_v4(),
+  ip inet NOT NULL,
+  lat numeric NULL,
+  lon numeric NULL,
+  isp text NULL,
+  org text NULL,
+  as_number text NULL,
+  city text NULL,
+  region text NULL,
+  country text NULL,
+  user_id uuid NOT NULL,
+  CONSTRAINT hosts_pkey PRIMARY KEY (id),
+  CONSTRAINT hosts_ip_key UNIQUE (ip),
+  CONSTRAINT fk_hosts_user_id FOREIGN KEY (user_id) REFERENCES auth.users (id)
+) TABLESPACE pg_default;
+
+-- Create indexes for optimized performance
+CREATE INDEX idx_hosts_user_id ON hosts (user_id);
+
+-- Enable RLS
 ALTER TABLE hosts ENABLE ROW LEVEL SECURITY;
 
--- Policies for hosts table (select for all, modify for authenticated users)
-CREATE POLICY hosts_select_policy ON hosts FOR SELECT USING (true);
-CREATE POLICY hosts_modify_policy ON hosts USING (auth.role() = 'authenticated');
+-- Select policy
+CREATE POLICY select_hosts_policy ON hosts
+USING (user_id = auth.uid());
 
--- Domain Hosts (junction table for many-to-many relationship between domains and hosts)
-CREATE TABLE domain_hosts (
-  domain_id UUID REFERENCES domains(id),
-  host_id UUID REFERENCES hosts(id),
-  PRIMARY KEY (domain_id, host_id)
-);
+-- Insert policy
+CREATE POLICY insert_hosts_policy ON hosts
+WITH CHECK (user_id = auth.uid());
 
--- Enable RLS on domain_hosts table
-ALTER TABLE domain_hosts ENABLE ROW LEVEL SECURITY;
+-- Update policy
+CREATE POLICY update_hosts_policy ON hosts
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
 
--- Policy for domain_hosts table
-CREATE POLICY domain_hosts_policy ON domain_hosts
-  USING (EXISTS (SELECT 1 FROM domains WHERE domains.id = domain_hosts.domain_id AND domains.user_id = auth.uid()))
-  WITH CHECK (EXISTS (SELECT 1 FROM domains WHERE domains.id = domain_hosts.domain_id AND domains.user_id = auth.uid()));
-
--- Indexes for performance on domain_hosts table
-CREATE INDEX idx_domain_hosts_domain_id ON domain_hosts(domain_id);
-CREATE INDEX idx_domain_hosts_host_id ON domain_hosts(host_id);
+-- Delete policy
+CREATE POLICY delete_hosts_policy ON hosts
+USING (user_id = auth.uid());
 
 
 /* ===========================
@@ -139,7 +149,7 @@ CREATE INDEX idx_domain_hosts_host_id ON domain_hosts(host_id);
 =========================== */
 
 -- WHOIS Information table
-CREATE TABLE whois_info (
+CREATE TABLE IF NOT EXISTS whois_info (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id),
   name TEXT,
@@ -166,7 +176,7 @@ CREATE POLICY whois_info_policy ON whois_info
 =========================== */
 
 -- DNS Records table
-CREATE TABLE dns_records (
+CREATE TABLE IF NOT EXISTS dns_records (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id),
   record_type TEXT NOT NULL,
@@ -192,7 +202,7 @@ CREATE INDEX idx_dns_records_domain_id ON dns_records(domain_id);
 =========================== */
 
 -- SSL Certificates table
-CREATE TABLE ssl_certificates (
+CREATE TABLE IF NOT EXISTS ssl_certificates (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id),
   issuer TEXT,
@@ -224,7 +234,7 @@ CREATE INDEX idx_ssl_certificates_domain_id ON ssl_certificates(domain_id);
 =========================== */
 
 -- IP Addresses table
-CREATE TABLE ip_addresses (
+CREATE TABLE IF NOT EXISTS ip_addresses (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id),
   ip_address INET NOT NULL,
@@ -249,7 +259,7 @@ CREATE INDEX idx_ip_addresses_domain_id ON ip_addresses(domain_id);
 =========================== */
 
 -- Table to store sub-domains associated with each domain
-CREATE TABLE sub_domains (
+CREATE TABLE IF NOT EXISTS sub_domains (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -275,7 +285,7 @@ ALTER TABLE sub_domains
 =========================== */
 
 -- Notifications table
-CREATE TABLE notification_preferences (
+CREATE TABLE IF NOT EXISTS notification_preferences (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id),
   notification_type TEXT NOT NULL,
@@ -297,7 +307,7 @@ CREATE POLICY notifications_policy ON notification_preferences
 CREATE INDEX idx_notifications_domain_id ON notification_preferences(domain_id);
 
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id),
   domain_id UUID NOT NULL REFERENCES domains(id),
@@ -330,7 +340,7 @@ CREATE POLICY insert_notifications_policy ON notifications
 Notifications Table
 =========================== */
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL,
   domain_id UUID NOT NULL REFERENCES domains(id),
@@ -364,7 +374,7 @@ CREATE INDEX idx_notifications_user_id_domain_id ON notifications(user_id, domai
 =========================== */
 
 -- Domain Statuses table to store EPP statuses
-CREATE TABLE domain_statuses (
+CREATE TABLE IF NOT EXISTS domain_statuses (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
   status_code TEXT NOT NULL,  -- EPP status code (e.g., addPeriod, ok, etc.)
@@ -385,7 +395,7 @@ CREATE POLICY domain_statuses_policy ON domain_statuses
 =========================== */
 
 -- Domain Costings table to track domain costs
-CREATE TABLE domain_costings (
+CREATE TABLE IF NOT EXISTS domain_costings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
   purchase_price NUMERIC(10, 2) DEFAULT 0,
@@ -414,7 +424,7 @@ ALTER TABLE domain_costings
 =========================== */
 
 -- Domain Updates table to track changes
-CREATE TABLE domain_updates (
+CREATE TABLE IF NOT EXISTS domain_updates (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   domain_id UUID NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id), -- Reference the user ID
@@ -441,7 +451,7 @@ CREATE INDEX idx_domain_updates_user_id ON domain_updates(user_id);
 =========================== */
 
 -- Create the user_info table with a JSON field for notification channels
-CREATE TABLE user_info (
+CREATE TABLE IF NOT EXISTS user_info (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users (id) ON DELETE CASCADE,
   notification_channels JSONB DEFAULT '{}'::JSONB,
