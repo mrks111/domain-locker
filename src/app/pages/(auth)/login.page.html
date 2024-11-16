@@ -60,3 +60,14 @@
     <p-message *ngIf="successMessage" severity="success" [text]="successMessage" styleClass="w-full mt-4"></p-message>
   </ng-template>      
 </p-card>
+
+<p-card *ngIf="!isAuthenticated" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
+  <ng-template pTemplate="title">
+    Continue With
+  </ng-template>
+  <div class="flex gap-2 justify-between">
+    <p-button label="GitHub" [outlined]="true" icon="pi pi-github" styleClass="w-full" (click)="loginWithGitHub()"></p-button>
+    <p-button label="Google" [outlined]="true" icon="pi pi-google" styleClass="w-full" (click)="signInWithGoogle()"></p-button>
+    <p-button label="Facebook" [outlined]="true" icon="pi pi-facebook" styleClass="w-full" (click)="signInWithFacebook()"></p-button>
+  </div>
+</p-card>

@@ -132,6 +132,15 @@ export default class LoginPageComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
   }
+
+  async loginWithGitHub(): Promise<void> {
+    console.log('Logging in with GitHub...');
+    try {
+      await this.supabaseService.signInWithGitHub();
+    } catch (error: any) {
+      console.error('Error during GitHub login:', error.message);
+    }
+  }
   
   private async performAuthAction(): Promise<void> {
     const authPromise = this.isLogin

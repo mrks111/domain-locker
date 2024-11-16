@@ -76,6 +76,22 @@ export class SupabaseService {
     return data;
   }
 
+  async signInWithGitHub(): Promise<void> {
+    const { data, error } = await this.supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  
+    if (error) {
+      console.error('Error during GitHub login:', error.message);
+      throw error;
+    }
+  
+    // Handle the response data (e.g., redirect or notify user)
+  }
+
   async signOut() {
     const { error } = await this.supabase.auth.signOut();
     this.setAuthState(false);
