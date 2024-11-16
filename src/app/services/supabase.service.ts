@@ -41,6 +41,10 @@ export class SupabaseService {
     return !!session;
   }
 
+  async getSessionData() {
+    return (await this.supabase.auth.getSession()).data || {};
+  }
+
   private initializeAuth() {
     this.token = localStorage.getItem('supabase_token');
     this.supabase.auth.onAuthStateChange((event, session) => {

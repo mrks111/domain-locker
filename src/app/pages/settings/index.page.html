@@ -4,7 +4,10 @@
     <ng-template pTemplate>
       <nav #sidebarNav class="border-surface-50 border-2 w-full rounded-l p-1 !border-r-0 bg-surface-25 relative">
         <a routerLink="/settings" class="no-underline text-default transition-all hover:text-primary">
-          <h3 class="m-3">Settings</h3>
+          <h3 class="m-3 flex gap-2 items-center">
+            <app-profile-picture [size]="36" />
+            Settings
+          </h3>
         </a>
         <ul class="list-none p-0 mt-2 flex flex-col gap-0.5 w-fit">
           @for (item of items; track item.label) {
