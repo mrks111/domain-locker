@@ -1,7 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import {  CommonModule } from '@angular/common';
 import { SupabaseService } from '@/app/services/supabase.service';
-// import * as crypto from 'crypto';
 
 interface UserThingys { user_metadata?: { avatar_url?: string; name?: string }; email?: string; id?: string };
 

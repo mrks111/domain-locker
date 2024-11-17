@@ -1,12 +1,12 @@
 
 
-type Plan = 'free' | 'starter' | 'pro' | 'self-hosted' | 'sponsor' | 'complimentary' | 'enterprise' | 'tester';
+type Plan = 'free' | 'hobby' | 'pro' | 'self-hosted' | 'sponsor' | 'complimentary' | 'enterprise' | 'tester';
 // Free: 5 domains and basic features
-// Starter: 20 domains
+// Hobby: 20 domains
 // Pro: 100 domains, all features
 // Self-Hosted: All features, no cloud access
-// Sponsor: Starter features, free for sponsors
-// Complimentary: Starter features, but for free
+// Sponsor: Hobby features, free for sponsors
+// Complimentary: Hobby features, but for free
 // Enterprise: All features
 // Tester: All features, debugging and logging enabled
 
@@ -31,7 +31,7 @@ export const pricingFeatures = [
     ]
   },
   {
-    title: 'Starter',
+    title: 'Hobby',
     priceMonth: '7',
     priceAnnual: '5',
     features: [
@@ -106,7 +106,7 @@ export const billingFaq = [
   {
     question: 'I can\'t afford the Pro plan, can I get a discount?',
     answer: `
-      We offer a smaller Starter plan at an affordable price, as well as a discount for paying annually instead of monthly.
+      We offer a smaller Hobby plan at an affordable price, as well as a discount for paying annually instead of monthly.
       And since the code is open source, you can also run Domain Locker locally for free.\n
       If you're a student, open-source maintainer, residing in a low income country, or cannot otherwise afford a paid plan,
       then reach out and I will try and help you out :) 

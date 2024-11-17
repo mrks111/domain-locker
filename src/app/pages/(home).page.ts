@@ -18,6 +18,7 @@ import { HostMapComponent } from '@components/charts/host-map/host-map.component
 import { EppStatusChartComponent } from '@components/charts/domain-epp-status/domain-epp-status.component';
 import { DomainGanttChartComponent } from '@components/charts/registration-lifespan/registration-lifespan.component';
 import { TagGridComponent } from '@components/tag-grid/tag-grid.component';
+import { SponsorMessageComponent } from '@components/sponsor-thanks/sponsor-thanks.component';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
@@ -39,6 +40,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
     DomainGanttChartComponent,
     TagGridComponent,
     TranslateModule,
+    SponsorMessageComponent,
   ],
   templateUrl: './home.page.html',
   styles: [`

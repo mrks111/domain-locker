@@ -4,7 +4,7 @@ import { FEATURE_CONFIG } from './feature-config.json';
 
 enum Plan {
   FREE = 'free',
-  STARTER = 'starter',
+  HOBBY = 'hobby',
   PRO = 'pro',
   ENTERPRISE = 'enterprise'
 }

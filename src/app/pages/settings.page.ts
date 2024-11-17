@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { PrimeNgModule } from '../prime-ng.module';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { settingsLinks } from '@/app/constants/navigation-links';
