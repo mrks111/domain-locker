@@ -1,19 +1,21 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { MenuItem } from 'primeng/api';
-
+import { DomainFaviconComponent } from '@components/misc/favicon.component';
+import { statsLinks, settingsLinks, aboutLinks, authenticatedNavLinks, unauthenticatedNavLinks } from '@/app/constants/navigation-links';
 
 @Component({
   standalone: true,
   selector: 'breadcrumbs',
-  imports: [CommonModule, PrimeNgModule],
+  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent],
   template: `
-  <p-breadcrumb class="mb-4" [model]="breadcrumbs">
+  <p-breadcrumb class="mb-4" *ngIf="shouldShowBreadcrumbs" [model]="breadcrumbs">
     <ng-template pTemplate="item" let-item>
       <ng-container *ngIf="item.route; else elseBlock">
         <a [routerLink]="item.route" class="p-menuitem-link">
-          <span [ngClass]="[item.icon ? item.icon : '', 'text-color']"></span>
+          <span [ngClass]="['mr-2 text-primary', item.icon ? item.icon : '!mr-0']"></span>
+          <app-domain-favicon *ngIf="isDomainPage(item.label)" [domain]="item.label" [size]="20" class="mr-1" />
           <span class="text-primary font-semibold">{{ item.label }}</span>
         </a>
       </ng-container>
@@ -33,62 +35,110 @@ import { MenuItem } from 'primeng/api';
     }
   `]
 })
-export class BreadcrumbsComponent implements OnInit {
+export class BreadcrumbsComponent implements OnInit, OnChanges {
   @Input() breadcrumbs?: MenuItem[];
   @Input() pagePath?: string;
   public shouldShowBreadcrumbs: boolean = true;
+  private navLinksMap: { [key: string]: { label: string, icon: string } } = {};
 
-  getIconForPath(path: string) {
-    const icons: { [key: string]: string } = {
-      'home': 'home',
-      'assets': 'box',
-      'registrars': 'receipt',
-      'hosts': 'server',
-      'certs': 'key',
-      'ips': 'sitemap',
-      'tags': 'tags',
-      'dns': 'table',
-      'statuses': 'shield',
+  ngOnInit(): void {
+    this.flattenNavLinks();
+    this.updateBreadcrumbs();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['pagePath'] && !changes['pagePath'].firstChange) {
+      this.updateBreadcrumbs();
     }
-    const iconName = icons[path];
-    if (!iconName) return
-    return ` pi pi-${iconName}`;
   }
 
-  getLabelForPath(path: string) {
-    const labels: { [key: string]: string } = {
-      'certs': 'Certificates',
+  public isDomainPage(path: string): boolean {
+    const domainPattern = /^(?!:\/\/)([a-zA-Z0-9-_]+\.)+[a-zA-Z]{2,11}?$/;
+    return domainPattern.test(path);
+  }
+
+  private updateBreadcrumbs(): void {
+    // Check that we're on a page which isn't excluded from breadcrumbs
+    this.shouldShowBreadcrumbs = this.determineIfBreadcrumbsShouldBeShown();
+    
+    // Generate breadcrumbs from page path, if breadcrumbs isn't already provided
+    if (this.pagePath) {
+      this.breadcrumbs = this.pagePath
+      .split('/')
+      .filter(path => path)
+      .map((path, index, paths) => ({
+        label: this.getLabelForPath(path),
+        route: this.getRouteForPath(paths, index),
+        icon: this.getIconForPath(path),
+      }));
+      this.breadcrumbs.unshift({ label: 'Home', route: '/', icon: 'pi pi-home' });
     }
-
-    const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-    return labels[path] || capitalizeFirstLetter(path);
   }
 
-  getRouteForPath(paths: string[], index: number) {
-    return paths.slice(0, index + 1).join('/');
-  }
-
-  determineIfBreadcrumbsShouldBeShown(): boolean {
+  private determineIfBreadcrumbsShouldBeShown(): boolean {
     if (!this.breadcrumbs && !this.pagePath) return false; 
     const hideOnPages = ['/'];
     if (this.pagePath && !hideOnPages.includes(this.pagePath)) return true;
     return false;
   }
 
-  ngOnInit(): void {
-    // Check that we're on a page which isn't excluded from breadcrumbs
-    this.shouldShowBreadcrumbs = this.determineIfBreadcrumbsShouldBeShown();
-
-    // Generate breadcrumbs from page path, if breadcrumbs isn't already provided
-    if (this.pagePath && !this.breadcrumbs) {
-      this.breadcrumbs = this.pagePath.split('/').map((path, index, paths) => {
-        return {
-          label: this.getLabelForPath(path),
-          route: this.getRouteForPath(paths, index),
-          icon: this.getIconForPath(path),
-        };
-      });
+  private getIconForPath(path: string) {
+    if (this.navLinksMap[path] && this.navLinksMap[path].icon) {
+      return this.navLinksMap[path].icon;
     }
+    const icons: { [key: string]: string } = {
+      // 'home': 'home',
+      // 'assets': 'box',
+      // 'registrars': 'receipt',
+      // 'hosts': 'server',
+      // 'certs': 'key',
+      // 'ips': 'sitemap',
+      // 'tags': 'tags',
+      // 'dns': 'table',
+      // 'statuses': 'shield',
+      // 'domains': 'globe',
+    };
+    const iconName = icons[path];
+    if (!iconName) return;
+    return ` pi pi-${iconName}`;
   }
 
+  private getLabelForPath(path: string) {
+    const labels: { [key: string]: string } = {
+      'certs': 'Certificates',
+      'dns': 'DNS Records',
+      'ips': 'IP Addresses',
+    };
+    const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+    path = decodeURIComponent(path);
+    return labels[path] || capitalizeFirstLetter(path);
+  }
+
+  private getRouteForPath(paths: string[], index: number) {
+    return paths.slice(0, index + 1).join('/');
+  }
+
+  private flattenNavLinks(): void {
+    const addLinksToMap = (links: any[]) => {
+      for (const link of links) {
+        if (link.routerLink) {
+          const path = link.routerLink.split('/').pop();
+          if (path) {
+            this.navLinksMap[path] = { label: link.label, icon: link.icon };
+          }
+        }
+        if (link.items) {
+          addLinksToMap(link.items);
+        }
+      }
+    };
+    const allLinks = [
+      ...statsLinks,
+      ...settingsLinks,
+      ...aboutLinks,
+      ...authenticatedNavLinks,
+      ...unauthenticatedNavLinks,
+    ];
+    addLinksToMap(allLinks);
+  }
 }

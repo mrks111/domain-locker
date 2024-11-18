@@ -80,7 +80,7 @@ export class DomainFaviconComponent implements OnInit, OnDestroy {
     try {
       let sanitizedDomain = domain.replace(/^(https?:\/\/)?(www\.)?/, '');
       sanitizedDomain = sanitizedDomain.split('/')[0];
-      return sanitizedDomain;
+      return sanitizedDomain.toLowerCase();
     } catch (e) {
       console.error('Error sanitizing domain:', e);
       return domain;

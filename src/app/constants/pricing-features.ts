@@ -5,10 +5,10 @@ type Plan = 'free' | 'hobby' | 'pro' | 'self-hosted' | 'sponsor' | 'complimentar
 // Hobby: 20 domains
 // Pro: 100 domains, all features
 // Self-Hosted: All features, no cloud access
-// Sponsor: Hobby features, free for sponsors
+// Sponsor: All Hobby features (free for sponsors)
 // Complimentary: Hobby features, but for free
 // Enterprise: All features
-// Tester: All features, debugging and logging enabled
+// Tester: All features, debugging and logging enabled, only for running locally
 
 export interface PricingFeature {
   title: string;
