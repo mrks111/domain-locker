@@ -11,7 +11,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { OverlayModule } from 'primeng/overlay';
 import { Subscription } from 'rxjs';
 import { authenticatedNavLinks, unauthenticatedNavLinks } from '@/app/constants/navigation-links';
-import { UiSettingsComponent } from '@components/settings/ui-options.component';
+import { UiSettingsComponent } from '@/app/components/settings/ui-options/ui-options.component';
 import { NotificationsListComponent } from '@components/notifications-list/notifications-list.component';
 import { OverlayPanel } from 'primeng/overlaypanel';
 import DatabaseService from '@/app/services/database.service';

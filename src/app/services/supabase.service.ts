@@ -120,6 +120,40 @@ export class SupabaseService {
     }
   }
 
+  /**
+   * Checks if the user's email is verified.
+   * @returns {Promise<boolean>}
+   */
+  async isEmailVerified(): Promise<boolean> {
+    const { data: user, error } = await this.supabase.auth.getUser();
+    if (error) {
+      console.error('Error fetching user data:', error);
+      return false;
+    }
+    console.log(user.user)
+    return user.user.email_confirmed_at ? true : false;
+  }
+
+  /**
+   * Resends the verification email to the provided email address.
+   * @param {string} email - The email address to resend the verification email to.
+   * @returns {Promise<void>}
+   */
+  async resendVerificationEmail(email: string): Promise<void> {
+    if (!email) {
+      throw new Error('Email address is required to resend the verification email.');
+    }
+
+    const { error: resendError } = await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/verify`,
+    });
+
+    if (resendError) {
+      console.error('Error resending verification email:', resendError);
+      throw resendError;
+    }
+  }
+
   async verifyEmail() {
     // TODO: Implement email verification logic
     const { error } = await this.supabase.auth.getUser();

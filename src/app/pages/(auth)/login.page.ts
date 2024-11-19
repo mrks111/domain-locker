@@ -1,4 +1,3 @@
-// src/app/pages/(auth)/login.page.ts
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -44,6 +43,7 @@ export default class LoginPageComponent implements OnInit {
   successMessage = '';
   showLoader = false;
   isAuthenticated: boolean = false;
+  showResendEmail = false;
   modes = [
     { label: 'Login', value: true },
     { label: 'Sign Up', value: false }
@@ -179,6 +179,9 @@ export default class LoginPageComponent implements OnInit {
       } else {
         this.errorMessage = error.message;
       }
+      if (error.message.includes('Email not confirmed')) {
+        this.showResendEmail = true;
+      }
     } else {
       this.errorMessage = 'An unexpected error occurred. Please try again.';
     }
@@ -188,6 +191,20 @@ export default class LoginPageComponent implements OnInit {
   private isSupabaseAuthError(error: any): error is { error: { message: string } } {
     return error && typeof error === 'object' && 'error' in error && 
            typeof error.error === 'object' && 'message' in error.error;
+  }
+
+  public resendVerificationEmail() {
+    this.showLoader = true;
+    try {
+      this.supabaseService.resendVerificationEmail(this.form.get('email')?.value);
+      this.successMessage = 'Verification email resent successfully.';
+      this.errorMessage = '';
+      this.showResendEmail = false;
+      this.showLoader = false;
+    } catch (error: any) {
+      this.errorMessage = 'Failed to resend verification email. Please try again.';
+      this.showLoader = false;
+    }
   }
   
 }
