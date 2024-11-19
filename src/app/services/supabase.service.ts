@@ -202,4 +202,98 @@ export class SupabaseService {
       if (error) throw error;
     }
   }
+
+  async getAccountIssues(): Promise<{ type: 'warn' | 'error' | 'info'; message: string; action?: { label: string; route?: string; callback?: () => void } }[]> {
+    const issues: { type: 'warn' | 'error' | 'info'; message: string; action?: { label: string; route?: string; callback?: () => void } }[] = [];
+    
+    try {
+      const { data: user } = await this.supabase.auth.getUser();
+      const session = await this.supabase.auth.getSession();
+      const userInfo = await this.supabase.from('user_info').select('current_plan').single();
+  
+      // Check if session expired
+      if (!session || !session.data.session) {
+        issues.push({
+          type: 'error',
+          message: 'Your session has expired. Please sign in again.',
+          action: { label: 'Sign Out', callback: () => this.signOut() },
+        });
+      }
+  
+      // Check if account locked
+      if (user?.user?.user_metadata['locked']) {
+        issues.push({
+          type: 'error',
+          message: 'Your account is locked. Please contact support.',
+          action: { label: 'Contact Support', route: '/support' },
+        });
+      }
+  
+      // Check if email is missing
+      if (!user?.user?.email) {
+        issues.push({
+          type: 'error',
+          message: 'Your account is missing an email address. Please update your details.',
+          action: { label: 'Update Details', route: '/settings/account' },
+        });
+      }
+  
+      // Check if profile is incomplete
+      if (!user?.user?.user_metadata?.['name'] || !user?.user?.user_metadata?.['avatar_url']) {
+        issues.push({
+          type: 'warn',
+          message: 'Your profile is incomplete. Add more details to enhance your account.',
+          action: { label: 'Update Profile', route: '/settings/account' },
+        });
+      }
+  
+      // Check if MFA is not enabled (exclude social logins)
+      if (!user?.user?.user_metadata?.['mfa_enabled'] && user?.user?.identities?.[0]?.provider !== 'github') {
+        issues.push({
+          type: 'warn',
+          message: 'You have not enabled multi-factor authentication. Add an extra layer of security.',
+          action: { label: 'Setup MFA', route: '/settings/account' },
+        });
+      }
+  
+      // Check if unverified OAuth accounts exist
+      const unverifiedIdentities = user?.user?.identities?.filter((id) => id.provider && !user.user.email_confirmed_at) || [];
+      if (unverifiedIdentities.length > 0) {
+        issues.push({
+          type: 'warn',
+          message: 'One or more third-party accounts are unverified.',
+          action: { label: 'Verify Accounts', route: '/settings/account' },
+        });
+      }
+  
+      // Plan-based warnings (for future)
+      const currentPlan = userInfo?.data?.current_plan || 'free';
+      if (currentPlan === 'free') {
+        const { count: domainCount } = await this.supabase.from('domains').select('id', { count: 'exact' });
+        if (domainCount !== null && domainCount > 5) {
+          issues.push({
+            type: 'error',
+            message: 'You have exceeded the limit of domains on your current plan. Remove some domains, or upgrade to continue using.',
+            action: { label: 'Upgrade Plan', route: '/settings/upgrade' },
+          });
+        } else if (domainCount !== null && domainCount > 3) {
+          issues.push({
+            type: 'info',
+            message: 'You are approaching the limit of the free plan, consider upgrading to add more domains and access additional features.',
+            action: { label: 'Upgrade Plan', route: '/settings/upgrade' },
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching account issues:', error);
+    }
+    
+    // Sort issues by severity: error, warn, info
+    issues.sort((a, b) => {
+      const severityOrder = { error: 0, warn: 1, info: 2 };
+      return severityOrder[a.type] - severityOrder[b.type];
+    });
+    return issues;
+  }
+  
 }

@@ -15,6 +15,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { NavbarComponent } from '@/app/components/navbar/navbar.component';
 import { FooterComponent } from '@/app/components/footer/footer.component';
 import { LoadingComponent } from '@/app/components/misc/loading.component';
+import { BreadcrumbsComponent } from '@/app/components/misc/breadcrumbs.component';
 
 // Services
 import { ThemeService } from '@/app/services/theme.service';
@@ -34,6 +35,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
     NavbarComponent,
     FooterComponent,
     LoadingComponent,
+    BreadcrumbsComponent,
   ],
   providers: [MessageService, ErrorHandlerService],
   template: `
@@ -44,6 +46,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
       <!-- While initializing, show loading spinner -->
       <loading *ngIf="loading" />
       <!-- Create router outlet -->
+      <breadcrumbs *ngIf="!loading && pagePath" [pagePath]="pagePath" />
       <router-outlet *ngIf="!loading" />
       <!-- Global components -->
       <p-scrollTop />
@@ -71,6 +74,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private fullWidthRoutes: string[] = ['/settings', '/stats'];
 
   public loading: boolean = true;
+  public pagePath: string = '';
   public isFullWidth: boolean = false;
   public isBigFooter: boolean = false;
 
@@ -93,6 +97,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.loading = true;
 
           const currentRoute = event.urlAfterRedirects || event.url;
+          this.pagePath = currentRoute;
 
           this.isFullWidth = this.fullWidthRoutes.some(route => currentRoute.includes(route));
 

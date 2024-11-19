@@ -141,6 +141,9 @@ export default class LoginPageComponent implements OnInit {
       console.error('Error during GitHub login:', error.message);
     }
   }
+
+  async loginWithGoogle(): Promise<void> {}
+  async loginWithFacebook(): Promise<void> {}
   
   private async performAuthAction(): Promise<void> {
     const authPromise = this.isLogin

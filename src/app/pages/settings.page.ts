@@ -6,10 +6,11 @@ import { MenuItem } from 'primeng/api';
 import { settingsLinks } from '@/app/constants/navigation-links';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { ProfilePictureComponent } from '@/app/components/misc/profile-picture.component';
+import { AccountIssuesComponent } from '@/app/components/settings/account-issues/account-issues.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterOutlet, PrimeNgModule, ProfilePictureComponent],
+  imports: [CommonModule, RouterOutlet, PrimeNgModule, ProfilePictureComponent, AccountIssuesComponent],
   templateUrl: './settings/index.page.html',
 })
 export default class SettingsIndexPage implements OnInit {

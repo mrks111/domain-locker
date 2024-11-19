@@ -24,6 +24,7 @@
       class="p-button-rounded p-button-text text-default hover:text-primary">
     </button>
     <p-button
+      *ngIf="isAuthenticated"
       icon="pi pi-bell"
       (click)="toggleNotifications($event)"
       pTooltip="Notifications"
