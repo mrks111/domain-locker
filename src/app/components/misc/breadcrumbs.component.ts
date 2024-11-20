@@ -87,7 +87,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       return this.navLinksMap[path].icon;
     }
     const icons: { [key: string]: string } = {
-      // 'home': 'home',
+      'settings': 'wrench',
       // 'assets': 'box',
       // 'registrars': 'receipt',
       // 'hosts': 'server',

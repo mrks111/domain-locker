@@ -1,8 +1,13 @@
 import { Component, OnInit, Input } from '@angular/core';
-import {  CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { SupabaseService } from '@/app/services/supabase.service';
 
-interface UserThingys { user_metadata?: { avatar_url?: string; name?: string }; email?: string; id?: string };
+interface UserThingys {
+  user_metadata?: { avatar_url?: string; name?: string };
+  email?: string;
+  id?: string;
+  identities?: Array<{ provider?: string; identity_data?: { avatar_url?: string } }>;
+}
 
 @Component({
   selector: 'app-profile-picture',
@@ -56,16 +61,27 @@ export class ProfilePictureComponent implements OnInit {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
   }
-  
+
   async ngOnInit(): Promise<void> {
     try {
       const sessionData = await this.supabaseService.getSessionData();
       const user: UserThingys = sessionData?.session?.user || {};
-      const { user_metadata, email } = user;
+      const { user_metadata, email, identities } = user;
 
       if (user_metadata?.avatar_url) {
         // Use the avatar URL if available
         this.profileImageUrl = user_metadata.avatar_url;
+      } else if (identities?.some(identity => identity.provider === 'github')) {
+        // Check GitHub identity for avatar URL
+        const githubIdentity = identities.find(identity => identity.provider === 'github');
+        const githubAvatarUrl = githubIdentity?.identity_data?.avatar_url;
+        if (githubAvatarUrl) {
+          this.profileImageUrl = githubAvatarUrl;
+        } else {
+          this.profileImageUrl = `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(
+            user_metadata?.name || 'GitHub User'
+          )}&rotate=30&radius=5`;
+        }
       } else if (user_metadata?.name) {
         // Use initials if the user has a name
         this.profileImageUrl = `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(

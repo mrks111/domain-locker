@@ -167,11 +167,43 @@ export class SupabaseService {
     if (error) throw error;
   }
 
-  async updatePassword(currentPassword: string, newPassword: string): Promise<void> {
-    // TODO: Implement password update logic
+  /* Set password, used for when users have logged in via a social auth provider */
+  async setPassword(newPassword: string): Promise<void> {
     const { error } = await this.supabase.auth.updateUser({ password: newPassword });
-    if (error) throw error;
+    if (error) { throw error; }
+    // Mark password as set, so we don't prompt user again
+    const { error: metadataError } = await this.supabase.auth.updateUser({
+      data: { has_password: true },
+    });
+    if (metadataError) {
+      throw new Error('Failed to mark password as set');
+    }
   }
+  
+
+  /* Updates the user's account password, if their current password is correct */
+  async updatePassword(currentPassword: string, newPassword: string): Promise<void> {
+    // Fetch the current user's email
+    const { data: user, error: userError } = await this.supabase.auth.getUser();
+    if (userError || !user?.user?.email) {
+      throw new Error('Failed to retrieve user email. Please try again.');
+    }
+  
+    // Validate current password by re-authenticating
+    const { error: authError } = await this.supabase.auth.signInWithPassword({
+      email: user.user.email,
+      password: currentPassword,
+    });
+    if (authError) {
+      throw new Error('Current password is incorrect.');
+    }
+  
+    // Proceed with updating the password
+    const { error: updateError } = await this.supabase.auth.updateUser({ password: newPassword });
+    if (updateError) {
+      throw new Error(updateError.message || 'Failed to update password. Please try again.');
+    }
+  }  
 
   async enableMFA(): Promise<{ secret: string; qrCode: string }> {
     // TODO: Implement MFA setup logic
@@ -202,6 +234,11 @@ export class SupabaseService {
       if (error) throw error;
     }
   }
+  
+  async updateUserMetadata(metadata: { name?: string; avatar_url?: string }): Promise<void> {
+    const { error } = await this.supabase.auth.updateUser({ data: metadata });
+    if (error) throw error;
+  }
 
   async getAccountIssues(): Promise<{ type: 'warn' | 'error' | 'info'; message: string; action?: { label: string; route?: string; callback?: () => void } }[]> {
     const issues: { type: 'warn' | 'error' | 'info'; message: string; action?: { label: string; route?: string; callback?: () => void } }[] = [];
@@ -226,7 +263,7 @@ export class SupabaseService {
           type: 'error',
           message: 'Your account is locked. Please contact support.',
           action: { label: 'Contact Support', route: '/support' },
-        });
+        }); 
       }
   
       // Check if email is missing
