@@ -8,7 +8,18 @@
     </a>
     <p-button severity="secondary" label="Sign Out" class="w-full" styleClass="w-full" (click)="signOut()" icon="pi pi-sign-out"></p-button>
   </div>
-</p-card>  
+</p-card>
+
+<p-card *ngIf="!isAuthenticated" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
+  <ng-template pTemplate="title">
+    Continue With
+  </ng-template>
+  <div class="flex gap-2 justify-between flex-col sm:flex-row">
+    <p-button class="flex-1" label="GitHub" [outlined]="true" icon="pi pi-github" styleClass="w-full" (click)="loginWithGitHub()"></p-button>
+    <p-button class="flex-1" label="Google" [outlined]="true" icon="pi pi-google" styleClass="w-full" (click)="loginWithGoogle()"></p-button>
+    <p-button class="flex-1" label="Facebook" [outlined]="true" icon="pi pi-facebook" styleClass="w-full" (click)="loginWithFacebook()"></p-button>
+  </div>
+</p-card>
 
 <p-card *ngIf="!isAuthenticated" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
   <ng-template pTemplate="title">
@@ -78,13 +89,3 @@
   </ng-template>      
 </p-card>
 
-<p-card *ngIf="!isAuthenticated" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
-  <ng-template pTemplate="title">
-    Continue With
-  </ng-template>
-  <div class="flex gap-2 justify-between">
-    <p-button label="GitHub" [outlined]="true" icon="pi pi-github" styleClass="w-full" (click)="loginWithGitHub()"></p-button>
-    <p-button label="Google" [outlined]="true" icon="pi pi-google" styleClass="w-full" (click)="loginWithGoogle()"></p-button>
-    <p-button label="Facebook" [outlined]="true" icon="pi pi-facebook" styleClass="w-full" (click)="loginWithFacebook()"></p-button>
-  </div>
-</p-card>
