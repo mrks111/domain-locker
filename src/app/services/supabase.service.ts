@@ -277,11 +277,13 @@ export class SupabaseService {
   
       // Check if profile is incomplete
       if (!user?.user?.user_metadata?.['name'] || !user?.user?.user_metadata?.['avatar_url']) {
-        issues.push({
-          type: 'warn',
-          message: 'Your profile is incomplete. Add more details to enhance your account.',
-          action: { label: 'Update Profile', route: '/settings/account' },
-        });
+        if (!user?.user?.identities || user.user.identities.length === 0) {
+          issues.push({
+        type: 'warn',
+        message: 'Your profile is incomplete. Add more details to enhance your account.',
+        action: { label: 'Update Profile', route: '/settings/account' },
+          });
+        }
       }
   
       // Check if MFA is not enabled (exclude social logins)

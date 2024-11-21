@@ -27,3 +27,9 @@
     @apply w-full;
   }
 }
+
+::ng-deep .user-settings-container {
+  .p-card-body, .p-card-body .p-card-content {
+    @apply h-full;
+  } 
+}

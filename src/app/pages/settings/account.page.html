@@ -1,29 +1,34 @@
 <h2>User Settings</h2>
 
-<div class="p-4 grid grid-cols-1 xl:grid-cols-2 gap-4 grid-flow-dense auto-rows-auto">
+<div class="p-4 grid grid-cols-1 xl:grid-cols-2 gap-4 grid-flow-dense auto-rows-auto user-settings-container">
   <!-- Profile Settings Panel -->
-  <p-card header="Profile Settings" styleClass="h-full">
-    <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
-      <div class="p-field">
-        <label for="name">Full Name</label>
-        <input id="name" type="text" pInputText formControlName="name" placeholder="Enter your full name" />
-      </div>
-      <div class="p-field">
-        <label for="avatar_url">Profile Picture URL</label>
-        <div class="flex flex-col w-full">
-          <input id="avatar_url" type="url" pInputText formControlName="avatar_url" placeholder="Enter a valid image URL" />
-          <small *ngIf="profileForm.get('avatar_url')?.invalid && profileForm.get('avatar_url')?.touched" class="p-error">
-            Please enter a valid image URL.
-          </small>
+  <p-card header="Profile" styleClass="h-full">
+    <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="h-full flex flex-col justify-between">
+      <div >
+        <p class="mt-0 mb-4 text-sm opacity-70">
+          Update your profile information for a more personalized experience.
+        </p>
+        <div class="p-field">
+          <label for="name">Full Name</label>
+          <input id="name" type="text" pInputText formControlName="name" placeholder="Enter your full name" />
         </div>
-      </div>
-      <div class="p-field justify-end">
-        <img
-          *ngIf="profileForm.get('avatar_url')?.value" [src]="profileForm.get('avatar_url')?.value"
-          alt="Profile Preview"
-          class="rounded-full"
-          width="100"
-        />
+        <div class="p-field">
+          <label for="avatar_url">Profile Picture URL</label>
+          <div class="flex flex-col w-full">
+            <input id="avatar_url" type="url" pInputText formControlName="avatar_url" placeholder="Enter a valid image URL" />
+            <small *ngIf="profileForm.get('avatar_url')?.invalid && profileForm.get('avatar_url')?.touched" class="p-error">
+              Please enter a valid image URL.
+            </small>
+          </div>
+        </div>
+        <div class="p-field justify-end">
+          <img
+            *ngIf="profileForm.get('avatar_url')?.value" [src]="profileForm.get('avatar_url')?.value"
+            alt="Profile Preview"
+            class="rounded-full"
+            width="100"
+          />
+        </div>
       </div>
       <p-button
         type="submit"
@@ -38,15 +43,21 @@
 
 
   <!-- Email Settings Panel -->
-  <p-card header="Email Settings" styleClass="h-full">
-    <form [formGroup]="emailForm" (ngSubmit)="updateEmail()">
-      <div class="p-field">
-        <label for="email">Email</label>
-        <div class="flex flex-col gap-2 w-full">
-          <input id="email" type="email" pInputText formControlName="email" />
-          <small *ngIf="emailForm.get('email')?.invalid && emailForm.get('email')?.touched" class="p-error">
-            Please enter a valid email address.
-          </small>
+  <p-card header="Email" styleClass="h-full">
+    <form [formGroup]="emailForm" (ngSubmit)="updateEmail()" class="h-full flex flex-col justify-between">
+      <div>
+        <p class="mt-0 mb-4 text-sm opacity-70">
+          Set or update your account email address. This is what you will use to log in.
+          If you want to revive notifications to a different email, you can set this in the Notifications settings.
+        </p>
+        <div class="p-field">
+          <label for="email">Email</label>
+          <div class="flex flex-col gap-2 w-full">
+            <input id="email" type="email" pInputText formControlName="email" />
+            <small *ngIf="emailForm.get('email')?.invalid && emailForm.get('email')?.touched" class="p-error">
+              Please enter a valid email address.
+            </small>
+          </div>
         </div>
       </div>
       <p-button
@@ -61,23 +72,32 @@
   </p-card>
 
 <!-- Password Settings Panel (spans multiple rows) -->
-  <p-card [header]="hasPassword ? 'Update Password' : 'Set a Password'" class="row-span-2" styleClass="h-full">
-    <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()" class="flex flex-col gap-2">
-      <div class="p-field" *ngIf="hasPassword">
-        <label for="currentPassword">Current Password</label>
-        <p-password id="currentPassword" formControlName="currentPassword" [feedback]="false"></p-password>
+  <p-card header="Password" class="row-span-2" styleClass="h-full">
+    <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()" class="flex flex-col gap-2 h-full justify-between">
+      <div>
+        <p class="mt-0 mb-4 text-sm opacity-70">
+          @if (hasPassword) {
+            Update your account password to keep your account secure.
+          } @else {
+            Setting a password will enable you to login with email + password, as well as with your social login.
+          }
+        </p>
+        <div class="p-field" *ngIf="hasPassword">
+          <label for="currentPassword">Current Password</label>
+          <p-password id="currentPassword" formControlName="currentPassword" [feedback]="false"></p-password>
+        </div>
+        <div class="p-field">
+          <label for="newPassword">New Password</label>
+          <p-password id="newPassword" formControlName="newPassword" [toggleMask]="true"></p-password>
+        </div>
+        <div class="p-field">
+          <label for="confirmPassword">Confirm New Password</label>
+          <p-password id="confirmPassword" formControlName="confirmPassword" [feedback]="false"></p-password>
+        </div>
+        <small *ngIf="passwordForm.hasError('mismatch')" class="p-error">
+          Passwords do not match.
+        </small>
       </div>
-      <div class="p-field">
-        <label for="newPassword">New Password</label>
-        <p-password id="newPassword" formControlName="newPassword" [toggleMask]="true"></p-password>
-      </div>
-      <div class="p-field">
-        <label for="confirmPassword">Confirm New Password</label>
-        <p-password id="confirmPassword" formControlName="confirmPassword" [feedback]="false"></p-password>
-      </div>
-      <small *ngIf="passwordForm.hasError('mismatch')" class="p-error">
-        Passwords do not match.
-      </small>
       <p-button
         type="submit"
         label="Update Password"
@@ -112,7 +132,10 @@
 
 <!-- Session Settings Panel -->
   <p-card header="Session Settings" styleClass="h-full">
-    <form [formGroup]="sessionForm" (ngSubmit)="updateSessionTimeout()">
+    <form [formGroup]="sessionForm" (ngSubmit)="updateSessionTimeout()" class="flex flex-col gap-2 h-full justify-between">
+      <p class="mt-0 mb-4 text-sm opacity-70">
+        Set the session timeout for your account. This is the time after which you will be logged out automatically.
+      </p>
       <div class="p-field">
         <label for="sessionTimeout">Session Timeout (minutes)</label>
         <p-inputNumber id="sessionTimeout" formControlName="sessionTimeout"></p-inputNumber>
@@ -130,11 +153,16 @@
 
 <!-- Account Actions Panel -->
   <p-card header="Account Actions" styleClass="h-full">
-    <div class="flex gap-2">
-      <a routerLink="/domains/export">
-        <p-button label="Export Data" icon="pi pi pi-download" severity="info"></p-button>
-      </a>
-      <p-button label="Delete Account" icon="pi pi-trash" (click)="confirmDeleteAccount()" severity="danger"></p-button>
+    <div class="flex flex-col gap-2 h-full justify-between">
+      <p class="mt-0 mb-4 text-sm opacity-70">
+        Perform actions on your account like exporting your data or deleting your account.
+      </p>
+      <div class="flex gap-2">
+        <a routerLink="/domains/export">
+          <p-button label="Export Data" icon="pi pi pi-download" severity="info"></p-button>
+        </a>
+        <p-button label="Delete Account" icon="pi pi-trash" (click)="confirmDeleteAccount()" severity="danger"></p-button>
+      </div>
     </div>
   </p-card>
 </div>
