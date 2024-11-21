@@ -16,12 +16,29 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
   providers: [MessageService, ConfirmationService]
 })
 export default class UserSettingsComponent implements OnInit {
+  // Forms
   profileForm!: FormGroup;
   emailForm!: FormGroup;
   passwordForm!: FormGroup;
   mfaForm!: FormGroup;
   sessionForm!: FormGroup;
+
+  // User data
+  user: any;
+
+  // Password data
   hasPassword = false;
+
+  // MFA data
+  mfaEnabled: boolean = false;
+  qrCode: string | null = null;
+  secret: string | null = null;
+  verified: boolean = false;
+  showResetMfaButton: boolean = false;
+  factorId: string | null = null;
+  challengeId: string | null = null;
+  
+  // Monitoring loading states
   loading = {
     profile: false,
     email: false,
@@ -32,7 +49,7 @@ export default class UserSettingsComponent implements OnInit {
     exportData: false,
     deleteAccount: false
   };
-  user: any;
+  
 
   constructor(
     private fb: FormBuilder,
@@ -51,6 +68,7 @@ export default class UserSettingsComponent implements OnInit {
       this.updatePasswordForm(hasPassword);
       this.cdr.detectChanges(); // Ensures the UI updates
     });
+    this.checkMFAStatus();
   }
 
   initializeForms() {
@@ -76,7 +94,7 @@ export default class UserSettingsComponent implements OnInit {
     }, { validators: this.passwordMatchValidator });
 
     this.mfaForm = this.fb.group({
-      otpCode: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
+      otpCode: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]],
     });
 
     this.sessionForm = this.fb.group({
@@ -182,32 +200,103 @@ export default class UserSettingsComponent implements OnInit {
     }
   }
   
-  async enableMFA() {
+  async checkMFAStatus(): Promise<void> {
+    try {
+      this.mfaEnabled = await this.supabaseService.isMFAEnabled();
+    } catch (error) {
+      this.errorHandler.handleError({ error, message: 'Failed to check MFA status', location: 'settings/mfa', showToast: true });
+    }
+  }
+
+  async startEnableMFA(): Promise<void> {
     this.loading.mfa = true;
     try {
-      const { secret, qrCode } = await this.supabaseService.enableMFA();
-      // Display QR code to user (you might want to use a modal for this)
-      this.messageService.showSuccess('MFA Enabled', 'Please scan the QR code with your authenticator app');
+      const { qrCode, secret, factorId, challengeId } = await this.supabaseService.enableMFA();
+      this.qrCode = qrCode;
+      this.secret = secret;
+      this.factorId = factorId; // Save factorId for verification
+      this.challengeId = challengeId; // Save challengeId for verification
+      this.mfaEnabled = true;
+      this.messageService.showInfo('Scan the QR Code', 'Please scan the QR code with your authenticator app and verify it.');
+      this.showResetMfaButton = true;
     } catch (error) {
-      this.errorHandler.handleError({ error, message: 'Failed to enable MFA', location: 'settings/account', showToast: true });
+      this.errorHandler.handleError({ error, message: 'Failed to enable MFA', location: 'settings/mfa', showToast: true });
+      this.showResetMfaButton = true;
+    } finally {
+      this.loading.mfa = false;
+    }
+  }
+  
+
+  async enableMFA(): Promise<void> {
+    this.loading.mfa = true;
+    try {
+      const { qrCode } = await this.supabaseService.enableMFA();
+      this.qrCode = qrCode;
+      this.messageService.showInfo('Scan the QR Code', 'Please scan the QR code with your authenticator app and verify it.');
+    } catch (error) {
+      this.errorHandler.handleError({ error, message: 'Failed to enable MFA', location: 'settings/mfa', showToast: true });
     } finally {
       this.loading.mfa = false;
     }
   }
 
-  async verifyMFA() {
-    if (this.mfaForm.valid) {
-      this.loading.mfa = true;
-      try {
-        await this.supabaseService.verifyMFA(this.mfaForm.get('otpCode')!.value);
-        this.messageService.showSuccess('MFA is now enabled', 'You\'ll be prompted for the code next time you login from a new device');
-      } catch (error) {
-        this.errorHandler.handleError({ error, message: 'Failed to verify MFA', location: 'settings/account', showToast: true });
-      } finally {
-        this.loading.mfa = false;
+
+  async verifyMFA(): Promise<void> {
+    this.loading.mfa = true;
+    try {
+      if (!this.factorId || !this.challengeId) {
+        throw new Error('MFA setup is incomplete. Please enable MFA again.');
       }
+      const code = this.mfaForm.get('otpCode')!.value;
+      await this.supabaseService.verifyMFA(this.factorId, this.challengeId, code);
+      this.verified = true;
+      this.messageService.showSuccess('MFA Enabled', 'Your two-factor authentication is now active.');
+    } catch (error) {
+      this.errorHandler.handleError({ error, message: 'Failed to verify MFA', location: 'settings/mfa', showToast: true });
+    } finally {
+      this.loading.mfa = false;
+    }
+  }  
+
+  async disableMFA(): Promise<void> {
+    this.loading.mfa = true;
+    try {
+      await this.supabaseService.disableMFA();
+      this.mfaEnabled = false;
+      this.qrCode = null;
+      this.verified = false;
+      this.messageService.showSuccess('MFA Disabled', 'Multi-Factor Authentication has been disabled.');
+    } catch (error) {
+      this.errorHandler.handleError({
+        error,
+        message: 'Failed to disable MFA',
+        location: 'settings/mfa',
+        showToast: true,
+      });
+    } finally {
+      this.loading.mfa = false;
     }
   }
+  
+
+
+  async resetMFA(): Promise<void> {
+    this.loading.mfa = true;
+    try {
+      await this.supabaseService.disableMFA();
+      this.qrCode = null;
+      this.secret = null;
+      this.verified = false;
+      this.mfaEnabled = false;
+      this.messageService.showInfo('MFA Reset', 'You can now re-enable MFA.');
+    } catch (error) {
+      this.errorHandler.handleError({ error, message: 'Failed to reset MFA', location: 'settings/mfa', showToast: true });
+    } finally {
+      this.loading.mfa = false;
+    }
+  }  
+  
 
   async downloadBackupCodes() {
     this.loading.backupCodes = true;

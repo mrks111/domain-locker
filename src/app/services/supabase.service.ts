@@ -205,16 +205,6 @@ export class SupabaseService {
     }
   }  
 
-  async enableMFA(): Promise<{ secret: string; qrCode: string }> {
-    // TODO: Implement MFA setup logic
-    throw new Error('MFA not implemented');
-  }
-
-  async verifyMFA(otpCode: string): Promise<void> {
-    // TODO: Implement MFA verification logic
-    throw new Error('MFA verification not implemented');
-  }
-
   async getBackupCodes(): Promise<string[]> {
     // TODO: Implement backup codes generation logic
     throw new Error('Backup codes not implemented');
@@ -240,6 +230,95 @@ export class SupabaseService {
     if (error) throw error;
   }
 
+  /***********************************\
+  |*********** MFA Methods ***********|
+  \***********************************/
+
+  async enableMFA(): Promise<{ qrCode: string; secret: string; factorId: string; challengeId: string }> {
+
+    // Check if TOTP factor already exists
+    const { data: factorList, error: listError } = await this.supabase.auth.mfa.listFactors();
+    if (listError) throw listError;
+    const existingTotpFactor = factorList.all.find(factor => factor.status === 'unverified');
+    if (existingTotpFactor) {
+      await this.resetMFA(existingTotpFactor.id);
+    }
+
+    // Enroll a TOTP factor
+    const { data: factorData, error: enrollError } = await this.supabase.auth.mfa.enroll({
+      factorType: 'totp',
+    });
+  
+    if (enrollError) throw enrollError;
+  
+    if (factorData.type !== 'totp') {
+      throw new Error('Failed to retrieve TOTP details for MFA setup.');
+    }
+    const { id: factorId, totp } = factorData;
+  
+    // Start the challenge to get the challengeId
+    const { data: challengeData, error: challengeError } = await this.supabase.auth.mfa.challenge({ factorId });
+    if (challengeError) throw challengeError;
+  
+    return {
+      qrCode: totp.qr_code,
+      secret: totp.secret,
+      factorId,
+      challengeId: challengeData.id,
+    };
+  }
+  
+
+  async verifyMFA(factorId: string, challengeId: string, code: string): Promise<void> {
+    const { error } = await this.supabase.auth.mfa.verify({
+      factorId,
+      challengeId,
+      code,
+    });
+    if (error) throw error;
+  }  
+
+  async disableMFA(): Promise<void> {
+    // List all factors to find the TOTP factor
+    const { data: factorList, error: listError } = await this.supabase.auth.mfa.listFactors();
+    if (listError) throw listError;
+    const totpFactor = factorList.all.find(factor => factor.status === 'verified' || factor.status === 'unverified');
+    if (!totpFactor) {
+      throw new Error('No active TOTP factor found to disable MFA.');
+    }
+    const { error: revokeError } = await this.supabase.auth.mfa.unenroll({ factorId: totpFactor.id });
+    if (revokeError) throw revokeError;
+  }
+  
+
+  async isMFAEnabled(): Promise<boolean> {
+    const { data, error } = await this.supabase.auth.mfa.listFactors();
+    if (error) throw error;
+    return data.totp.some(factor => factor.status === 'verified');
+  }
+
+  /* Resets MFA, either by ID, or by most recent */
+  async resetMFA(id?: string): Promise<void> {
+    if (id) {
+      const { error: unenrollError } = await this.supabase.auth.mfa.unenroll({ factorId: id });
+      if (unenrollError) throw unenrollError;
+    } else {
+      const { data, error } = await this.supabase.auth.mfa.listFactors();
+      if (error) throw error;
+      const unverifiedFactor = data.totp.find(factor => factor.status === 'unverified');
+      if (unverifiedFactor) {
+        const { error: unenrollError } = await this.supabase.auth.mfa.unenroll({ factorId: unverifiedFactor.id });
+        if (unenrollError) throw unenrollError;
+      }
+    }
+  }
+  
+  
+  /**
+   * Checks for any account issues, suggestions or warnings.
+   * Returns a list of issues with description, severity levels and action function.
+   * @returns 
+   */
   async getAccountIssues(): Promise<{ type: 'warn' | 'error' | 'info'; message: string; action?: { label: string; route?: string; callback?: () => void } }[]> {
     const issues: { type: 'warn' | 'error' | 'info'; message: string; action?: { label: string; route?: string; callback?: () => void } }[] = [];
     
@@ -277,17 +356,18 @@ export class SupabaseService {
   
       // Check if profile is incomplete
       if (!user?.user?.user_metadata?.['name'] || !user?.user?.user_metadata?.['avatar_url']) {
-        if (!user?.user?.identities || user.user.identities.length === 0) {
+        const nonEmailIdentities = user?.user?.identities?.filter(identity => identity.provider !== 'email') || [];
+        if (nonEmailIdentities.length === 0) {
           issues.push({
-        type: 'warn',
-        message: 'Your profile is incomplete. Add more details to enhance your account.',
-        action: { label: 'Update Profile', route: '/settings/account' },
+            type: 'warn',
+            message: 'Your profile is incomplete. Add more details to enhance your account.',
+            action: { label: 'Update Profile', route: '/settings/account' },
           });
         }
       }
   
       // Check if MFA is not enabled (exclude social logins)
-      if (!user?.user?.user_metadata?.['mfa_enabled'] && user?.user?.identities?.[0]?.provider !== 'github') {
+      if (!(await this.isMFAEnabled()) && user?.user?.identities?.[0]?.provider !== 'github') {
         issues.push({
           type: 'warn',
           message: 'You have not enabled multi-factor authentication. Add an extra layer of security.',

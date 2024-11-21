@@ -40,10 +40,10 @@ export class ErrorHandlerService {
 
 
   /* Shows a popup toast message to the user (if user-triggered) */
-  private showToast(message: string): void {
+  private showToast(title: string, message: string): void {
     this.globalMessageService.showMessage({
       severity: 'error',
-      summary: 'Error',
+      summary: title,
       detail: message,
     })
   }
@@ -120,7 +120,11 @@ export class ErrorHandlerService {
 
     // Show error toast if showError is true
     if (showToast && message) {
-      this.showToast(message);
+      if (error.message) {
+        this.showToast(message, error.message);
+      } else {
+        this.showToast('Error', message);
+      }
     }
 
     // Log error to Glitchtip (if enabled) with user context
