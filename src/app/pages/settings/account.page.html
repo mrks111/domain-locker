@@ -111,23 +111,15 @@
 
 <!-- Multi-Factor Authentication Panel -->
 <p-card header="Multi-Factor Authentication" class="row-span-2" styleClass="h-full">
-  <form [formGroup]="mfaForm" class="h-full flex flex-col pb-2">
+  <form [formGroup]="mfaForm" class="h-full flex flex-col justify-between pb-2">
+    <div>
     <p class="mt-0 mb-2 text-sm opacity-70">
       Secure your account with an additional layer of protection using Multi-Factor Authentication.
       This is highly recommended for all users who authenticate with a password.
     </p>
-    <div *ngIf="!mfaEnabled" class="p-field">
-      <p-button 
-        label="Enable MFA" 
-        icon="pi pi-key" 
-        (click)="startEnableMFA()" 
-        [loading]="loading.mfa"
-        [disabled]="loading.mfa || mfaEnabled">
-      </p-button>
-    </div>
 
+    <!-- MFA Setup Form -->
     <div *ngIf="mfaEnabled" class="mfa-setup">
-      <!-- Complete MFA Setup -->
       <div *ngIf="(qrCode && !verified)" class="flex flex-col gap-2">
         <p class="m-0 text-sm opacity-70">
           To complete MFA setup, scan the QR code using your authenticator app, or enter the seed.
@@ -142,42 +134,53 @@
           </p-tabPanel>
         </p-tabView>
         <p-inputOtp id="otpCode" formControlName="otpCode" [length]="6"></p-inputOtp>
-        <p-button 
-          label="Verify MFA" 
-          icon="pi pi-check"
-          severity="success"
-          (click)="verifyMFA()" 
-          [loading]="loading.mfa"
-          [disabled]="mfaForm.invalid || loading.mfa">
-        </p-button>
-      </div>
-      <!-- MFA error -->
-      <div *ngIf="(!qrCode && !verified)" class="flex flex-col gap-2">
-        <p-button 
-          *ngIf="showResetMfaButton"
-          label="Reset MFA" 
-          icon="pi pi-refresh" 
-          severity="warning"
-          (click)="resetMFA()"
-          [loading]="loading.mfa">
-        </p-button>
       </div>
 
-      <!-- MFA Setup Complete -->
+      <!-- MFA Enabled view -->
       <div *ngIf="mfaEnabled">
         <p class="text-green-400">
           <i class="pi pi-check"></i>
           Multi-Factor Authentication is active on your account.
         </p>
-        <p-button 
-          label="Disable MFA" 
-          icon="pi pi-times" 
-          severity="warning"
-          (click)="disableMFA()" 
-          [loading]="loading.mfa"
-          [disabled]="loading.mfa">
-        </p-button>
       </div>
+    </div>
+    </div>
+
+    <div class="flex gap-2 justify-end">
+      <p-button 
+        *ngIf="(qrCode && !verified)"
+        label="Verify MFA" 
+        icon="pi pi-check"
+        severity="success"
+        (click)="verifyMFA()" 
+        [loading]="loading.mfa"
+        [disabled]="mfaForm.invalid || loading.mfa">
+      </p-button>
+      <p-button 
+        *ngIf="mfaEnabled"
+        label="Disable MFA" 
+        icon="pi pi-times" 
+        severity="warning"
+        (click)="disableMFA()" 
+        [loading]="loading.mfa"
+        [disabled]="loading.mfa">
+      </p-button>
+      <p-button 
+        *ngIf="showResetMfaButton && (!qrCode && !verified)"
+        label="Reset MFA" 
+        icon="pi pi-refresh" 
+        severity="warning"
+        (click)="resetMFA()"
+        [loading]="loading.mfa">
+      </p-button>
+      <p-button 
+        *ngIf="!mfaEnabled && !qrCode"
+        label="Enable MFA" 
+        icon="pi pi-key" 
+        (click)="startEnableMFA()" 
+        [loading]="loading.mfa"
+        [disabled]="loading.mfa || mfaEnabled">
+      </p-button>
     </div>
   </form>
 </p-card>
