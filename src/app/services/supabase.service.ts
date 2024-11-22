@@ -1,7 +1,7 @@
 // src/app/services/supabase.service.ts
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
+import { createClient, Factor, Session, SupabaseClient, User } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -37,8 +37,24 @@ export class SupabaseService {
   }
 
   async isAuthenticated(): Promise<boolean> {
+    // Check if user has an active session
     const { data: { session } } = await this.supabase.auth.getSession();
-    return !!session;
+    if (!session) return false;
+  
+    // Check if user has MFA enabled
+    const { data: factors, error: factorsError } = await this.supabase.auth.mfa.listFactors();
+    if (factorsError) throw factorsError;
+    const hasMFAEnabled = factors.totp.length > 0;
+    
+    // No MFA required, any session is fine
+    if (!hasMFAEnabled) {
+      return true;
+    }
+  
+    // User has MFA enabled, verify they're at AAL2
+    const { data: aal, error: aalError } = await this.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalError) throw aalError;
+    return aal.currentLevel === 'aal2'; // Only consider authenticated if they've completed MFA (AAL2)
   }
 
   async getSessionData() {
@@ -74,8 +90,113 @@ export class SupabaseService {
     return data;
   }
 
-  async signIn(email: string, password: string) {
-    const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
+
+  
+  async checkMFAEnrollment(): Promise<Factor[]> {
+    const { data, error } = await this.supabase.auth.mfa.listFactors();
+    if (error) throw error;
+    return data.totp;
+  }
+
+  async signIn(email: string, password: string): Promise<{
+    requiresMFA: boolean;
+    factors: Factor[];
+  }> {
+    // First verify credentials and reach AAL1
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    if (error) throw error;
+
+    // Check AAL and MFA requirements
+    const { data: mfaData, error: mfaError } = await this.supabase.auth.mfa.listFactors();
+    if (mfaError) throw mfaError;
+
+    const hasMFAEnabled = mfaData.totp.length > 0;
+
+    if (!hasMFAEnabled) {
+      // No MFA required, user can proceed with AAL1
+      this.setAuthState(true);
+      return {
+        requiresMFA: false,
+        factors: []
+      };
+    }
+
+    // MFA is required - user needs to provide code to reach AAL2
+    return {
+      requiresMFA: true,
+      factors: mfaData.totp
+    };
+  }
+
+  async verifyMFA(factorId: string, code: string): Promise<void> {
+    // Create MFA challenge
+    const { data: challengeData, error: challengeError } = 
+      await this.supabase.auth.mfa.challenge({ factorId });
+    
+    if (challengeError) throw challengeError;
+
+    // Verify the challenge with provided code
+    const { data, error: verifyError } = await this.supabase.auth.mfa.verify({
+      factorId,
+      challengeId: challengeData.id,
+      code
+    });
+
+    if (verifyError) throw verifyError;
+
+    // Successfully verified - user is now at AAL2
+    this.setAuthState(true);
+  }
+
+
+  async verifyMFAAndLogin(email: string, password: string, factorId: string, code: string): Promise<Session> {
+    // First sign in again (since we signed out)
+    const { error: signInError } = 
+      await this.supabase.auth.signInWithPassword({ email, password });
+    if (signInError) throw signInError;
+
+    // Challenge the factor
+    const { data: challengeData, error: challengeError } = 
+      await this.supabase.auth.mfa.challenge({ factorId });
+    if (challengeError) throw challengeError;
+
+    // Verify the challenge
+    const { data: verifyData, error: verifyError } = 
+      await this.supabase.auth.mfa.verify({
+        factorId,
+        challengeId: challengeData.id,
+        code
+      });
+    if (verifyError) throw verifyError;
+
+    // Get the session after successful MFA verification
+    const { data: { session }, error: sessionError } = 
+      await this.supabase.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!session) throw new Error('No session after MFA verification');
+
+    this.setAuthState(true);
+    return session;
+  }
+
+  async getAuthenticatorAssuranceLevel(): Promise<{ currentLevel: string | null; nextLevel: string | null }> {
+    const { data, error } = await this.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (error) throw error;
+    return { currentLevel: data.currentLevel, nextLevel: data.nextLevel };
+  }
+  
+  async listMFAFactors(): Promise<Factor[]> {
+    const { data, error } = await this.supabase.auth.mfa.listFactors();
+    if (error) throw error;
+    return data.all;
+  }
+  
+  async initiateMFAChallenge(factorId: string): Promise<{ id: string }> {
+    const { data, error } = await this.supabase.auth.mfa.challenge({ factorId });
     if (error) throw error;
     return data;
   }
@@ -268,16 +389,6 @@ export class SupabaseService {
     };
   }
   
-
-  async verifyMFA(factorId: string, challengeId: string, code: string): Promise<void> {
-    const { error } = await this.supabase.auth.mfa.verify({
-      factorId,
-      challengeId,
-      code,
-    });
-    if (error) throw error;
-  }  
-
   async disableMFA(): Promise<void> {
     // List all factors to find the TOTP factor
     const { data: factorList, error: listError } = await this.supabase.auth.mfa.listFactors();

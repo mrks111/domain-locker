@@ -1,6 +1,6 @@
 
 
-<p-card *ngIf="isAuthenticated" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
+<p-card *ngIf="isAuthenticated && !requireMFA" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
   <ng-template pTemplate="title">Your Signed In</ng-template>
   <div class="flex gap-2">
     <a class="w-full" routerLink="/domains">
@@ -10,7 +10,7 @@
   </div>
 </p-card>
 
-<p-card *ngIf="!isAuthenticated" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
+<p-card *ngIf="!isAuthenticated && !requireMFA" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
   <ng-template pTemplate="title">
     Continue With
   </ng-template>
@@ -21,7 +21,28 @@
   </div>
 </p-card>
 
-<p-card *ngIf="!isAuthenticated" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
+<p-card *ngIf="requireMFA" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
+  <ng-template pTemplate="title">
+    Multi-Factor Authentication
+  </ng-template>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-fluid">
+    <p>
+      You've enabled multi-factor authentication for your account.
+      To complete your login, you need to provide the 6-digit code from your authenticator app.
+    </p>
+    <div class="field">
+      <label for="mfaCode" class="block">2FA Code</label>
+      <p-inputOtp formControlName="mfaCode" [integerOnly]="true" [length]="6" />
+      <p-message *ngIf="form.get('mfaCode')?.invalid && form.get('mfaCode')?.touched" severity="error"
+                text="A valid MFA code is required"></p-message>
+    </div>
+    <p-button type="submit" label="Complete Login" styleClass="w-full"
+    [disabled]="form.invalid" [loading]="showLoader"></p-button>
+    <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage" styleClass="w-full mt-4"></p-message>
+  </form>
+</p-card>
+
+<p-card *ngIf="!isAuthenticated && !requireMFA" styleClass="w-[500px] max-w-full sm:w-[calc(100%-2rem)] sm:max-w-full sm:px-4 md:w-[500px] xl:w-[600px] 2xl:w-[700px] p-card-shadow">
   <ng-template pTemplate="title">
     {{ isLogin ? 'Login' : 'Sign Up' }}
   </ng-template>

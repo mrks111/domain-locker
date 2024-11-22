@@ -1,11 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SupabaseService } from '../../services/supabase.service';
+import { SupabaseService } from '@/app/services/supabase.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PrimeNgModule } from '../../prime-ng.module';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 import { Subscription } from 'rxjs';
+import { Session } from '@supabase/supabase-js';
+import { GlobalMessageService } from '@/app/services/messaging.service';
 
 @Component({
   standalone: true,
@@ -49,6 +51,11 @@ export default class LoginPageComponent implements OnInit {
     { label: 'Sign Up', value: false }
   ];
 
+  requireMFA = false;
+  factorId: string | null = null;
+  challengeId: string | null = null
+  partialSession: any;
+
   private subscriptions: Subscription = new Subscription();
   
   constructor(
@@ -56,11 +63,13 @@ export default class LoginPageComponent implements OnInit {
     private supabaseService: SupabaseService,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private messagingService: GlobalMessageService,
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: [''],
+      mfaCode: ['', [Validators.pattern(/^\d{6}$/)]],
       acceptTerms: [false]
     });
   }
@@ -91,6 +100,11 @@ export default class LoginPageComponent implements OnInit {
   onModeChange() {
     this.errorMessage = '';
     this.successMessage = '';
+    this.requireMFA = false; // Reset MFA-specific UI
+    this.factorId = null;
+    this.challengeId = null;
+    this.form.get('mfaCode')?.reset();
+  
     if (this.isLogin) {
       this.form.get('confirmPassword')?.clearValidators();
       this.form.get('acceptTerms')?.clearValidators();
@@ -113,14 +127,13 @@ export default class LoginPageComponent implements OnInit {
   }
 
   async onSubmit() {
-    if (!this.form.valid) return;
+    if (!this.form.valid || (this.requireMFA && this.form.get('mfaCode')?.invalid)) return;
   
     this.resetMessages();
     this.showLoader = true;
   
     try {
       await this.performAuthAction();
-      this.handleSuccess();
     } catch (error) {
       this.handleError(error);
     } finally {
@@ -146,13 +159,69 @@ export default class LoginPageComponent implements OnInit {
   async loginWithFacebook(): Promise<void> {}
   
   private async performAuthAction(): Promise<void> {
-    const authPromise = this.isLogin
-      ? this.supabaseService.signIn(this.form.get('email')?.value, this.form.get('password')?.value)
-      : this.supabaseService.signUp(this.form.get('email')?.value, this.form.get('password')?.value);
-    const timeoutPromise = this.createTimeout(15000);
-    const result = await Promise.race([authPromise, timeoutPromise]);
-    if (result instanceof Error) {
-      throw result;
+    const email = this.form.get('email')?.value;
+    const password = this.form.get('password')?.value;
+    const mfaCode = this.form.get('mfaCode')?.value;
+    if (!email || !password) throw new Error('Email and password are required.');
+    const delayTimeout = 15000;
+
+    if (this.isLogin) { // Login
+      console.log('Starting login...');
+      try {
+        if (this.requireMFA && mfaCode) {
+          console.log('MFA code provided - verifying...');
+          // User has provided MFA code - verify it
+          if (!this.factorId) throw new Error('No factor ID available');
+            try {
+              await this.supabaseService.verifyMFA(
+                this.factorId,
+                this.form.get('mfaCode')?.value
+              );
+            } catch (error) {
+              this.handleError(error);
+              return;
+            }
+          this.requireMFA = false;
+          this.handleSuccess();
+        } else {
+          console.log('No MFA code provided (yet) - checking credentials...');
+          // Initial login attempt - verify credentials and check MFA
+          const { requiresMFA, factors } = await this.supabaseService.signIn(email, password);
+          console.log({ requiresMFA, factors });
+
+          if (requiresMFA && factors.length > 0) {
+            // Enable MFA input for next step
+            console.log('MFA required - enabling MFA input...');
+            this.requireMFA = true;
+            this.factorId = factors[0].id;
+            this.form.get('mfaCode')?.setValidators([
+              Validators.required, 
+              Validators.pattern(/^\d{6}$/)
+            ]);
+            this.form.get('mfaCode')?.updateValueAndValidity();
+            this.successMessage = 'Please enter your 2FA code to continue';
+            this.cdr.detectChanges();
+          } else {
+            console.log('No MFA required - proceeding with login...');
+            // No MFA required - proceed with login
+            this.handleSuccess();
+          }
+        }
+      } catch (error) {
+        this.handleError(error);
+        console.log('Login attempt failed:', error);
+      } finally {
+        console.log('Login attempt complete.');
+        this.showLoader = false;
+      }
+
+    } else { // Sign up
+      const authPromise = this.supabaseService.signUp(email, password);
+      const timeoutPromise = this.createTimeout(delayTimeout);
+      const result = await Promise.race([authPromise, timeoutPromise]);
+      if (result instanceof Error) {
+        throw result;
+      }
     }
   }
   
@@ -163,10 +232,15 @@ export default class LoginPageComponent implements OnInit {
   }
   
   private handleSuccess() {
-    if (this.isLogin) {
+    if (this.requireMFA) {
+      this.successMessage = '2FA verification is enabled. Please enter your code when prompted';
+      this.messagingService.showInfo('2FA Enabled', 'Please enter your 2FA code to continue');
+    } else if (this.isLogin) {
       this.successMessage = 'Login successful! Redirecting...';
+      this.messagingService.showSuccess('Login Successful', 'Redirecting...');
       this.router.navigate(['/']);
     } else {
+      this.messagingService.showSuccess('Sign Up Successful', 'Awaiting account confirmation...');
       this.successMessage = 'Sign up successful! Please check your email to confirm your account.';
     }
     this.cdr.detectChanges();
