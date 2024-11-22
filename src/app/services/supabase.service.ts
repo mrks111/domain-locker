@@ -90,14 +90,6 @@ export class SupabaseService {
     return data;
   }
 
-
-  
-  async checkMFAEnrollment(): Promise<Factor[]> {
-    const { data, error } = await this.supabase.auth.mfa.listFactors();
-    if (error) throw error;
-    return data.totp;
-  }
-
   async signIn(email: string, password: string): Promise<{
     requiresMFA: boolean;
     factors: Factor[];
@@ -152,53 +144,10 @@ export class SupabaseService {
     this.setAuthState(true);
   }
 
-
-  async verifyMFAAndLogin(email: string, password: string, factorId: string, code: string): Promise<Session> {
-    // First sign in again (since we signed out)
-    const { error: signInError } = 
-      await this.supabase.auth.signInWithPassword({ email, password });
-    if (signInError) throw signInError;
-
-    // Challenge the factor
-    const { data: challengeData, error: challengeError } = 
-      await this.supabase.auth.mfa.challenge({ factorId });
-    if (challengeError) throw challengeError;
-
-    // Verify the challenge
-    const { data: verifyData, error: verifyError } = 
-      await this.supabase.auth.mfa.verify({
-        factorId,
-        challengeId: challengeData.id,
-        code
-      });
-    if (verifyError) throw verifyError;
-
-    // Get the session after successful MFA verification
-    const { data: { session }, error: sessionError } = 
-      await this.supabase.auth.getSession();
-    if (sessionError) throw sessionError;
-    if (!session) throw new Error('No session after MFA verification');
-
-    this.setAuthState(true);
-    return session;
-  }
-
   async getAuthenticatorAssuranceLevel(): Promise<{ currentLevel: string | null; nextLevel: string | null }> {
     const { data, error } = await this.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (error) throw error;
     return { currentLevel: data.currentLevel, nextLevel: data.nextLevel };
-  }
-  
-  async listMFAFactors(): Promise<Factor[]> {
-    const { data, error } = await this.supabase.auth.mfa.listFactors();
-    if (error) throw error;
-    return data.all;
-  }
-  
-  async initiateMFAChallenge(factorId: string): Promise<{ id: string }> {
-    const { data, error } = await this.supabase.auth.mfa.challenge({ factorId });
-    if (error) throw error;
-    return data;
   }
 
   async signInWithGitHub(): Promise<void> {

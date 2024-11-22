@@ -1,5 +1,5 @@
 // Angular
-import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 
@@ -70,7 +70,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
   private subscription: Subscription | undefined;
-  private publicRoutes: string[] = ['/', '/home', '/about', '/login'];
+  private publicRoutes =  new Set(['/', '/home', '/about', '/login']);
   private fullWidthRoutes: string[] = ['/settings', '/stats'];
 
   public loading: boolean = true;
@@ -80,9 +80,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private cdr: ChangeDetectorRef,
     private supabaseService: SupabaseService,
     private messageService: MessageService,
     private globalMessageService: GlobalMessageService,
+    private errorHandlerService: ErrorHandlerService,
     public _themeService: ThemeService,
     public _hitCountingService: HitCountingService,
     // private _translationService: TranslationService,
@@ -94,27 +96,30 @@ export class AppComponent implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       this.router.events.subscribe((event) => {
         if (event instanceof NavigationEnd) {
-          this.loading = true;
-
           const currentRoute = event.urlAfterRedirects || event.url;
           this.pagePath = currentRoute;
 
           this.isFullWidth = this.fullWidthRoutes.some(route => currentRoute.includes(route));
 
-          if (this.publicRoutes.includes(currentRoute) || currentRoute.startsWith('/about')) {
+          if (this.publicRoutes.has(currentRoute) || currentRoute.startsWith('/about')) {
             this.loading = false;
             return; // No auth needed for public routes
           }
 
           // Auth needed, check if user authenticated, redirect to login if not
-          if (!this.supabaseService.getToken()) {
-            this.router.navigate(['/login']).then(() => {
-              this.loading = false;
-              this.isBigFooter = true;
-            });
-          } else {
+          this.checkAuthentication().then(() => {
             this.loading = false;
-          }
+            this.cdr.detectChanges();
+          }).catch(async (error) => {
+            this.loading = false;
+            this.cdr.detectChanges();
+            this.errorHandlerService.handleError({
+              error,
+              message: 'Unable to validate auth state',
+              showToast: true,
+              location: 'app.component',
+            });
+          });
         }
       });
     }
@@ -132,5 +137,37 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+  }
+
+  private async checkAuthentication(): Promise<void> {
+    try {
+      // Check if authenticated
+      const isAuthenticated = await this.supabaseService.isAuthenticated();
+      if (!isAuthenticated) { // Not authenticated, redirect to login
+        await this.redirectToLogin();
+        return;
+      }
+
+      // Authenticated, now check if MFA is required
+      const hasMFA = await this.supabaseService.isMFAEnabled();
+      if (hasMFA) {
+        const { currentLevel } = await this.supabaseService.getAuthenticatorAssuranceLevel();
+        if (currentLevel !== 'aal2') {
+          await this.router.navigate(['/login'], { 
+            queryParams: { requireMFA: 'true' }
+          });
+        }
+      }
+      return Promise.resolve();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private redirectToLogin() {
+    this.router.navigate(['/login']).then(() => {
+      this.loading = false;
+      this.isBigFooter = true;
+    });
   }
 }
