@@ -1,0 +1,92 @@
+<p-card header="Contact Us">
+  <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="p-fluid flex gap-2">
+    <div class="flex-1 gap-2 flex flex-col">
+      <div class="field m-0">
+        <label for="name">Name</label>
+        <input id="name" type="text" pInputText formControlName="name" />
+      </div>
+      <div class="field m-0">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText formControlName="email" />
+      </div>
+      <div class="field m-0">
+        <label for="userType">User Type</label>
+        <input
+          id="userType"
+          type="text"
+          pInputText
+          formControlName="userType"
+          [readonly]="contactForm.get('userType')?.value"
+        />
+      </div>
+      <div class="field m-0">
+        <label for="queryType">Query Type</label>
+        <p-dropdown
+          id="queryType"
+          formControlName="queryType"
+          [options]="queryTypes"
+          (onChange)="onQueryTypeChange($event.value)"
+          placeholder="Select a query type"
+        ></p-dropdown>
+      </div>
+    </div>
+
+    <div class="flex-[2_2_0%] flex flex-col" *ngIf="contactForm.get('queryType')?.value">
+      
+      <p-messages severity="info" *ngIf="queryInfo[contactForm.get('queryType')?.value]?.info">
+        <ng-template pTemplate>
+          {{ queryInfo[contactForm.get('queryType')?.value]?.info }}
+        </ng-template>
+      </p-messages>
+      
+      <p-messages severity="warn" *ngIf="!showContactForm && queryInfo[contactForm.get('queryType')?.value]?.warn">
+        <ng-template pTemplate>
+          {{ queryInfo[contactForm.get('queryType')?.value]?.warn }}
+        </ng-template>
+      </p-messages>
+      
+
+      @if (contactForm.get('queryType')?.value === 'Feedback') {
+
+      } @else if (contactForm.get('queryType')?.value === 'Bug/Issue') {
+
+      } @else if (contactForm.get('queryType')?.value === 'Security') {
+
+      } @else if (contactForm.get('queryType')?.value === 'Custom Plan') {
+
+      } @else if (contactForm.get('queryType')?.value === 'User Support') {
+
+      } @else if (contactForm.get('queryType')?.value === 'Enterprise Support') {
+
+      } @else if (contactForm.get('queryType')?.value === 'Data') {
+        <div>
+          <p>With Domain Locker, you're in control of your data. </p>
+        </div>
+      } @else if (contactForm.get('queryType')?.value === 'Help') {
+
+      }
+      
+      <div *ngIf="queryInfo[contactForm.get('queryType')?.value]?.links" class="flex gap-3 flex-wrap">
+        <div *ngFor="let link of queryInfo[contactForm.get('queryType')?.value]?.links">
+          <a [routerLink]="link.location"
+             class="w-48 px-1 py-2 text-center flex flex-col items-center gap-2 text-default no-underline rounded border-1 border-surface-400 hover:border-primary-400">
+            <h4 class="font-bold m-0">{{ link.title }}</h4>
+            <i class="pi pi-{{link.icon}} text-3xl"></i>
+            <p class="m-0 text-sm italic opacity-70">{{ link.body }}</p>
+          </a>
+        </div>
+      </div>
+
+      <div *ngIf="showContactForm" class="field">
+        <label for="body">Message</label>
+        <textarea id="body" rows="5" pInputTextarea formControlName="body"></textarea>
+      </div>
+      <p-button
+        *ngIf="showContactForm"
+        type="submit"
+        label="Submit"
+        [disabled]="!showContactForm || contactForm.invalid"
+      ></p-button>
+  </div>
+  </form>
+</p-card>
