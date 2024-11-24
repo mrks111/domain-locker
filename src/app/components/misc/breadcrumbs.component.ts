@@ -88,15 +88,9 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
     }
     const icons: { [key: string]: string } = {
       'settings': 'wrench',
-      // 'assets': 'box',
-      // 'registrars': 'receipt',
-      // 'hosts': 'server',
-      // 'certs': 'key',
-      // 'ips': 'sitemap',
-      // 'tags': 'tags',
-      // 'dns': 'table',
-      // 'statuses': 'shield',
-      // 'domains': 'globe',
+      'about': 'info',
+      'contact': 'headphones',
+
     };
     const iconName = icons[path];
     if (!iconName) return;
