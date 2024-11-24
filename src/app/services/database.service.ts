@@ -1084,7 +1084,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
-  getHostsWithDomainCounts(): Observable<(Host & { domainCount: number })[]> {
+  getHostsWithDomainCounts(): Observable<(Host & { domain_count: number })[]> {
     return from(this.supabase.supabase
       .from('hosts')
       .select(`
@@ -1097,20 +1097,20 @@ export default class SupabaseDatabaseService extends DatabaseService {
         if (error) throw error;
         return data.map(host => ({
           ...host,
-          domainCount: host.domain_hosts.length,
+          domain_count: host.domain_hosts.length,
         }));
       }),
       catchError(error => this.handleError(error))
     );
   }
   
-  getSslIssuersWithDomainCounts(): Observable<{ issuer: string; domainCount: number }[]> {
+  getSslIssuersWithDomainCounts(): Observable<{ issuer: string; domain_count: number }[]> {
     return from(this.supabase.supabase
       .rpc('get_ssl_issuers_with_domain_counts')
     ).pipe(
       map(({ data, error }) => {
         if (error) throw error;
-        return data as { issuer: string; domainCount: number }[];
+        return data as { issuer: string; domain_count: number }[];
       }),
       catchError(error => this.handleError(error))
     );

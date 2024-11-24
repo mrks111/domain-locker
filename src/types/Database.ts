@@ -137,10 +137,10 @@ export abstract class DatabaseService {
   abstract getHosts(): Observable<Host[]>;
   abstract getDomainCountsByHost(): Observable<Record<string, number>>;
   abstract getDomainsByHost(hostIsp: string): Observable<DbDomain[]>;
-  abstract getHostsWithDomainCounts(): Observable<(Host & { domainCount: number })[]>;
+  abstract getHostsWithDomainCounts(): Observable<(Host & { domain_count: number })[]>;
 
   // SSL functions
-  abstract getSslIssuersWithDomainCounts(): Observable<{ issuer: string; domainCount: number }[]>;
+  abstract getSslIssuersWithDomainCounts(): Observable<{ issuer: string; domain_count: number }[]>;
   abstract getDomainsBySslIssuer(issuer: string): Observable<DbDomain[]>;
 
   // DNS functions

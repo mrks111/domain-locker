@@ -7,6 +7,20 @@
     </h2>
     <div class="flex gap-2 flex-wrap">
       <p-button
+        label="Edit Notification Events"
+        icon="pi pi-check-square"
+        severity="secondary"
+        routerLink="/notifications/edit-events"
+        styleClass="min-w-72"
+      />
+      <p-button
+        label="Edit Notification Channels"
+        icon="pi pi-telegram"
+        severity="secondary"
+        routerLink="/settings/notification-preferences"
+        styleClass="min-w-72"
+      />
+      <p-button
         *ngIf="!isInModal"
         label="View Full Change History"
         icon="pi pi-history"
@@ -14,7 +28,6 @@
         severity="success"
         styleClass="min-w-72"
       />
-      
       @if (unreadNotificationsCount && !isInModal) {
         <p-button
           label="Mark All as Read"
@@ -38,7 +51,7 @@
   </div>
 }
 
-<div *ngIf="notifications.length; else noNotifications" [class]="isInModal ? 'max-w-80 max-h-[48rem] overflow-y-scroll overflow-x-hidden' : ''">
+<div *ngIf="notifications.length; else noNotifications" [class]="isInModal ? 'max-w-80 max-h-[36rem] overflow-y-scroll overflow-x-hidden' : ''">
   <div *ngFor="let notification of notifications"
        class="notification-row {{ notification.read ? '' : 'unread' }} p-2 flex justify-between items-center border-b-2 border-surface-400"
        >
@@ -60,7 +73,7 @@
   </div>
 
   <!-- View All Button in Modal -->
-  <div *ngIf="isInModal && notifications.length === rowsPerPage" class="text-center mt-2">
+  <div *ngIf="isInModal" class="text-center mt-2">
     <p-button
       label="View All"
       icon="pi pi-arrow-up-right"
@@ -79,23 +92,6 @@
       (onPageChange)="loadNotifications($event.page)"
       styleClass="mt-4"
     />
-
-    <div class="flex gap-2 mt-4 mx-auto justify-end flex-wrap">
-      <p-button
-        label="Edit Notification Events"
-        icon="pi pi-check-square"
-        severity="secondary"
-        routerLink="/notifications/edit-events"
-        styleClass="min-w-72"
-      />
-      <p-button
-        label="Edit Notification Channels"
-        icon="pi pi-telegram"
-        severity="secondary"
-        routerLink="/settings/notification-preferences"
-        styleClass="min-w-72"
-      />
-    </div>
   }
 
 </div>

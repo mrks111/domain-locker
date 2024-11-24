@@ -10,7 +10,7 @@ import { statsLinks, settingsLinks, aboutLinks, authenticatedNavLinks, unauthent
   selector: 'breadcrumbs',
   imports: [CommonModule, PrimeNgModule, DomainFaviconComponent],
   template: `
-  <p-breadcrumb class="mb-4" *ngIf="shouldShowBreadcrumbs" [model]="breadcrumbs">
+  <p-breadcrumb styleClass="ml-2 mb-2" *ngIf="shouldShowBreadcrumbs" [model]="breadcrumbs">
     <ng-template pTemplate="item" let-item>
       <ng-container *ngIf="item.route; else elseBlock">
         <a [routerLink]="item.route" class="p-menuitem-link">
@@ -88,9 +88,11 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
     }
     const icons: { [key: string]: string } = {
       'settings': 'wrench',
-      'about': 'info',
+      'about': 'lightbulb',
       'contact': 'headphones',
-
+      'notifications': 'bell',
+      'edit-events': 'list-check',
+      'pricing': 'money-bill',
     };
     const iconName = icons[path];
     if (!iconName) return;
@@ -102,6 +104,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'certs': 'Certificates',
       'dns': 'DNS Records',
       'ips': 'IP Addresses',
+      'edit-events': 'Edit Events',
     };
     const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
     path = decodeURIComponent(path);

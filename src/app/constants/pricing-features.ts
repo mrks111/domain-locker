@@ -1,10 +1,4 @@
 
-type BillingPlans = 'free' | 'hobby' | 'pro' | 'enterprise';
-type SpecialPlans  = 'sponsor' | 'complimentary' | 'tester' | 'demo' | 'super';
-type UserType = BillingPlans | SpecialPlans;
-type EnvironmentType = 'dev' | 'managed' | 'self-hosted' | 'demo';
-
-
 // Sponsor: All Hobby features (free for sponsors)
 // Complimentary: Hobby features, but for free
 // Tester: All features, debugging and logging enabled, only for running locally
@@ -93,8 +87,8 @@ export const enterpriseFeatures =  {
   priceMonth: '500',
   priceAnnual: '500', 
   features: [
-    'Includes all Pro plan features',
-    'Commercial use rights',
+    'Includes all Pro plan features (+1000 domains)',
+    'Commercial usage rights',
     'SSO (with OIDC, SAML 2.0, Okta or G-Workspace)',
     'Data residency options (UK, EU, US)',
     'Custom domain and branded appearance',
