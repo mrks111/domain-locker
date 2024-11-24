@@ -63,8 +63,7 @@ h1 {
   margin: 0 auto;
   width: 100%;
   flex: 1;
-  &.full {
-    margin: 0;
+  &.full {  
     width: 100vw;
     padding: 0;
     display: block;
