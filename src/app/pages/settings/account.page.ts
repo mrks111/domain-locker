@@ -249,7 +249,7 @@ export default class UserSettingsComponent implements OnInit {
         throw new Error('MFA setup is incomplete. Please enable MFA again.');
       }
       const code = this.mfaForm.get('otpCode')!.value;
-      await this.supabaseService.verifyMFA(this.factorId, this.challengeId, code);
+      await this.supabaseService.verifyMFA2WithChallenge(this.factorId, this.challengeId, code);
       this.verified = true;
       this.messageService.showSuccess('MFA Enabled', 'Your two-factor authentication is now active.');
     } catch (error) {
