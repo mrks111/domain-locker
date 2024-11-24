@@ -1,3 +1,7 @@
+@if (loading) {
+  <p-progressSpinner styleClass="flex mx-auto" />
+}
+
 <div *ngIf="!loading && accountIssues.length > 0" class="account-issues">
   <p-messages *ngFor="let issue of accountIssues" [severity]="issue.type">
     <ng-template pTemplate>

@@ -11,7 +11,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
 })
 export class SupabaseService {
 
-  public supabase: SupabaseClient;
+  public supabase!: SupabaseClient;
   private authStateSubject = new BehaviorSubject<boolean>(false);
   authState$ = this.authStateSubject.asObservable();
   private userSubject = new BehaviorSubject<User | null>(null);
@@ -302,7 +302,23 @@ export class SupabaseService {
     if (updateError) {
       throw new Error(updateError.message || 'Failed to update password. Please try again.');
     }
-  }  
+  }
+
+  async getUserBillingInfo(): Promise<{ data: any; error: any }> {
+    const user = await this.getCurrentUser();
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated') };
+    }
+
+    const { data, error } = await this.supabase
+      .from('billing')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    return { data, error };
+  }
+
 
   async getBackupCodes(): Promise<string[]> {
     // TODO: Implement backup codes generation logic

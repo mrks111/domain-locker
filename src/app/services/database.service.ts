@@ -129,6 +129,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
   
   deleteDomain(domainId: string): Observable<void> {
     return from(this.supabase.supabase.rpc('delete_domain', { domain_id: domainId })).pipe(
+      map(() => void 0),
       catchError(error => {
         console.error('Error deleting domain:', error);
         return throwError(() => new Error('Failed to delete domain'));

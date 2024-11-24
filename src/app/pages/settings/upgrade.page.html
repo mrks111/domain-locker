@@ -1,11 +1,72 @@
-<h2>Upgrade</h2>
 
-<a routerLink="/about/pricing">
-  <p-button
-    label="View Pricing"
-    severity="secondary"
-    icon="pi pi-euro"
-    class="min-w-48"
-    styleClass="w-full"
+<div class="flex justify-between items-center mb-2">
+  <h2>Upgrade</h2>
+  <!-- <a routerLink="/about/pricing">
+    <p-button
+      label="Compare Plans"
+      severity="secondary"
+      icon="pi pi-euro"
+      class="min-w-48"
+      styleClass="w-fit"
+    />
+  </a> -->
+  <p-selectButton 
+    [options]="billingCycleOptions" 
+    [(ngModel)]="isAnnual" 
+    optionLabel="label" 
+    optionValue="value"
   />
-</a>
+</div>
+
+
+<div class="w-full p-3 p-card">
+  <h3>Current Plan</h3>
+  <div class="flex justify-between items-center">
+    <p *ngIf="currentPlan$ | async as currentPlan; else loading">
+      You are currently on the <strong>{{ currentPlan | titlecase }}</strong> plan.
+    </p>
+    <ng-template #loading>
+      <p>Loading billing details...
+      </p>
+    </ng-template>
+    <p-button
+      *ngIf="(currentPlan$ | async) !== 'pro'"
+      label="Upgrade to Pro"
+      routerLink="/settings/subscription"
+      severity="success" />
+  </div>
+</div>
+
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 mt-4">
+  <div *ngFor="let plan of availablePlans" class="p-card px-2 py-6 flex flex-col space-betweem gap-4 relative"> 
+    <div *ngIf="(currentPlan$ | async) === plan.planId"
+      class="absolute text-center bg-highlight text-highlight w-full top-0 rounded-t ml-[-0.5rem] font-semibold py-1">
+      Current Plan
+    </div>
+    <div *ngIf="plan.suggested && (currentPlan$ | async) !== plan.planId"
+      class="absolute text-center bg-green-400 w-full top-0 rounded-t ml-[-0.5rem] font-semibold py-1">
+      Recommended Plan
+    </div>
+    <div class="flex flex-col items-center h-full gap-2">
+      <h2 class="text-2xl font-bold m-0 mb-2">{{ plan.title }}</h2>
+      <p class="text-5xl font-semibold m-0 {{ plan.suggested ? 'text-green-500' : 'text-primary-500'}}">
+        ${{ getPrice(plan) }}<span class="text-lg font-medium text-gray-500">/mo</span>
+      </p>
+      <p class="text-gray-400 mb-4">{{ isAnnual ? 'Billed annually' : 'Billed monthly' }}</p>
+      
+      <ul class="text-surface-500 space-y-2 list-none m-0 p-0">
+        <li *ngFor="let feature of plan.features">
+          <i class="pi pi-check-circle mr-2 text-green-500"></i>{{ feature }}
+        </li>
+      </ul>
+    </div>  
+    <button pButton
+      *ngIf="(currentPlan$ | async) !== plan.planId && plan.planId !== 'free'"
+      routerLink="/settings/upgrade"
+      label="Upgrade"
+      [severity]="plan.suggested ? 'success' : 'secondary'"
+      class="mx-4 p-button-primary {{ plan.suggested ? '' : 'p-button-outlined' }}"></button>
+  </div>
+</div>
+

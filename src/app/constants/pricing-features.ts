@@ -14,6 +14,7 @@
 
 export interface PricingFeature {
   title: string;
+  planId: string;
   priceMonth: string;
   priceAnnual: string;
   features: string[];
@@ -24,6 +25,7 @@ export interface PricingFeature {
 export const pricingFeatures = [
   {
     title: 'Free',
+    planId: 'free',
     priceMonth: '0',
     priceAnnual: '0',
     features: [
@@ -34,6 +36,7 @@ export const pricingFeatures = [
   },
   {
     title: 'Hobby',
+    planId: 'hobby',
     priceMonth: '7',
     priceAnnual: '5',
     features: [
@@ -48,6 +51,7 @@ export const pricingFeatures = [
   },
   {
     title: 'Pro',
+    planId: 'pro',
     priceMonth: '25',
     priceAnnual: '20', 
     features: [

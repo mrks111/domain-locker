@@ -1,2 +1,12 @@
 <h2>Account Checkup</h2>
 <app-account-issues />
+
+<p-divider />
+
+<h2>Current Plan</h2>
+<p *ngIf="currentPlan$ | async as currentPlan; else loading">
+  Your current plan is: <strong>{{ currentPlan | titlecase }}</strong>
+</p>
+<ng-template #loading>
+  Loading billing details...
+</ng-template>

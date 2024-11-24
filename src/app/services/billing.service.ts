@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { EnvService } from '@/app/services/environment.service';
 import { ErrorHandlerService } from '@/app/services//error-handler.service';
+import { resolve } from '@angular/compiler-cli';
 
 /**
  * Environment Types
@@ -55,7 +56,11 @@ export class BillingService {
       // Fetch user plan from `user_info`
       const { data, error } = await this.supabaseService.getUserBillingInfo();
       if (error || !data?.current_plan) {
-        console.error('Failed to fetch user plan:', error);
+        this.errorHandler.handleError({
+          error,
+          message: 'Failed to fetch billing info',
+          location: 'billing service',
+        });
         this.userPlan$.next('free');
         return;
       }
@@ -63,8 +68,7 @@ export class BillingService {
     } catch (error) {
       this.errorHandler.handleError({
         error,
-        location: 'BillingService.fetchUserPlan',
-        showToast: true,
+        location: 'billing service',
         message: 'Unable to verify billing plan, fallback to free plan',
       });
       this.userPlan$.next('free');
@@ -97,6 +101,20 @@ export class BillingService {
     };
     return planMap[plan as SpecialPlans] || 'free';
   }
+
+    /**
+   * Creates a Stripe checkout session for the selected plan.
+   * @param planId Plan identifier
+   */
+    async createCheckoutSession(planId: string): Promise<{ url: string }> {
+      // const { data, error } = await this.supabaseService.callFunction('create_checkout_session', { plan_id: planId });
+      // if (error) {
+      //   console.error('Failed to create checkout session:', error);
+      //   throw error;
+      // }
+      // return data;
+      return { url: 'https://dummy-url.com' }; // TODO: Replace with actual implementation
+    }
 
     /**
    * Checks if a feature is available for the current user.
