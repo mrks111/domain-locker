@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
+import { environment } from '@/app/environments/environment';
 
 type EnvironmentType = 'dev' | 'managed' | 'self-hosted' | 'demo';
 
 type EnvVar =
-'SUPABASE_URL' // Supabase URL
-| 'SUPABASE_ANON_KEY' // Supabase public key
-| 'DL_ENV_TYPE' // EnvironmentType (dev, managed, self-hosted, demo)
+'SUPABASE_URL'          // Supabase URL
+| 'SUPABASE_ANON_KEY'   // Supabase public key
+| 'DL_ENV_TYPE'         // EnvironmentType (dev, managed, self-hosted, demo)
 | 'DL_SUPABASE_PROJECT' // Supabase project ID
-| 'DL_DEBUG'
-| 'DL_GLITCHTIP_DSN'
-| 'DL_PLAUSIBLE_URL'
-| 'DL_PLAUSIBLE_SITE'
+| 'DL_DEBUG'            // Enable debug mode, to show debug messages
+| 'DL_GLITCHTIP_DSN'    // GlitchTip DSN, for error tracking
+| 'DL_PLAUSIBLE_URL'    // URL to Plausible instance, for hit counting
+| 'DL_PLAUSIBLE_SITE'   // Plausible site ID /  URL, for hit counting
 ;
 
 @Injectable({
@@ -18,14 +19,26 @@ type EnvVar =
 })
 export class EnvService {
 
+  private environmentFile = (environment || {}) as Record<string, any>;
+
+  mapKeyToVarName(key: EnvVar): string {
+    return key.startsWith('DL_') ? key.substring(3) : key;
+  }
+
   /**
-   * Retrieves the value of an environment variable or returns a fallback.
+   * Retrieves the value of an environment variable
+   * Tries environmental variable (e.g. from .env) first, then runtime variable (e.g. from environment.ts)
+   * Otherwise returns the fallback value if present, otherwise null.
    * @param key Environment variable key
    * @param fallback Fallback value
    */
   getEnvVar(key: EnvVar, fallback: string | null = null, throwError: boolean = false): any {
-    const value = import.meta.env[key] ?? fallback;
-    if (!value && throwError) {
+    const buildtimeValue = import.meta.env[key]; // From .env
+    const runtimeValue = this.environmentFile[this.mapKeyToVarName(key)]; // From environment.ts
+
+    const value = (buildtimeValue || runtimeValue) ?? fallback;
+    
+    if (!value && throwError) { // Throw error to be caught by the caller
       throw new Error(`Environment variable ${key} is not set.`);
     }
     return value;

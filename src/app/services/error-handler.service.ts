@@ -1,6 +1,7 @@
 import { Injectable, isDevMode, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import * as Sentry from '@sentry/angular';
+import { EnvService } from '@/app/services/environment.service';
 
 import { GlobalMessageService } from '@services/messaging.service';
 
@@ -26,11 +27,11 @@ export class ErrorHandlerService {
   private glitchTipEnabled = false; // Don't log errors, unless enabled
 
   private lsKey = 'PRIVACY_disable-error-tracking';
-  private glitchTipDsnKey = 'DL_GLITCHTIP_DSN';
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private globalMessageService: GlobalMessageService,
+    private envService: EnvService,
   ) {
     this.glitchTipEnabled = this.shouldEnableGlitchTip();
     if (this.glitchTipEnabled) {
@@ -56,7 +57,7 @@ export class ErrorHandlerService {
   /* Determines whether to enable GlitchTip (if enabled at server-level, and not disabled by user) */
   private shouldEnableGlitchTip(): boolean {
     if (!isPlatformBrowser(this.platformId)) return false; // Don't run on server-side
-    const glitchTipDsn = import.meta.env[this.glitchTipDsnKey]; // Check if the env var is set
+    const glitchTipDsn = this.envService.getGlitchTipDsn(); // Get DSN from environment service
     const disabledByUser = localStorage.getItem(this.lsKey) !== null; // Check if user disabled error tracking
     const isLocal = isDevMode(); // Check if we are running in development mode
 
@@ -75,7 +76,7 @@ export class ErrorHandlerService {
   /* Initializes GlitchTip error tracking (if not disabled by user or admin) */
   private initializeGlitchTip(): void {
     if (!this.glitchTipEnabled) return;
-    const glitchTipDsn = import.meta.env[this.glitchTipDsnKey];
+    const glitchTipDsn = this.envService.getGlitchTipDsn();
     Sentry.init({
       dsn: glitchTipDsn,
       integrations: [ Sentry.browserTracingIntegration() ],
@@ -85,7 +86,7 @@ export class ErrorHandlerService {
 
   /* Gets the user ID from local storage (if available) */
   private getUserId(): string | null {
-    const projectName = import.meta.env['DL_SUPABASE_PROJECT'];
+    const projectName = this.envService.getProjectId();
     let userId: string | null = null;
     if (projectName && typeof localStorage !== 'undefined') {
       const authObject = localStorage.getItem(`sb-${projectName}-auth-token`);

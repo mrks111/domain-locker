@@ -1,14 +1,22 @@
 
+type BillingPlans = 'free' | 'hobby' | 'pro' | 'enterprise';
+type SpecialPlans  = 'sponsor' | 'complimentary' | 'tester' | 'demo' | 'super';
+type UserType = BillingPlans | SpecialPlans;
+type EnvironmentType = 'dev' | 'managed' | 'self-hosted' | 'demo';
 
-type Plan = 'free' | 'hobby' | 'pro' | 'self-hosted' | 'sponsor' | 'complimentary' | 'enterprise' | 'tester';
+
+// Sponsor: All Hobby features (free for sponsors)
+// Complimentary: Hobby features, but for free
+// Tester: All features, debugging and logging enabled, only for running locally
+// Demo: All features, but with read-only access
+// Super: All features (but only for self-hosted instances)
+
 // Free: 5 domains and basic features
 // Hobby: 20 domains
 // Pro: 100 domains, all features
-// Self-Hosted: All features, no cloud access
-// Sponsor: All Hobby features (free for sponsors)
-// Complimentary: Hobby features, but for free
 // Enterprise: All features
-// Tester: All features, debugging and logging enabled, only for running locally
+
+// Self-Hosted: All features, no cloud access (uses Postgres instead)
 
 export interface PricingFeature {
   title: string;

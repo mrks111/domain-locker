@@ -1,5 +1,6 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { EnvService } from '@/app/services/environment.service';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,10 @@ export class HitCountingService {
   private plausibleEnabled = false;
   private analyticsKey = 'PRIVACY_disable-analytics';
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private envService: EnvService,
+  ) {
     this.plausibleEnabled = this.shouldEnablePlausible();
     if (this.plausibleEnabled) {
       this.initializePlausible();
@@ -17,9 +21,8 @@ export class HitCountingService {
 
   /* Read Plausible config from environmental variables */
   private getCredentials() {
-    const plausibleUrl = import.meta.env['DL_PLAUSIBLE_URL'];
-    const plausibleSite = import.meta.env['DL_PLAUSIBLE_SITE'];
-    return { plausibleUrl, plausibleSite };
+    const { site: plausibleSite, url: plausibleUrl, isConfigured } = this.envService.getPlausibleConfig();
+    return { plausibleUrl, plausibleSite, isConfigured };
   }
 
   /* Checks if Plausible analytics should be enabled */
@@ -28,11 +31,11 @@ export class HitCountingService {
     if (!isPlatformBrowser(this.platformId)) return false;
 
     // Check for required environment variables
-    const { plausibleUrl, plausibleSite } = this.getCredentials();
+    const { isConfigured } = this.getCredentials();
     const analyticsDisabled = localStorage.getItem(this.analyticsKey) === 'true';
 
     // Return false if user disabled, admin disabled or any missing values
-    if (!plausibleUrl || !plausibleSite || analyticsDisabled) {
+    if (!isConfigured || analyticsDisabled) {
       return false;
     }
 

@@ -3,9 +3,11 @@ import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { createClient, Factor, Session, SupabaseClient, User } from '@supabase/supabase-js';
 import { BehaviorSubject } from 'rxjs';
+import { EnvService } from '@/app/services/environment.service';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SupabaseService {
 
@@ -16,23 +18,41 @@ export class SupabaseService {
   user$ = this.userSubject.asObservable();
   private token: string | null = null;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-
-    const supabaseUrl = import.meta.env['SUPABASE_URL'];
-    const supabaseAnonKey = import.meta.env['SUPABASE_ANON_KEY'];
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Supabase URL and Supabase Anon Key must be provided');
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private envService: EnvService,
+    private errorHandler: ErrorHandlerService,
+  ) {
+    
+    try {
+      const supabaseUrl = this.envService.getSupabaseUrl();
+      const supabaseAnonKey = this.envService.getSupabasePublicKey();
+      this.supabase = createClient(supabaseUrl, supabaseAnonKey);
+    } catch (error) {
+      this.errorHandler.handleError({
+        message: 'Failed to connect to Supabase',
+        error,
+        showToast: true,
+        location: 'SupabaseService.constructor',
+      });
+      return;
     }
-
-    this.supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     this.supabase.auth.onAuthStateChange((event, session) => {
       this.setAuthState(!!session);
     });
 
     if (isPlatformBrowser(this.platformId)) {
-      this.initializeAuth();
+      try {
+        this.initializeAuth();
+      } catch (error) {
+        this.errorHandler.handleError({
+          message: 'Failed to initialize authentication',
+          error,
+          showToast: true,
+          location: 'SupabaseService.constructor',
+        });
+      }
     }
   }
 
@@ -143,6 +163,15 @@ export class SupabaseService {
     // Successfully verified - user is now at AAL2
     this.setAuthState(true);
   }
+
+  async verifyMFA2WithChallenge(factorId: string, challengeId: string, code: string): Promise<void> {
+    const { error } = await this.supabase.auth.mfa.verify({
+      factorId,
+      challengeId,
+      code,
+    });
+    if (error) throw error;
+  }  
 
   async getAuthenticatorAssuranceLevel(): Promise<{ currentLevel: string | null; nextLevel: string | null }> {
     const { data, error } = await this.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
