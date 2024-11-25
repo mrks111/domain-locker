@@ -63,14 +63,16 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
     
     // Generate breadcrumbs from page path, if breadcrumbs isn't already provided
     if (this.pagePath) {
-      this.breadcrumbs = this.pagePath
+      this.breadcrumbs = this.pagePath.split('?')[0]
       .split('/')
       .filter(path => path)
-      .map((path, index, paths) => ({
-        label: this.getLabelForPath(path),
-        route: this.getRouteForPath(paths, index),
-        icon: this.getIconForPath(path),
-      }));
+      .map((path, index, paths) => {
+        return {
+          label: this.getLabelForPath(path),
+          route: this.getRouteForPath(paths.map(p => p.split('?')[0]), index),
+          icon: this.getIconForPath(path),
+        };
+      });
       this.breadcrumbs.unshift({ label: 'Home', route: '/', icon: 'pi pi-home' });
     }
   }
@@ -78,7 +80,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
   private determineIfBreadcrumbsShouldBeShown(): boolean {
     if (!this.breadcrumbs && !this.pagePath) return false; 
     const hideOnPages = ['/'];
-    if (this.pagePath && !hideOnPages.includes(this.pagePath)) return true;
+    if (this.pagePath && !hideOnPages.includes(this.pagePath.split('?')[0])) return true;
     return false;
   }
 

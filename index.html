@@ -1,15 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Character Set -->
     <meta charset="utf-8" />
-    <title>My App</title>
+
+    <!-- Page Title -->
+    <title>Domain Locker | Manage Your Domains with Ease</title>
+
+    <!-- Base URL -->
     <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <!-- Description -->
+    <meta name="description" content="Domain Locker helps you track, monitor, and manage your domains effortlessly. Stay on top of expiration dates, DNS records, and changes with alerts and detailed insights." />
+
+    <!-- Keywords -->
+    <meta name="keywords" content="domain management, domain monitoring, DNS records, domain tracking, alerts, SSL, WHOIS" />
+
+    <!-- Author -->
+    <meta name="author" content="Alicia Sykes" />
+
+    <!-- Robots -->
+    <meta name="robots" content="index, follow" />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#a78bfa" />
+
+    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Domain Locker" />
+    <meta property="og:description" content="Domain Locker helps you track, monitor, and manage your domains effortlessly." />
+    <meta property="og:image" content="/assets/images/social-preview.png" />
+    <meta property="og:url" content="https://domain-locker.com" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Domain Locker" />
+    <meta name="twitter:description" content="Domain Locker helps you track, monitor, and manage your domains effortlessly." />
+    <meta name="twitter:image" content="/assets/images/social-preview.png" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://domainlocker.example.com/" />
+
+    <!-- Styles -->
     <link rel="stylesheet" href="/src/styles.css" />
+
+    <!-- Preload critical resources -->
+    <link rel="preload" as="style" href="/src/styles.css" />
+    <link rel="preload" as="script" href="/src/main.ts" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Accessibility Improvements -->
+    <meta name="accessibility-support" content="WCAG 2.1 AA" />
+    <meta name="screen-reader-support" content="true" />
+
+    <!-- CSP (Content Security Policy) -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; img-src 'self' data:; font-src 'self' fonts.gstatic.com; connect-src 'self' https://api.example.com; frame-src 'none';" /> -->
+
+    <!-- SEO Alternate Links for Language -->
+    <link rel="alternate" hreflang="en" href="https://domainlocker.example.com?lang=en" />
+    <link rel="alternate" hreflang="es" href="https://domainlocker.example.com?lang=es" />
   </head>
   <body>
-    <app-root></app-root>
+    <!-- Angular App Root -->
+    <app-root id="main-content"></app-root>
+
+    <!-- Scripts -->
     <script type="module" src="/src/main.ts"></script>
+
+    <!-- Analytics -->
+    <script async data-domain="domain.locker" src="https://no-track.as93.net/js/script.js"></script>
   </body>
 </html>

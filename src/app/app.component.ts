@@ -23,6 +23,7 @@ import { GlobalMessageService } from '@/app/services/messaging.service';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { HitCountingService } from '@/app/services/hit-counting.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { TranslationService } from './services/translation.service';
 
 @Component({
   selector: 'app-root',
@@ -87,7 +88,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private errorHandlerService: ErrorHandlerService,
     public _themeService: ThemeService,
     public _hitCountingService: HitCountingService,
-    // private _translationService: TranslationService,
+    private _translationService: TranslationService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 
