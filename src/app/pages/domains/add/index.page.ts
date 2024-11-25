@@ -12,7 +12,7 @@ import { SaveDomainData } from '@typings/Database';
 import { notificationTypes } from '@/app/constants/notification-types';
 
 import type { DomainInfo } from '@typings/DomainInfo';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Registrar } from '@/types/common';
 
 @Component({
@@ -35,6 +35,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
   private existingDomains: string[] = [];
   public showDomainError = false;
   public readonly notificationOptions = notificationTypes;
+  public initialDomain = '';
 
   public readonly saveOptions: MenuItem[] = [
     {
@@ -56,9 +57,11 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private databaseService: DatabaseService,
     private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
+    this.initialDomain = this.route.snapshot.queryParamMap.get('domain') || '';
     this.initializeForm();
     this.fetchExistingDomains();
     this.setupDomainValidation();
@@ -76,7 +79,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     }, {} as Record<string, [boolean]>);
 
     this.domainForm = this.fb.group({
-      domainName: ['', [
+      domainName: [this.initialDomain, [
         Validators.required,
         Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/),
         this.domainExistsValidator()
