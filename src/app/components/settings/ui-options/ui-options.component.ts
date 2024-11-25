@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
-import { ThemeService, Theme } from '@services/theme.service';
+import { ThemeService, Theme, FontOption } from '@services/theme.service';
 import { SupabaseService } from '@services/supabase.service';
 import { TranslationService } from '@services/translation.service';
 import { Subscription } from 'rxjs';
@@ -33,6 +33,9 @@ export class UiSettingsComponent implements OnInit {
   themes: Theme[];
   scale: 'small' | 'medium' | 'large' = 'medium';
 
+  fonts: FontOption[] = [];
+  selectedFont: FontOption | null = null;
+
   private subscriptions: Subscription = new Subscription();
   languages: any[] = [];
   selectedLanguage: string = 'en';
@@ -45,6 +48,14 @@ export class UiSettingsComponent implements OnInit {
   ) {
     this.themes = this.themeService.getThemes();
     this.selectedTheme = this.themes[0];
+
+    this.fonts = this.themeService.getFonts();
+    this.subscriptions.add(
+      this.themeService.selectedFont$.subscribe((font) => {
+        this.selectedFont = font;
+        // this.cdr.detectChanges();
+      })
+    );
   }
 
 
@@ -77,6 +88,10 @@ export class UiSettingsComponent implements OnInit {
 
   onThemeChange(theme: Theme) {
     this.themeService.setTheme(theme);
+  }
+
+  onFontChange(font: FontOption) {
+    this.themeService.setFont(font);
   }
 
   onScaleChange() {
