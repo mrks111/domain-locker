@@ -97,4 +97,6 @@ export interface Host {
   isp: string;
   org: string;
   asNumber: string;
+  domain_count?: number;
+  ip?: string;
 }

@@ -53,7 +53,7 @@ export class DomainGanttChartComponent implements OnInit, AfterViewInit {
         this.domains = domains.map((domain, index) => ({
           id: index,
           name: domain.domain_name,
-          start: new Date(domain.registration_date),
+          start: new Date(domain.registration_date || new Date()),
           end: new Date(domain.expiry_date || new Date())
         }));
         this.loading = false;

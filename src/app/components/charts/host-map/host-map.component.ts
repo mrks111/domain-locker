@@ -54,7 +54,10 @@ export class HostMapComponent implements OnInit, AfterViewInit {
   private loadHosts() {
     this.databaseService.getHostsWithDomainCounts().subscribe(
       hosts => {
-        this.hosts = hosts;
+        this.hosts = hosts.map(host => ({
+          ...host,
+          domainCount: host.domain_count
+        }));
         if (this.map) {
           this.addMarkers();
         }

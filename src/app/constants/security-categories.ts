@@ -46,7 +46,7 @@ export const getByEppCode = (eppCode: string): SecurityCategory | undefined => {
   return securityCategories.find(cat => cat.eppCode === eppCode);
 }
 
-export const makeEppArrayFromLabels = (labels: string[]): SecurityCategory[] => {
+export const makeEppArrayFromLabels = (labels: string[]): SecurityCategory[] | undefined => {
   if (!labels) return [];
   return labels
     .map(label => securityCategories.find(cat => cat.eppCode === label))

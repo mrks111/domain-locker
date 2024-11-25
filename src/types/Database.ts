@@ -72,14 +72,15 @@ export interface NotificationOptions extends Timestamps {
 }
 
 export interface SaveDomainData {
-  domain: Omit<DbDomain, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
-  ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'created_at' | 'updated_at'>[];
+  domain: Omit<DbDomain, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'dns' | 'ipAddresses' >;
+  // ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'created_at' | 'updated_at'>[];
   tags: string[];
   notifications: { notification_type: string; is_enabled: boolean; }[];
   ssl?: Ssl;
   whois?: Contact;
   dns?: Dns;
-  registrar: Registrar;
+  // registrar: Registrar;
+  registrar?: any;
   host?: Host;
   subdomains: string[];
 }

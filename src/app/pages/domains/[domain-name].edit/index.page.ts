@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import DatabaseService from '@services/database.service';
-import { DbDomain } from '@/types/Database';
+import { DbDomain, SaveDomainData } from '@/types/Database';
 import { notificationTypes, NotificationType } from '@/app/constants/notification-types';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
@@ -105,7 +105,7 @@ export default class EditDomainComponent implements OnInit {
       const subdomains = formValue.subdomains.map((sd: string) => this.cleanSubdomain(sd));
 
       // Prepare updated domain data
-      const updatedDomain = {
+      const updatedDomain: SaveDomainData = {
         domain: {
           domain_name: this.domain!.domain_name,
           registrar: formValue.registrar,

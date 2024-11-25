@@ -49,7 +49,10 @@ export default class SslIssuersIndexPageComponent implements OnInit {
     this.loading = true;
     this.databaseService.getSslIssuersWithDomainCounts().subscribe({
       next: (issuers) => {
-        this.sslIssuers = issuers.sort((a, b) => b.domainCount - a.domainCount);
+        this.sslIssuers = issuers.map(issuer => ({
+          issuer: issuer.issuer,
+          domainCount: issuer.domain_count
+        })).sort((a, b) => b.domainCount - a.domainCount);
         this.loading = false;
       },
       error: (error) => {

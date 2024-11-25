@@ -1,6 +1,6 @@
 import { Component, OnInit, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
 import * as d3 from 'd3';
-import cloud from 'd3-cloud';
+import * as cloud from 'd3-cloud';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { Router } from '@angular/router';
@@ -107,7 +107,7 @@ export class DomainTagCloudComponent implements OnInit, OnDestroy {
         .padding(5)
         .rotate(() => ~~(Math.random() * 2) * 90)
         .font('Impact')
-        .fontSize((d: CloudWord) => d.size)
+        .fontSize((d: any) => d.size)
         .on('end', this.draw.bind(this))
         .start();
     } catch (err) {
