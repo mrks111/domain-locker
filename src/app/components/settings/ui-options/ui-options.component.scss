@@ -24,3 +24,20 @@
     flex: 1;
   }
 }
+
+
+::ng-deep .language-select {
+  &.gappy-select .p-selectbutton.p-buttonset {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    .p-button {
+      min-width: 10rem;
+      border-radius: 4px;
+      border: 1px solid var(--surface-300);
+    }
+  }
+  &:not(.gappy-select) .p-selectbutton .p-button {
+    padding: 0.2rem 0.3rem;
+  }
+}

@@ -10,7 +10,7 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { OverlayModule } from 'primeng/overlay';
 import { Subscription } from 'rxjs';
-import { authenticatedNavLinks, unauthenticatedNavLinks } from '@/app/constants/navigation-links';
+import { authenticatedNavLinks, unauthenticatedNavLinks, settingsLinks } from '@/app/constants/navigation-links';
 import { UiSettingsComponent } from '@/app/components/settings/ui-options/ui-options.component';
 import { NotificationsListComponent } from '@components/notifications-list/notifications-list.component';
 import { OverlayPanel } from 'primeng/overlaypanel';
@@ -37,6 +37,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   @ViewChild('notificationsOverlay') notificationsOverlay!: OverlayPanel;
   notificationsVisible: boolean = false;
   items: MenuItem[] = [];
+  itemsWithSettings: MenuItem[] = [];
   sidebarVisible: boolean = false;
   settingsVisible: boolean = false;
   isAuthenticated: boolean = false;
@@ -85,8 +86,13 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
     if (this.isAuthenticated) {
       this.items = authenticatedNavLinks;
+      this.itemsWithSettings = [
+        ...authenticatedNavLinks,
+        { label: 'Settings', routerLink: '/settings', icon: 'pi pi-wrench',  items: settingsLinks },
+      ];
     } else {
       this.items = unauthenticatedNavLinks;
+      this.itemsWithSettings = unauthenticatedNavLinks;
     }
   }
 

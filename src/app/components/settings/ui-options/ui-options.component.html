@@ -37,7 +37,7 @@
       </ng-template>
     </p-selectButton>
   </div>
-  <!-- Language Section (Placeholder) -->
+  <!-- Language Section -->
   <div class="mb-4 ui-settings-section {{ standAlone ? 'p-card' : '' }}">
     <h3 class="text-sm font-semibold mb-2">
       <i class="pi pi-language mr-2"></i>Language
@@ -48,7 +48,7 @@
       optionLabel="flag"
       optionValue="code"
       (onChange)="onLanguageChange($event.value)"
-      class="language-select"
+      class="language-select {{ standAlone ? 'gappy-select' : '' }}"
     >
       <ng-template let-option pTemplate="item">
         <span
@@ -75,7 +75,7 @@
   </div>
   
   <!-- User Settings Section -->
-  <div class="logged-in-options-wrap ui-settings-section {{ standAlone ? 'p-card' : '' }}" *ngIf="isAuthenticated">
+  <!-- <div class="logged-in-options-wrap ui-settings-section {{ standAlone ? 'p-card' : '' }}" *ngIf="isAuthenticated">
     <a routerLink="/settings" class="p-button text-sm no-underline">
       <i class="pi pi-user mr-2"></i>User Settings
     </a>
@@ -85,6 +85,6 @@
       icon="pi pi-sign-out"
       class="p-button-text text-sm"
       (click)="signOut()"></button>
-  </div>
+  </div> -->
 </div>
 

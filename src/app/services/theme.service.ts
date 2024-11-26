@@ -29,10 +29,10 @@ export class ThemeService {
   // Define themes, and set default
   private themes: Theme[] = [
     { name: 'Lara Purple', code: 'lara-purple', color: '#8B5CF6', darkLink: '/themes/purple-dark.css', lightLink: '/themes/purple-light.css' },
+    { name: 'Vela Orange', code: 'vela-orange', color: '#FF9800', darkLink: '/themes/orange-dark.css', lightLink: '/themes/orange-light.css' },
     { name: 'Material Indigo', code: 'md-indigo', color: '#3F51B5', darkLink: '/themes/indigo-dark.css', lightLink: '/themes/indigo-light.css' },
     { name: 'Bootstrap Blue', code: 'bootstrap-blue', color: '#007BFF', darkLink: '/themes/blue-dark.css', lightLink: '/themes/blue-light.css' },
     { name: 'Lara Teal', code: 'lara-teal', color: '#14B8A6', darkLink: '/themes/teal-dark.css', lightLink: '/themes/teal-light.css' },
-    { name: 'Vela Orange', code: 'vela-orange', color: '#FF9800', darkLink: '/themes/orange-dark.css', lightLink: '/themes/orange-light.css' },
     { name: 'Arya Green', code: 'arya-green', color: '#4CAF50', darkLink: '/themes/green-dark.css', lightLink: '/themes/green-light.css' }
   ];
   private defaultTheme = this.themes[0];

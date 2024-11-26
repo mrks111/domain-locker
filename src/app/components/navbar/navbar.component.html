@@ -36,9 +36,8 @@
       <p-badge
         *ngIf="unreadNotificationsCount"
         [value]="unreadNotificationsCount"
-        (click)="toggleNotifications($event)"
         severity="danger"
-        class="absolute top-0 right-px"
+        class="absolute top-0 right-px pointer-events-none"
       />
     </p-button>
 
@@ -70,15 +69,60 @@
     </p-overlay>
   </div>
 </div>
-<p-sidebar [(visible)]="sidebarVisible" position="left" [styleClass]="'p-sidebar-sm'">
+<p-sidebar [(visible)]="sidebarVisible" position="left" styleClass="p-sidebar-sm p-0" class="p-0">
+  <ng-template pTemplate="header">
+    <div class="w-full flex flex-col justify-between">
+      <a routerLink="/" class="font-semibold text-xl text-default no-underline">
+          Domain Locker
+      </a>
+      <div class="w-full flex gap-1">
+      <p-button
+        routerLink="/settings/display-options"
+        icon="pi pi-palette"
+        severity="contrast"
+        [text]="true"
+        class="text-default hover:text-primary">
+      </p-button>
+      <p-button
+        routerLink="/settings"
+        icon="pi pi-wrench"
+        severity="contrast"
+        [text]="true"
+        class="text-default hover:text-primary">
+      </p-button>
+      <p-button
+        *ngIf="isAuthenticated"
+        routerLink="/notifications"
+        icon="pi pi-bell"
+        [text]="true"
+        severity="contrast"
+        class="notification-button text-default hover:text-primary">
+        <p-badge
+          *ngIf="unreadNotificationsCount"
+          [value]="unreadNotificationsCount"
+          severity="danger"
+          class="absolute top-0 right-px pointer-events-none"
+        />
+      </p-button>
+    </div>
+  </div>
+</ng-template>
   <ng-template pTemplate="content">
-    <div class="flex flex-col space-y-4">
+    <p-menu [model]="itemsWithSettings" styleClass="w-full bg-transparent border-none">
+      <ng-template pTemplate="submenuheader" let-item>
+        <a class="text-primary font-bold no-underline" [routerLink]="item.routerLink">
+          <i [class]="item.icon + ' mr-2'"></i>
+          {{ item.label }}
+        </a>
+    </ng-template>
+    </p-menu>
+    <!-- <div class="flex flex-col space-y-4">
       <a *ngFor="let item of items" [routerLink]="item.routerLink"
          class="p-3 hover:bg-gray-100 rounded-md flex items-center"
          (click)="closeSidebar()">
         <i [class]="item.icon + ' mr-3'"></i>
         {{ item.label }}
       </a>
-    </div>
+    </div> -->
   </ng-template>
 </p-sidebar>

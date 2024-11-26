@@ -1,6 +1,6 @@
 import { Component, OnInit, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
 import * as d3 from 'd3';
-import * as cloud from 'd3-cloud';
+import cloud from 'd3-cloud';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { Router } from '@angular/router';

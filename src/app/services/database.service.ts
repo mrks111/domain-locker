@@ -922,7 +922,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
         if (error) throw error;
         const counts: Record<string, number> = {};
         data.forEach((item: any) => {
-          const tagName = item.tags.name;
+          const tagName = item.tags?.name;
           counts[tagName] = (counts[tagName] || 0) + 1;
         });
         return counts;
@@ -1144,7 +1144,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
         if (error) throw error;
         return data.map(record => ({
           record_value: record.record_value,
-          // Check if record.domains is an object, and handle accordingly
+          // @ts-ignore: Check if record.domains is an object, and handle accordingly
           domains: record.domains ? [record.domains.domain_name] : []
         }));
       }),
