@@ -30,7 +30,7 @@ export class TranslationService {
   }
 
   // Determine the language to use based on URL, localStorage, or default
-  private getLanguageToUse(): string {
+  public getLanguageToUse(): string {
     let langFromUrl = null;
     let langFromStorage = null;
     if (isPlatformBrowser(this.platformId)) {

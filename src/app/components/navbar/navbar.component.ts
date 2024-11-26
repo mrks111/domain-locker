@@ -102,6 +102,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
   closeSidebar() {
     this.sidebarVisible = false;
+    this.cdr.detectChanges();
   }
   
   toggleNotifications(event: Event) {

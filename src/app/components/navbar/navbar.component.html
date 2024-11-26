@@ -14,7 +14,6 @@
   <div class="hidden sm:flex sm:items-center">
     <p-menubar [model]="items" [styleClass]="'bg-transparent border-none p-0'"></p-menubar>
     <button
-      #settingsButton
       pButton
       icon="pi pi-palette"
       (click)="toggleSettings($event)"
@@ -60,7 +59,7 @@
         class="p-button-rounded p-button-text text-default hover:text-primary">
       </button>
     </a>
-    <p-overlay [(visible)]="settingsVisible" [target]="settingsButton" [appendTo]="'body'"
+    <p-overlay [(visible)]="settingsVisible" #settingsButton [appendTo]="'body'"
                [showTransitionOptions]="'0ms'" [hideTransitionOptions]="'0ms'"
                styleClass="settings-overlay w-60">
       <ng-template pTemplate="content">
@@ -108,7 +107,7 @@
   </div>
 </ng-template>
   <ng-template pTemplate="content">
-    <p-menu [model]="itemsWithSettings" styleClass="w-full bg-transparent border-none">
+    <p-menu [model]="itemsWithSettings" styleClass="w-full bg-transparent border-none" (click)="closeSidebar()">
       <ng-template pTemplate="submenuheader" let-item>
         <a class="text-primary font-bold no-underline" [routerLink]="item.routerLink">
           <i [class]="item.icon + ' mr-2'"></i>
@@ -116,13 +115,5 @@
         </a>
     </ng-template>
     </p-menu>
-    <!-- <div class="flex flex-col space-y-4">
-      <a *ngFor="let item of items" [routerLink]="item.routerLink"
-         class="p-3 hover:bg-gray-100 rounded-md flex items-center"
-         (click)="closeSidebar()">
-        <i [class]="item.icon + ' mr-3'"></i>
-        {{ item.label }}
-      </a>
-    </div> -->
   </ng-template>
 </p-sidebar>

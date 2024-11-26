@@ -1,7 +1,6 @@
 import { Injectable, inject, PLATFORM_ID, Renderer2, RendererFactory2 } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
-import { init } from '@sentry/browser';
 
 export interface Theme {
   name: string;
@@ -213,5 +212,14 @@ export class ThemeService {
     // Apply fonts to body and headings
     this.document.documentElement.style.setProperty('--body-font', font.bodyFont);
     this.document.documentElement.style.setProperty('--heading-font', font.headingFont);
+  }
+
+  public getUserPreferences(): { theme: string, darkMode: boolean, font: string, scale: string } {
+    return {
+      theme: this.selectedThemeSubject.value.name,
+      darkMode: this.isDarkThemeSubject.value,
+      font: this.selectedFontSubject.value?.name || 'Default',
+      scale: localStorage.getItem('scale') || 'medium',
+    };
   }
 }
