@@ -4,6 +4,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HelpfulLinksComponent } from '@/app/components/misc/helpful-links.component';
 
 interface QueryInfo {
   [key: string]: {
@@ -22,7 +23,7 @@ interface QueryInfo {
 @Component({
   standalone: true,
   selector: 'app-contact',
-  imports: [CommonModule, PrimeNgModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, PrimeNgModule, FormsModule, ReactiveFormsModule, HelpfulLinksComponent],
   templateUrl: './index.page.html',
 })
 export default class ContactPageComponent implements OnInit {

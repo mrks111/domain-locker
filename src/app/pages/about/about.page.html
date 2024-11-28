@@ -1,0 +1,13 @@
+
+
+<section *ngFor="let section of sections" class="p-card p-4 mx-auto my-4">
+  <h2>{{ section.title }}</h2>
+  
+  <ul class="pl-4">
+    <li *ngFor="let link of section.links">
+      <a [routerLink]="link.link" class="text-primary font-semibold no-underline">{{ link.title }}</a>
+      @if (link.description) { - {{ link.description }} }
+    </li>
+  </ul>
+  
+</section>
