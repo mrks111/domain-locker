@@ -12,8 +12,8 @@ import { of } from 'rxjs';
 import { DlIconComponent } from '@components/misc/svg-icon.component';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { GlobalMessageService } from '@services/messaging.service';
-import { securityCategories } from '@/app/constants/security-categories';
 import { DomainUpdatesComponent } from '@/app/components/domain-things/domain-updates/domain-updates.component';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 @Component({
   standalone: true,
@@ -25,17 +25,17 @@ import { DomainUpdatesComponent } from '@/app/components/domain-things/domain-up
 })
 export default class DomainDetailsPage implements OnInit {
   domain: DbDomain | null = null;
-  error: string | null = null;
   name: string | null = null;
+  domainNotFound = false;
 
   constructor(
     private route: ActivatedRoute,
     private databaseService: DatabaseService,
-    private messageService: MessageService,
     public domainUtils: DomainUtils,
     private confirmationService: ConfirmationService,
     private router: Router,
     private globalMessageService: GlobalMessageService,
+    private errorHandler: ErrorHandlerService,
   ) {}
 
   ngOnInit() {
@@ -45,11 +45,12 @@ export default class DomainDetailsPage implements OnInit {
         this.name = domainName;
         return this.databaseService.getDomain(domainName).pipe(
           catchError(error => {
-            this.error = error.message;
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: `Failed to load domain details: ${error.message}`
+            this.domainNotFound = true;
+            this.errorHandler.handleError({
+              error,
+              message: 'Failed to load domain details',
+              showToast: true,
+              location: 'Domain',
             });
             return of(null);
           })
