@@ -3,14 +3,13 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { EnvService } from '@/app/services/environment.service';
 import { ErrorHandlerService } from '@/app/services//error-handler.service';
-import { resolve } from '@angular/compiler-cli';
 
 /**
  * Environment Types
  */
-type BillingPlans = 'free' | 'hobby' | 'pro' | 'enterprise';
+export type BillingPlans = 'free' | 'hobby' | 'pro' | 'enterprise';
 type SpecialPlans = 'sponsor' | 'complimentary' | 'tester' | 'demo' | 'super';
-type UserType = BillingPlans | SpecialPlans;
+export type UserType = BillingPlans | SpecialPlans;
 type EnvironmentType = 'dev' | 'managed' | 'self-hosted' | 'demo';
 
 @Injectable({
@@ -116,34 +115,5 @@ export class BillingService {
       return { url: 'https://dummy-url.com' }; // TODO: Replace with actual implementation
     }
 
-    /**
-   * Checks if a feature is available for the current user.
-   * @param feature Feature to check
-   * TODO: I may break this out into a dedicated feature service
-   */
-    async isFeatureAvailable(feature: string): Promise<boolean> {
-      const plan = this.userPlan$.getValue();
-  
-      if (!plan) return false;
-  
-      const features = this.getFeaturesForPlan(this.mapSpecialPlanToBillingPlan(plan));
-      return features.includes(feature);
-    }
 
-  /**
-   * Retrieves features available for the given plan.
-   * @param plan User's plan
-   * TODO: I may break this out into a dedicated feature service
-   */
-  private getFeaturesForPlan(plan: BillingPlans): string[] {
-    // TODO: This needs refining based on the actual features available
-    const planFeatures: Record<BillingPlans, string[]> = {
-      free: ['basic-domain-info', 'notifications'],
-      hobby: ['domain-tracking', 'detailed-info', 'analytics'],
-      pro: ['all', 'support', 'monitoring', 'branding'],
-      enterprise: ['everything', 'priority-support'],
-    };
-
-    return planFeatures[plan] || [];
-  }
 }

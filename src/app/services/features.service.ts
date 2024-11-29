@@ -1,72 +1,66 @@
-// import { Injectable } from '@angular/core';
-// import flagsmith from 'flagsmith';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
+import { BillingService } from '@/app/services/billing.service';
+import { EnvService, type EnvironmentType } from '@/app/services/environment.service';
 
-// @Injectable({
-//   providedIn: 'root'
-// })
-// export class FeatureConfigService {
-//   private env = process.env;
-//   private userPlan: Plan;
-//   private environment: EnvironmentType;
+import { features, type FeatureConfig, type FeatureDefinitions } from '@/app/constants/feature-options';
 
-//   constructor() {
-//     // Initialize flagsmith and set environment
-//     flagsmith.init({ environmentID: this.env['FLAGS_ENV_ID'] || '' });
-//     this.environment = this.getEnvironmentType();
-//     this.userPlan = this.getUserPlan();
-//   }
 
-//   private getEnvironmentType(): EnvironmentType {
-//     if (this.env['ENV_TYPE'] === 'self-hosted') return EnvironmentType.SELF_HOSTED;
-//     if (this.env['ENV_TYPE'] === 'managed') return EnvironmentType.MANAGED;
-//     return EnvironmentType.DEV;
-//   }
+@Injectable({
+  providedIn: 'root',
+})
+export class FeatureConfigService {
+  private environment: EnvironmentType;
+  private userPlan$: Observable<string | null>;
+  private features: FeatureDefinitions = features;
 
-//   private getUserPlan(): Plan {
-//     // Retrieve from auth or env (use a fallback if not available)
-//     return this.env['USER_PLAN'] as Plan || Plan.FREE;
-//   }
+  private activeFeatures$: BehaviorSubject<Record<keyof FeatureDefinitions, any>> = new BehaviorSubject({} as Record<keyof FeatureDefinitions, any>);
 
-//   // Main function to check if a feature is enabled or retrieve its value
-//   async getFeatureValue(featureKey: string): Promise<any> {
-//     const feature = FEATURE_CONFIG[featureKey];
+  constructor(private billingService: BillingService, private environmentService: EnvService) {
+    this.environment = this.environmentService.getEnvironmentType();
+    this.userPlan$ = this.billingService.getUserPlan();
 
-//     if (!feature) throw new Error(`Feature '${featureKey}' not found in config`);
+    // Reactive update for feature configurations
+    combineLatest([this.userPlan$]).subscribe(([userPlan]) => {
+      const features = this.resolveFeatures(userPlan || 'free');
+      this.activeFeatures$.next(features);
+    });
+  }
 
-//     // 1. Check Flagsmith if configured
-//     if (await this.getFlagsmithFeature(featureKey) !== undefined) {
-//       return await this.getFlagsmithFeature(featureKey);
-//     }
+  /**
+   * Resolves features based on user plan, environment, and feature configuration.
+   */
+  private resolveFeatures(userPlan: string): Record<keyof FeatureDefinitions, any> {
+    const features: Partial<Record<keyof FeatureDefinitions, any>> = {};
 
-//     // 2. Check based on environment-specific rules
-//     if (this.environment === EnvironmentType.SELF_HOSTED && feature.selfHostedValue) {
-//       return feature.selfHostedValue;
-//     }
+    for (const [feature, config] of Object.entries(this.features) as [keyof FeatureDefinitions, FeatureConfig<any>][]) {
+      let value = config.default;
 
-//     // 3. Check user plan for allowed features or overrides
-//     if (feature.planOverrides && feature.planOverrides[this.userPlan]) {
-//       return feature.planOverrides[this.userPlan];
-//     }
-//     if (feature.enabledFor?.includes(this.userPlan)) {
-//       return true;
-//     }
+      if (this.environment in config) {
+        value = config[this.environment as keyof FeatureConfig<any>]!;
+      } else if (this.environment === 'managed' && typeof config.managed === 'object') {
+        value = config.managed[userPlan] ?? config.default;
+      } else if (this.environment === 'managed' && typeof config.managed !== 'undefined') {
+        value = config.managed;
+      }
 
-//     // 4. Check for environment variables
-//     if (feature.source.includes('environment') && this.env[featureKey] !== undefined) {
-//       return this.env[featureKey] === 'true' || this.env[featureKey];
-//     }
+      features[feature] = value;
+    }
 
-//     // 5. Return default
-//     return feature.default;
-//   }
+    return features as Record<keyof FeatureDefinitions, any>;
+  }
 
-//   private async getFlagsmithFeature(featureKey: string): Promise<any> {
-//     try {
-//       const featureValue = await flagsmith.getValue(featureKey);
-//       return featureValue !== undefined ? featureValue : null;
-//     } catch (error) {
-//       console.warn(`Flagsmith unavailable: ${error instanceof Error ? error.message : 'Unknown Error'}`);
-//       return null;
-//     }
-//   }
-// }
+  /**
+   * Get the resolved value for a specific feature.
+   */
+  public getFeatureValue<T>(feature: keyof FeatureDefinitions): Observable<T | null> {
+    return this.activeFeatures$.pipe(map((features) => (features[feature] ?? null) as T | null));
+  }
+
+  /**
+   * Check if a specific feature is enabled (boolean features).
+   */
+  public isFeatureEnabled(feature: keyof FeatureDefinitions): Observable<boolean> {
+    return this.getFeatureValue<boolean>(feature).pipe(map((value) => !!value));
+  }
+}

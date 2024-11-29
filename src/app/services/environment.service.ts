@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '@/app/environments/environment';
 
-type EnvironmentType = 'dev' | 'managed' | 'self-hosted' | 'demo';
+export type EnvironmentType = 'dev' | 'managed' | 'self-hosted' | 'demo';
 
 type EnvVar =
 'SUPABASE_URL'          // Supabase URL
