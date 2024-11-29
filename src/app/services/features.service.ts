@@ -2,14 +2,12 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 import { BillingService } from '@/app/services/billing.service';
 import { EnvService, type EnvironmentType } from '@/app/services/environment.service';
-
 import { features, type FeatureConfig, type FeatureDefinitions } from '@/app/constants/feature-options';
-
 
 @Injectable({
   providedIn: 'root',
 })
-export class FeatureConfigService {
+export class FeatureService {
   private environment: EnvironmentType;
   private userPlan$: Observable<string | null>;
   private features: FeatureDefinitions = features;
@@ -31,24 +29,34 @@ export class FeatureConfigService {
    * Resolves features based on user plan, environment, and feature configuration.
    */
   private resolveFeatures(userPlan: string): Record<keyof FeatureDefinitions, any> {
-    const features: Partial<Record<keyof FeatureDefinitions, any>> = {};
-
-    for (const [feature, config] of Object.entries(this.features) as [keyof FeatureDefinitions, FeatureConfig<any>][]) {
-      let value = config.default;
-
-      if (this.environment in config) {
-        value = config[this.environment as keyof FeatureConfig<any>]!;
-      } else if (this.environment === 'managed' && typeof config.managed === 'object') {
-        value = config.managed[userPlan] ?? config.default;
-      } else if (this.environment === 'managed' && typeof config.managed !== 'undefined') {
-        value = config.managed;
+    const features: Record<keyof FeatureDefinitions, any> = {} as Record<
+      keyof FeatureDefinitions,
+      any
+    >;
+    for (const [feature, config] of Object.entries(this.features) as [
+      keyof FeatureDefinitions,
+      any
+    ][]) {
+      if (this.environment === 'managed') {
+        // If `managed` is a single value, use it directly
+        if (typeof config.managed === 'boolean' || typeof config.managed === 'number') {
+          features[feature] = config.managed;
+        } else if (typeof config.managed === 'object') {
+          // Otherwise, check for userPlan-specific value
+          features[feature] = config.managed[userPlan] ?? config.default;
+        }
+      } else if (config[this.environment] !== undefined) {
+        // If there's an environment-specific value (e.g., self-hosted, demo)
+        features[feature] = config[this.environment];
+      } else {
+        // Default value
+        features[feature] = config.default;
       }
-
-      features[feature] = value;
     }
 
-    return features as Record<keyof FeatureDefinitions, any>;
+    return features;
   }
+
 
   /**
    * Get the resolved value for a specific feature.
@@ -61,6 +69,15 @@ export class FeatureConfigService {
    * Check if a specific feature is enabled (boolean features).
    */
   public isFeatureEnabled(feature: keyof FeatureDefinitions): Observable<boolean> {
-    return this.getFeatureValue<boolean>(feature).pipe(map((value) => !!value));
+    return this.getFeatureValue<boolean>(feature).pipe(
+      map((value) => {
+        if (typeof value !== 'boolean') {
+          console.error(`Feature "${feature}" did not resolve to a boolean. Got:`, value);
+          return false; // Fallback to false if value isn't boolean
+        }
+        return value;
+      })
+    );
   }
+  
 }

@@ -1,13 +1,15 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import { PrimeNgModule } from '../prime-ng.module';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { statsLinks } from '@/app/constants/navigation-links';
+import { FeatureService } from '@/app/services/features.service';
+import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterOutlet, PrimeNgModule],
+  imports: [CommonModule, RouterOutlet, PrimeNgModule, FeatureNotEnabledComponent],
   selector: 'stats-index-page',
   templateUrl: './stats/index.page.html',
   styles: ['::ng-deep .content-container { max-width: 1600px; }']
@@ -18,10 +20,12 @@ export default class StatsIndexPage implements OnInit, OnDestroy {
   @ViewChild('sidebarNav', { static: false }) sidebarNav!: ElementRef;
   hideTextLabels = false;
   private resizeObserver!: ResizeObserver;
+  statsEnabled$ = this.featureService.isFeatureEnabled('visualStats');
 
   constructor(
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private featureService: FeatureService,
   ) {}
 
   ngOnInit() {

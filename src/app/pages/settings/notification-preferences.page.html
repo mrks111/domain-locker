@@ -1,3 +1,5 @@
+<app-feature-not-enabled *ngIf="!(notificationFeatureEnabled$ | async)" feature="notificationChannels" />
+
 <h2 class="text-2xl font-semibold my-2">Notification Preferences</h2>
 <p class="italic text-lg opacity-70 m-0">
   Configure how you would like to receive notifications and alerts for domain activity
@@ -6,7 +8,8 @@
   You can update which notifications you receive on a per-domain basis by editing the domain
 </p>
 
-<form [formGroup]="notificationForm" *ngIf="notificationForm" class="space-y-6">
+<form [formGroup]="notificationForm" *ngIf="notificationForm" class="space-y-6 relative">
+  <div *ngIf="!(notificationFeatureEnabled$ | async)" class="absolute bg-surface-50 h-full w-full z-10 opacity-25 cursor-not-allowed"></div>
   <p-card *ngFor="let channel of notificationChannels" [formGroupName]="channel.formControlName" class="notification-section p-4 shadow-sm rounded-lg">
     <div class="flex items-center justify-between">
       <div class="flex gap-2 items-center flex-1">

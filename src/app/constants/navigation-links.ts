@@ -198,9 +198,6 @@ export const authenticatedNavLinks = [
     icon: 'pi pi-fw pi-wave-pulse',
     routerLink: '/stats',
     items: statsLinks,
-    // items: [
-    //   { label: 'View All', items: statsLinks }
-    // ],
   },
 ];
 

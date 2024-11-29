@@ -34,7 +34,11 @@
     </ng-template>
     <ng-template pTemplate>
       <div class="py-2 px-4 w-full border-2 !border-l-0 border-surface-50 rounded-r overflow-y-auto">
-        <router-outlet></router-outlet>
+        @if (statsEnabled$ | async) {
+          <router-outlet></router-outlet>
+        } @else {
+          <app-feature-not-enabled feature="visualStats" />
+        }
       </div>
     </ng-template>
 </p-splitter>

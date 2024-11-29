@@ -7,6 +7,8 @@ import { DlIconComponent } from '@components/misc/svg-icon.component';
 import { GlobalMessageService } from '@services/messaging.service';
 import DatabaseService from '@services/database.service';
 import { SupabaseService } from '@/app/services/supabase.service';
+import { FeatureService } from '@/app/services/features.service';
+import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
 
 interface NotificationChannelField {
   label: string;
@@ -33,13 +35,15 @@ interface NotificationChannel {
   selector: 'app-notification-preferences',
   templateUrl: './notification-preferences.page.html',
   standalone: true,
-  imports: [CommonModule, PrimeNgModule, ReactiveFormsModule, DlIconComponent],
+  imports: [CommonModule, PrimeNgModule, ReactiveFormsModule, DlIconComponent, FeatureNotEnabledComponent],
   providers: [],
   styles: ['::ng-deep .p-card-content { padding: 0; } '],
 })
 export default class NotificationPreferencesPage implements OnInit {
+  
+  notificationFeatureEnabled$ = this.featureService.isFeatureEnabled('notificationChannels');
+  
   notificationForm!: FormGroup;
-
   notificationChannels: NotificationChannel[] = [
     {
       name: 'Email',
@@ -136,6 +140,7 @@ export default class NotificationPreferencesPage implements OnInit {
     private globalMessageService: GlobalMessageService,
     private databaseService: DatabaseService,
     private supabaseService: SupabaseService,
+    private featureService: FeatureService,
   ) {}
 
   ngOnInit() {

@@ -3,7 +3,10 @@
   Manage notifications for each domain and notification type.
 </p>
 
-<form [formGroup]="notificationForm" class="space-y-6 mt-4" *ngIf="!loading">
+<app-feature-not-enabled *ngIf="!(changeNotificationsFeatureEnabled$ | async)" feature="changeNotifications" />
+
+<form [formGroup]="notificationForm" class="space-y-6 mt-4 relative" *ngIf="!loading">
+  <div *ngIf="!(changeNotificationsFeatureEnabled$ | async)" class="absolute bg-surface-50 h-full w-full z-10 opacity-25 cursor-not-allowed"></div>
   <div *ngFor="let type of notificationTypes" class="p-card p-4 shadow-sm rounded-lg mb-4">
     <h3>{{ type.label }}</h3>
     <p>{{ type.description }}</p>

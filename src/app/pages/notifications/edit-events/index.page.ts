@@ -8,15 +8,12 @@ import { GlobalMessageService } from '@services/messaging.service';
 import { CommonModule } from '@angular/common';
 import { DbDomain } from '@/types/Database';
 import { forkJoin } from 'rxjs';
-
-interface Domain {
-  id: string;
-  name: string;
-}
+import { FeatureService } from '@/app/services/features.service';
+import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, PrimeNgModule, MultiSelectModule, ReactiveFormsModule],
+  imports: [CommonModule, PrimeNgModule, MultiSelectModule, ReactiveFormsModule, FeatureNotEnabledComponent],
   templateUrl: './index.page.html',
 })
 export default class BulkNotificationPreferencesPage implements OnInit {
@@ -25,11 +22,14 @@ export default class BulkNotificationPreferencesPage implements OnInit {
   notificationPreferences: { domain_id: string; notification_type: string; is_enabled: boolean }[] = [];
   notificationForm: FormGroup = this.fb.group({});
   loading = true;
+
+  changeNotificationsFeatureEnabled$ = this.featureService.isFeatureEnabled('changeNotifications');
   
   constructor(
     private databaseService: DatabaseService,
     private fb: FormBuilder,
     private globalMessageService: GlobalMessageService,
+    private featureService: FeatureService,
   ) {}
 
   ngOnInit() {

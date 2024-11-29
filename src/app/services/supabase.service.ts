@@ -5,6 +5,7 @@ import { createClient, Factor, Session, SupabaseClient, User } from '@supabase/s
 import { BehaviorSubject } from 'rxjs';
 import { EnvService } from '@/app/services/environment.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { features } from '@/app/constants/feature-options';
 
 @Injectable({
   providedIn: 'root',
@@ -491,16 +492,29 @@ export class SupabaseService {
       }
   
       // Plan-based warnings (for future)
-      const currentPlan = userInfo?.data?.current_plan || 'free';
-      if (currentPlan === 'free') {
-        const { count: domainCount } = await this.supabase.from('domains').select('id', { count: 'exact' });
-        if (domainCount !== null && domainCount > 5) {
+      const { data: billingInfo, error: billingError } = await this.getUserBillingInfo();
+      if (billingError) {
+        throw billingError;
+      }
+      const currentPlan = billingInfo?.current_plan || 'free';
+
+      if (currentPlan === 'free' || currentPlan === 'hobby') {
+        // Get domain count
+        let { count: domainCount } = await this.supabase.from('domains').select('id', { count: 'exact' });
+        if (!domainCount) domainCount = 0;
+
+        // Get domain limit for current plan
+        const managedDomainLimit = features.domainLimit?.managed;
+        const domainLimit = managedDomainLimit ? managedDomainLimit[currentPlan as keyof typeof managedDomainLimit] || 1000 : 1000;
+        
+        // Check if domain limit exceeded or approaching
+        if (domainCount > domainLimit) {
           issues.push({
             type: 'error',
             message: 'You have exceeded the limit of domains on your current plan. Remove some domains, or upgrade to continue using.',
             action: { label: 'Upgrade Plan', route: '/settings/upgrade' },
           });
-        } else if (domainCount !== null && domainCount > 3) {
+        } else if (domainCount > (domainLimit - 3)) {
           issues.push({
             type: 'info',
             message: 'You are approaching the limit of the free plan, consider upgrading to add more domains and access additional features.',
@@ -509,7 +523,7 @@ export class SupabaseService {
         }
       }
     } catch (error) {
-      console.error('Error fetching account issues:', error);
+      this.errorHandler.handleError({ error, message: 'Failed to fetch account issues', location: 'SupabaseService.getAccountIssues' });
     }
     
     // Sort issues by severity: error, warn, info

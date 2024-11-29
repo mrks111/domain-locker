@@ -1,8 +1,8 @@
 // src/app/components/navbar/navbar.component.ts
 import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, ViewChild, AfterViewInit } from '@angular/core';
 import { MenuItem } from 'primeng/api';
-import { EventType, RouterModule } from '@angular/router';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { FormsModule } from '@angular/forms';
@@ -69,6 +69,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
     // Initial check for auth status
     this.checkAuthStatus();
+    this.billingService.fetchUserPlan();
   }
 
   ngAfterViewInit() {
@@ -77,16 +78,15 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   }
 
   loadUserPlanEnvironment() {
-    if (isPlatformBrowser(this.platformId)) {
-      const environmentType = this.environmentService.getEnvironmentType();
-      if (environmentType === 'managed') {
-      this.billingService.getUserPlan().subscribe(plan => {
-        this.userPlan = plan || 'free';
-      });
-      } else {
+    const environmentType = this.environmentService.getEnvironmentType();
+    if (environmentType === 'managed') {
+    this.billingService.getUserPlan().subscribe(plan => {
+      this.userPlan = plan || 'free';
+      this.planColor = this.getColorForPlan(this.userPlan);
+      this.cdr.detectChanges();
+    });
+    } else {
       this.userPlan = environmentType;
-      }
-      if (this.userPlan) this.planColor = this.getColorForPlan(this.userPlan);
       this.cdr.detectChanges();
     }
   }
@@ -96,9 +96,9 @@ export class NavbarComponent implements OnInit, AfterViewInit {
       case 'free':
         return 'cyan';
       case 'hobby':
-        return 'green';
+        return 'yellow';
       case 'pro':
-        return 'blue';
+        return 'orange';
       case 'sponsor':
         return 'pink';
       case 'enterprise':
