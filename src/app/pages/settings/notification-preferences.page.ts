@@ -13,6 +13,7 @@ interface NotificationChannelField {
   name: string;
   placeholder?: string;
   validator?: any;
+  defaultValue?: string;
 }
 
 interface NotificationChannelProvider {
@@ -63,7 +64,7 @@ export default class NotificationPreferencesPage implements OnInit {
           label: 'Ntfy',
           value: 'ntfy',
           fields: [
-            { label: 'Topic', name: 'topic', placeholder: 'Enter topic' }
+            { label: 'Topic', name: 'topic', placeholder: 'Enter topic' },
           ]
         },
         {
@@ -78,7 +79,7 @@ export default class NotificationPreferencesPage implements OnInit {
           value: 'pushbits',
           fields: [
             { label: 'Token', name: 'token', placeholder: 'Enter token' },
-            { label: 'User ID', name: 'userId', placeholder: 'Enter user ID' }
+            { label: 'User ID', name: 'userId', placeholder: 'Enter user ID' },
           ]
         },
         {
@@ -176,8 +177,31 @@ export default class NotificationPreferencesPage implements OnInit {
         this.notificationForm.get('email')?.patchValue({ enabled: true, address: userEmail });
       }
     } catch (error) {
-      console.error('Error loading notification preferences:', error);
       this.notificationForm.get('email')?.patchValue({ enabled: true, address: userEmail });
+    }
+  }
+  private onProviderChange() {
+    this.notificationForm.get('webHook')?.get('provider')?.valueChanges.subscribe(() => {
+      this.setDefaultWebhookNotificationUrls();
+    });
+  }
+  
+  ngAfterViewInit() {
+    this.onProviderChange();
+  }
+  private setDefaultWebhookNotificationUrls() {
+    const webhookUrl = this.notificationForm.get('webHook')?.get('url');
+    const newProvider = this.notificationForm.get('webHook')?.get('provider')?.value;
+    if (newProvider === 'ntfy') {
+      webhookUrl?.patchValue('https://ntfy.sh');
+    } else if (newProvider === 'gotify') {
+      webhookUrl?.patchValue('');
+    } else if (newProvider === 'pushbits') {
+      webhookUrl?.patchValue('');
+    } else if (newProvider === 'pushbullet') {
+      webhookUrl?.patchValue('https://pushbullet.com');
+    } else if (newProvider === 'custom') {
+      webhookUrl?.patchValue('');
     }
   }
 

@@ -31,7 +31,7 @@ export const pricingFeatures = [
     features: [
       '5 Domains',
       'Domain Info',
-      'Expiry Notifications',
+      'Expiry Emails',
     ]
   },
   {

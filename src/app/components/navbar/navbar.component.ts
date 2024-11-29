@@ -1,8 +1,8 @@
 // src/app/components/navbar/navbar.component.ts
 import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, ViewChild, AfterViewInit } from '@angular/core';
 import { MenuItem } from 'primeng/api';
-import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { EventType, RouterModule } from '@angular/router';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +15,8 @@ import { UiSettingsComponent } from '@/app/components/settings/ui-options/ui-opt
 import { NotificationsListComponent } from '@components/notifications-list/notifications-list.component';
 import { OverlayPanel } from 'primeng/overlaypanel';
 import DatabaseService from '@/app/services/database.service';
+import { BillingService, UserType } from '@/app/services/billing.service';
+import { EnvironmentType, EnvService } from '@/app/services/environment.service';
 
 @Component({
   selector: 'app-navbar',
@@ -42,6 +44,8 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   settingsVisible: boolean = false;
   isAuthenticated: boolean = false;
   unreadNotificationsCount: number = 0;
+  userPlan: EnvironmentType | UserType | null = null;
+  planColor: string = 'primary';
 
   private subscriptions: Subscription = new Subscription(); 
   private platformId = inject(PLATFORM_ID);
@@ -49,6 +53,8 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   constructor(
     public supabaseService: SupabaseService,
     private databaseService: DatabaseService,
+    private billingService: BillingService,
+    private environmentService: EnvService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -63,11 +69,53 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
     // Initial check for auth status
     this.checkAuthStatus();
-
   }
 
   ngAfterViewInit() {
     this.loadUnreadNotificationCount();
+    this.loadUserPlanEnvironment();
+  }
+
+  loadUserPlanEnvironment() {
+    if (isPlatformBrowser(this.platformId)) {
+      const environmentType = this.environmentService.getEnvironmentType();
+      if (environmentType === 'managed') {
+      this.billingService.getUserPlan().subscribe(plan => {
+        this.userPlan = plan || 'free';
+      });
+      } else {
+      this.userPlan = environmentType;
+      }
+      if (this.userPlan) this.planColor = this.getColorForPlan(this.userPlan);
+      this.cdr.detectChanges();
+    }
+  }
+
+  getColorForPlan(plan: EnvironmentType | UserType): string {
+    switch (plan) {
+      case 'free':
+        return 'cyan';
+      case 'hobby':
+        return 'green';
+      case 'pro':
+        return 'blue';
+      case 'sponsor':
+        return 'pink';
+      case 'enterprise':
+        return 'blue';
+      case 'tester':
+        return 'red';
+      case 'super':
+        return 'indigo';
+      case 'self-hosted':
+        return 'teal';
+      case 'demo':
+        return 'orange';
+      case 'dev':
+        return 'purple';
+      default:
+        return 'primary';
+    }
   }
 
   loadUnreadNotificationCount() {

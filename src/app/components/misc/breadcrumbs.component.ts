@@ -67,10 +67,11 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       .split('/')
       .filter(path => path)
       .map((path, index, paths) => {
+        const cleanPath = path.split('?')[0].split('#')[0];
         return {
-          label: this.getLabelForPath(path),
+          label: this.getLabelForPath(cleanPath),
           route: this.getRouteForPath(paths.map(p => p.split('?')[0]), index),
-          icon: this.getIconForPath(path),
+          icon: this.getIconForPath(cleanPath),
         };
       });
       this.breadcrumbs.unshift({ label: 'Home', route: '/', icon: 'pi pi-home' });

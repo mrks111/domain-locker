@@ -9,7 +9,14 @@
       <path d="M10 0.465878V2.43845L12 2.93845V0H11.8735C11.2125 0 10.5704 0.163501 10 0.465878Z" fill="var(--primary-700, white)"/>
     </svg>
 
-    <span class="text-xl font-bold ml-2 text-primary">Domain Locker</span>
+    <h1 class="text-xl font-bold ml-2 text-primary relative">
+      Domain Locker
+      <p *ngIf="userPlan"
+        class="absolute top-[-0.5rem] right-[-1.5rem] m-0 rotate-12 text-xs
+        bg-{{planColor || 'primary'}}-400 text-surface-50 px-1 rounded opacity-90 capitalize">
+        {{ userPlan }}
+      </p>
+    </h1>
   </a>
   <div class="hidden sm:flex sm:items-center">
     <p-menubar [model]="items" [styleClass]="'bg-transparent border-none p-0'"></p-menubar>

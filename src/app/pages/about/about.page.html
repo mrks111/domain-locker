@@ -1,7 +1,7 @@
 
 
 <section *ngFor="let section of sections" class="p-card p-4 mx-auto my-4">
-  <h2>{{ section.title }}</h2>
+  <h2 [id]="section.title.replaceAll(' ', '-').toLocaleLowerCase()">{{ section.title }}</h2>
   
   <ul class="pl-4">
     <li *ngFor="let link of section.links">

@@ -72,6 +72,13 @@
             </div>
           </div>
         </div>
+
+        <div *ngIf="notificationForm.get(channel.formControlName + '.provider')?.value === 'ntfy'" class="mt-3">
+          <p class="text-sm italic opacity-70">
+            For the managed instance, the default URL should be <strong>ntfy.sh</strong>
+          </p>
+        </div>
+        
       </div>
     </div>
   </p-card>
