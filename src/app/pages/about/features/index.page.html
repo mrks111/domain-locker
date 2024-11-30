@@ -1,0 +1,63 @@
+<div class="p-card py-3 px-4 my-4">
+  <h2 class="my-1 font-semmibold">Features</h2>
+  <p class="text-xl italic my-2 opacity-80">
+    Domain Locker is your all-in-one tool for managing and monitoring your domain portfolio, all from one simple dashboard.
+  </p>
+  <p class="my-3">
+    Your domains are the foundation of your online presence— give them the attention they deserve.
+    With Domain Locker, you can track, organize, and protect your domains effortlessly.
+    Never lose track of renewals, forget where a domain is registered, or stress over DNS settings again.
+  </p>
+  <p class="my-3">
+    We fetch and monitor everything for you—SSL certificates, DNS, IPs, security, and more—so you don't have to.
+    Get instant notifications when something important changes, visualize your portfolio with beautiful stats and charts, and even track valuations and costs.
+    Whether you have one domain or hundreds, Domain Locker gives you the tools you need to stay on top of it all.
+  </p>
+</div>
+
+<ul class="p-0 list-none grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+  <li *ngFor="let feature of features" class="p-card p-4">
+    <div class="flex gap-2 items-center mb-2">
+      <!-- <img [src]="'https://placehold.co/64/navy/white'" alt="feature.featureTitle" class="w-[3rem] h-12 rounded"> -->
+      <dl-icon
+        *ngIf="feature.icon"
+        [icon]="feature.icon"
+        [viewBox]="feature.iconViewBox || '0 0 512 512'"
+        class="min-w-[3rem] text-center h-12 rounded bg-surface-100 p-2"
+        classNames="h-full"
+        color="var(--primary-400)"
+      />
+      <h4 class="m-0 mb-2 font-semmibold">{{ feature.featureTitle}}</h4>
+    </div>
+    <ul class="pl-3">
+      <li *ngFor="let featureInfo of feature.featureInfo">
+        {{ featureInfo }}
+      </li>
+    </ul>
+    <!-- <img [src]="'https://placehold.co/64'" alt="feature.featureTitle" class="w-12 h-12 object-cover mb-2"> -->
+  </li>
+</ul>
+
+<div class="p-card py-3 px-4 my-4">
+  <h3 class="my-1 font-semmibold">Ready to get started?</h3>
+  <p class="my-2">
+    Domain Locker is easy to use, and our free plan will get you up and running in no time.
+    Alternatively, check out our GitHub repo to run on your own infrastructure.
+  </p>
+  <div class="flex justify-center sm:justify-end w-full flex-wrap gap-3 my-3">
+      <p-button 
+        label="View on GitHub" 
+        severity="secondary" 
+        icon="pi pi-github" 
+        class="min-w-48" 
+        styleClass="w-full" 
+      />
+      <p-button
+        routerLink="/login"
+        label="Get Started" 
+        class="min-w-48" 
+        icon="pi pi-arrow-circle-right" 
+        styleClass="w-full" 
+      />
+  </div>
+</div>

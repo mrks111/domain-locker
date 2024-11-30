@@ -122,6 +122,38 @@
     </div>
   </div>
 
+  <!-- Charities -->
+  <div class="p-card px-2 py-4 mt-4">
+    <div
+      class="flex items-center justify-center align-center gap-2 cursor-pointer"
+      [pTooltip]="showCharity ? '' : 'Show Charity Options'"
+      (click)="showCharity = !showCharity">
+      <h2 class="text-2xl font-bold m-0">Charity {{ showCharity ? 'Plan' : 'Options' }}</h2>
+      <i [class]="showCharity ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="text-lg"></i>
+    </div>
+
+    <div *ngIf="showCharity" @slideDown class="flex flex-col items-center h-full gap-2 mt-4">
+      <p class="text-5xl font-semibold text-purple-500 m-0">
+        Free*
+      </p>
+      <span class="text-sm font-medium text-gray-500">*for registered charities, Churches and non-profits</span>
+      
+
+      <div class="max-w-[50rem] mx-2">
+        <p class="m-0">
+          Staying on top of your domain names is really important.
+          We don't think that cost should be a barrier to that, so we offer Domain Locker for free to users who are doing good in the world 💖
+        </p>
+        <p class="m-0">
+          Just get in contact below, and I'll sort you out with a free account with all the features of the Pro plan.
+        </p>
+      </div>
+      
+      <button pButton label="Contact Us" class=" mt-4 p-button-primary bg-purple-400 border-purple-700 w-fit" icon="pi pi-heart-fill"></button>
+      
+    </div>
+  </div>
+
   <!-- Corporate -->
   <div class="p-card px-2 py-4 mt-4">
     <div

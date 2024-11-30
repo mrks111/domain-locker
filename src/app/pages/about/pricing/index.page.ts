@@ -29,6 +29,7 @@ export default class PricingPage {
   billingFaq = billingFaq;
 
   showEnterprise = false;
+  showCharity = false;
   
   isAnnual = true;
   billingCycleOptions = [
