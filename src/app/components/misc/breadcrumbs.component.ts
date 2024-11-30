@@ -96,6 +96,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'notifications': 'bell',
       'edit-events': 'list-check',
       'pricing': 'money-bill',
+      'features': 'star',
     };
     const iconName = icons[path];
     if (!iconName) return;
