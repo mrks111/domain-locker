@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
-import { PrimeNgModule } from '../prime-ng.module';
+import { PrimeNgModule } from '@/app/prime-ng.module';
 
 @Component({
   standalone: true,
   imports: [PrimeNgModule],
   selector: 'app-not-found-page',
-  // templateUrl: './not-found.page.html',
   template: `
   <div class=" w-full h-full flex flex-col justify-center items-center">
 	<h1 class="text-9xl font-extrabold text-default tracking-widest">404</h1>

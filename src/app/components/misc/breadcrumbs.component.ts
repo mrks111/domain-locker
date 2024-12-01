@@ -97,6 +97,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'edit-events': 'list-check',
       'pricing': 'money-bill',
       'features': 'star',
+      'external-tools': 'external-link',
     };
     const iconName = icons[path];
     if (!iconName) return;
@@ -109,6 +110,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'dns': 'DNS Records',
       'ips': 'IP Addresses',
       'edit-events': 'Edit Events',
+      'external-tools': 'External Tools',
     };
     const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
     path = decodeURIComponent(path);
