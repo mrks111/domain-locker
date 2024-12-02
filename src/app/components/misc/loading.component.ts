@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, OnDestroy, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 
 @Component({
@@ -38,16 +38,20 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
     </div>
   `,
 })
-export class LoadingComponent implements OnInit, OnDestroy {
+export class LoadingComponent implements AfterViewInit, OnDestroy {
   @Input() loadingTitle?: string;
   @Input() loadingDescription?: string;
   public showError: boolean = false;
   private errorTimeout: any;
 
-  ngOnInit() {
-    // this.errorTimeout = setTimeout(() => {
-    //   this.showError = true;
-    // }, 8500);
+  constructor(@Inject(PLATFORM_ID) private platformId: Object){}
+
+  ngAfterViewInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.errorTimeout = window.setTimeout(() => {
+        this.showError = true;
+      }, 8500);
+    }
   }
 
   ngOnDestroy() {

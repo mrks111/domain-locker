@@ -204,6 +204,12 @@ export const domainManagementPlatforms: WebTool[] =  [
     icon: 'https://demo.domain-admin.cn/favicon.ico',
     description: 'Lightweight renewal and SSL expiration monitor with notifications',
   },
+  {
+    title: 'Domain Ant',
+    link: 'https://domant.me/',
+    icon: 'https://domant.me/wp-content/uploads/2024/03/domant-favicon-150x150.png',
+    description: 'Notifications and domain tracking (Not yet GA at time of writing)',
+  },
 ];
 
 export const domainOsintTools: WebTool[] = [

@@ -114,6 +114,11 @@ export const authenticatedNavLinks = [
         routerLink: '/domains',
       },
       {
+        label: 'Monitor',
+        icon: 'pi pi-wave-pulse',
+        routerLink: '/monitor',
+      },
+      {
         label: 'Valuation',
         icon: 'pi pi-money-bill',
         routerLink: '/value',
@@ -195,7 +200,7 @@ export const authenticatedNavLinks = [
   },
   {
     label: 'Statistics',
-    icon: 'pi pi-fw pi-wave-pulse',
+    icon: 'pi pi-fw pi-sparkles',
     routerLink: '/stats',
     items: statsLinks,
   },

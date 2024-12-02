@@ -1626,12 +1626,14 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }  
 
-  markNotificationReadStatus(notificationId: string, readStatus: boolean) {
+  markNotificationReadStatus(notificationId: string, readStatus: boolean): Observable<void> {
     return from(
       this.supabase.supabase
         .from('notifications')
         .update({ read: readStatus })
         .eq('id', notificationId)
+    ).pipe(
+      map(() => void 0)
     );
   }
 
@@ -1655,5 +1657,19 @@ export default class SupabaseDatabaseService extends DatabaseService {
       })
     );
   }
+
+    /**
+   * Fetch domain uptime data for the given user and domain.
+   * @param userId The ID of the user
+   * @param domainId The ID of the domain
+   * @param timeframe The timeframe to filter data (e.g., 'day', 'week', etc.)
+   */
+    getDomainUptime(userId: string, domainId: string, timeframe: string) {
+      return this.supabase.supabase.rpc('get_domain_uptime', {
+        user_id: userId,
+        domain_id: domainId,
+        timeframe: timeframe,
+      });
+    }
 
 }

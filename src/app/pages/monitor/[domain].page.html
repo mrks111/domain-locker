@@ -1,0 +1,40 @@
+
+<!-- Domain Name -->
+<div *ngIf="domain && !domainNotFound; else loading" class="domain-details p-4 flex flex-col gap-1">
+  <div class="flex gap-2 justify-between align-items-center flex-wrap mb-4">
+    <h1 class="text-3xl flex items-center">
+      <app-domain-favicon [domain]="domain.domain_name" [size]="32" class="mr-3"></app-domain-favicon>
+      <span class="text-primary">{{ domainUtils.splitDomain(domain.domain_name).domain }}</span>
+      <span class="text-default">.</span>
+      <span class="text-secondary">{{ domainUtils.splitDomain(domain.domain_name).tld }}</span>
+    </h1>
+  </div>
+</div>
+
+
+<app-domain-sparklines [domainId]="domain.id" [userId]="domain.user_id" *ngIf="domain && domain.id && domain.user_id && !domainNotFound" />
+
+<!-- Domain not found -->
+<div *ngIf="domainNotFound" class="flex flex-col gap-4 items-center justify-center max-w-[30rem] mx-auto p-card p-4 mt-8">
+  <h1 class="text-3xl">
+    <i class="pi pi-exclamation-triangle text-3xl"></i>
+    Domain Not Found
+  </h1>
+  <p class="m-0">
+    <strong>{{ name }}</strong> hasn't yet been added to your account.
+  </p>
+  <a [href]="'/domains/add?domain='+(name)">
+    <p-button icon="pi pi-plus" label="Add it now" class="p-button-primary" />
+  </a>
+  <p class="text-sm opacity-70 italic">
+    Believe this is an error?
+    Check the URL is correct, ensure you are authenticated, and have the correct access rights.
+    <br>
+    For additional help contact the administrator, or see the <a href="/about#support">Help Docs</a>
+  </p>
+</div>
+
+<!-- Loading domain info -->
+<ng-template #loading>
+  <loading *ngIf="!domainNotFound" loadingTitle="Loading" loadingDescription="Fetching details for domain..." />
+</ng-template>
