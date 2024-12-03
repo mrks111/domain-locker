@@ -10,7 +10,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
   standalone: true,
   imports: [CommonModule, PrimeNgModule, NgApexchartsModule],
   templateUrl: './sparklines.component.html',
-  // styleUrls: ['./domain-uptime.component.scss'],
+  styleUrls: ['./sparklines.component.scss'],
 })
 export class DomainSparklineComponent implements OnInit {
 
@@ -20,7 +20,7 @@ export class DomainSparklineComponent implements OnInit {
   timeframe: 'day' | 'week' | 'month' | 'year' = 'day';
   timeframeOptions = ['day', 'week', 'month', 'year'];
   uptimeData: any[] = [];
-  isUp!: boolean;
+  isUp: boolean = false;
   uptimePercentage!: number;
   avgResponseTime!: number;
   avgDnsTime!: number;
@@ -42,7 +42,6 @@ export class DomainSparklineComponent implements OnInit {
 
   fetchUptimeData(): void {
     this.databaseService.getDomainUptime(this.userId, this.domainId, this.timeframe).then((data: any) => {
-      console.log(data);
       if (data.data) {
         this.uptimeData = data.data;
         this.processUptimeData();
@@ -58,10 +57,10 @@ export class DomainSparklineComponent implements OnInit {
     ;
   }
 
+  /* From the db response data, puts in format ready for charts */
   processUptimeData(): void {
     if (!this.uptimeData.length) return;
 
-    // Calculate stats
     const totalChecks = this.uptimeData.length;
     const upChecks = this.uptimeData.filter((d) => d.is_up).length;
     this.isUp = this.uptimeData[0].is_up;
@@ -90,27 +89,28 @@ export class DomainSparklineComponent implements OnInit {
     dnsTimes: number[],
     sslTimes: number[]
   ): void {
-    this.responseTimeChart = this.createSparklineChart(responseTimes);
-    this.dnsTimeChart = this.createSparklineChart(dnsTimes);
-    this.sslTimeChart = this.createSparklineChart(sslTimes);
+    this.responseTimeChart = this.createSparklineChart(responseTimes, '--cyan-400');
+    this.dnsTimeChart = this.createSparklineChart(dnsTimes, '--indigo-400');
+    this.sslTimeChart = this.createSparklineChart(sslTimes, '--purple-400');
   }
 
-  createSparklineChart(data: number[]): any {
+  createSparklineChart(data: number[], color = '--blue-400'): any {
     return {
       chart: {
-        type: 'line',
-        height: 50,
-        sparkline: {
-          enabled: true,
-        },
+      type: 'line',
+      height: 50,
+      sparkline: {
+        enabled: true,
+      },
       },
       series: [{ data }],
       stroke: {
-        curve: 'smooth',
-        width: 2,
+      curve: 'smooth',
+      width: 3,
+      colors: [`var(${color}, #60a5fa)`],
       },
       tooltip: {
-        enabled: false,
+      enabled: false,
       },
     };
   }
