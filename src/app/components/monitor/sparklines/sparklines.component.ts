@@ -4,6 +4,10 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import DatabaseService from '@services/database.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { ApexOptions } from 'ng-apexcharts';
+
+interface Series { x: string; y: number };
+interface MinMax { min: number; max: number };
 
 @Component({
   selector: 'app-domain-sparklines',
@@ -22,9 +26,13 @@ export class DomainSparklineComponent implements OnInit {
   uptimeData: any[] = [];
   isUp: boolean = false;
   uptimePercentage!: number;
+  
   avgResponseTime!: number;
   avgDnsTime!: number;
   avgSslTime!: number;
+  minMaxResponseTime!: MinMax;
+  minMaxDnsTime!: MinMax;
+  minMaxSslTime!: MinMax;
 
   // Chart data
   responseTimeChart: any;
@@ -66,13 +74,26 @@ export class DomainSparklineComponent implements OnInit {
     this.isUp = this.uptimeData[0].is_up;
     this.uptimePercentage = (upChecks / totalChecks) * 100;
 
-    const responseTimes = this.uptimeData.map((d) => d.response_time_ms);
-    const dnsTimes = this.uptimeData.map((d) => d.dns_lookup_time_ms);
-    const sslTimes = this.uptimeData.map((d) => d.ssl_handshake_time_ms);
+    const responseTimes = this.uptimeData.map((d) => ({
+      x: d.checked_at,
+      y: d.response_time_ms,
+    }));
+    const dnsTimes = this.uptimeData.map((d) => ({
+      x: d.checked_at,
+      y: d.dns_lookup_time_ms,
+    }));
+    const sslTimes = this.uptimeData.map((d) => ({
+      x: d.checked_at,
+      y: d.ssl_handshake_time_ms,
+    }));
 
-    this.avgResponseTime = this.calculateAverage(responseTimes);
-    this.avgDnsTime = this.calculateAverage(dnsTimes);
-    this.avgSslTime = this.calculateAverage(sslTimes);
+    this.avgResponseTime = this.calculateAverage(responseTimes.map((d) => d.y));
+    this.avgDnsTime = this.calculateAverage(dnsTimes.map((d) => d.y));
+    this.avgSslTime = this.calculateAverage(sslTimes.map((d) => d.y));
+
+    this.minMaxResponseTime = this.calculateMinMax(responseTimes.map((d) => d.y));
+    this.minMaxDnsTime = this.calculateMinMax(dnsTimes.map((d) => d.y));
+    this.minMaxSslTime = this.calculateMinMax(sslTimes.map((d) => d.y));
 
     this.updateCharts(responseTimes, dnsTimes, sslTimes);
   }
@@ -84,36 +105,86 @@ export class DomainSparklineComponent implements OnInit {
     );
   }
 
-  updateCharts(
-    responseTimes: number[],
-    dnsTimes: number[],
-    sslTimes: number[]
-  ): void {
-    this.responseTimeChart = this.createSparklineChart(responseTimes, '--cyan-400');
-    this.dnsTimeChart = this.createSparklineChart(dnsTimes, '--indigo-400');
-    this.sslTimeChart = this.createSparklineChart(sslTimes, '--purple-400');
+  calculateMinMax(times: number[]): MinMax {
+    const filteredTimes = times.filter((t) => t != null);
+    return {
+      min: Math.min(...filteredTimes),
+      max: Math.max(...filteredTimes),
+    };
   }
 
-  createSparklineChart(data: number[], color = '--blue-400'): any {
+  updateCharts(
+    responseTimes: Series[],
+    dnsTimes: Series[],
+    sslTimes: Series[]
+  ): void {
+    this.responseTimeChart = this.createSparklineChart('response', responseTimes, '--cyan-400', 'Response Time');
+    this.dnsTimeChart = this.createSparklineChart('dns', dnsTimes, '--indigo-400', 'DNS Time');
+    this.sslTimeChart = this.createSparklineChart('ssl', sslTimes, '--purple-400', 'SSL Time');
+  }
+
+  createSparklineChart(
+    id: string,
+    data: Series[],
+    color = '--blue-400',
+    name: string
+  ): ApexOptions {
     return {
       chart: {
-      type: 'line',
-      height: 50,
-      sparkline: {
-        enabled: true,
+        id,
+        group: 'performance',
+        type: 'line',
+        height: 100,
+        sparkline: { enabled: false },
+        // events: {
+        //   dataPointMouseEnter: (event, chartContext, config) => {
+        //     console.log(event, chartContext, config);
+        //   },
+        //   dataPointMouseLeave: () => {
+        //     console.log('Mouse leave');
+        //   },
+        // },
+        zoom: {
+          enabled: false,
+        },
       },
-      },
-      series: [{ data }],
+      series: [
+        {
+          name,
+          data,
+          color: `var(${color})`,
+        },
+      ],
       stroke: {
-      curve: 'smooth',
-      width: 3,
-      colors: [`var(${color}, #60a5fa)`],
+        curve: 'smooth',
+        width: 2,
+        colors: [`var(${color}, #60a5fa)`],
       },
       tooltip: {
-      enabled: false,
+        enabled: true,
+        theme: 'dark',
+        x: {
+          format: 'dd MMM HH:mm',
+        },
+        y: {
+          formatter: (value: number) => value ? `${value.toFixed(2)} ms` : 'N/A',
+        },
+      },
+      xaxis: {
+        type: 'datetime',
       },
     };
   }
+  
+
+  updateHoveredValue(value: number | null): void {
+    if (value !== null) {
+      this.avgResponseTime = value;
+    } else {
+      this.avgResponseTime = this.calculateAverage(this.uptimeData.map((d) => d.response_time_ms)); // Reset to average
+    }
+  }
+  
 
   onTimeframeChange(timeframe: string): void {
     console.log(timeframe);
@@ -145,10 +216,10 @@ export class DomainSparklineComponent implements OnInit {
     }
   
     // Define ranges for each type
-    const thresholds = {
-      ssl: { green: 100, yellow: 300, orange: 500 }, // in milliseconds
-      dns: { green: 50, yellow: 100, orange: 250 }, // in milliseconds
-      response: { green: 200, yellow: 500, orange: 1000 } // in milliseconds
+    const thresholds = { // in ms
+      ssl: { green: 80, yellow: 200, orange: 400 },
+      dns: { green: 40, yellow: 80, orange: 150 },
+      response: { green: 200, yellow: 500, orange: 1000 }
     };
   
     // Ensure the type exists in thresholds
@@ -166,6 +237,16 @@ export class DomainSparklineComponent implements OnInit {
       return `${prefix}orange${postfix}`;
     } else {
       return `${prefix}red${postfix}`;
+    }
+  }
+
+  public mapTimeToSentence(timeframe: 'day' | 'week' | 'month' | 'year'): string {
+    switch (timeframe) {
+      case 'day': return 'past 24 hours';
+      case 'week': return 'past 7 days';
+      case 'month': return 'past 30 days';
+      case 'year': return 'past 12 months';
+      default: return 'Unknown';
     }
   }
   

@@ -4,13 +4,19 @@
     <div class="flex gap-3">
       <div class="flex flex-col p-card p-3 w-40 gap-3">
         <strong class="font-semibold">Average Uptime</strong>
-        <span class="text-{{ getColorClassForPercentage(uptimePercentage) }}">{{ uptimePercentage.toFixed(2) }}%</span>
+        <span *ngIf="uptimePercentage" class="text-{{ getColorClassForPercentage(uptimePercentage) }}">
+          {{ uptimePercentage.toFixed(2) }}%
+        </span>
       </div>
       <div class="flex flex-col p-card p-3 w-40 gap-3">
         <strong class="font-semibold">Current Status</strong>
         <span [class.text-green-400]="isUp" [class.text-red-400]="!isUp">
           {{ isUp ? '✅ Up' : ' ❌ Down' }}
         </span>
+      </div>
+      <div class="flex flex-col p-card p-3 w-80 gap-3">
+        <strong class="font-semibold">Response Codes</strong>
+        <span>PLACEHOLDER</span>
       </div>
     </div>
     <p-selectButton 
@@ -28,36 +34,65 @@
   <div class="flex gap-3 w-full">
     <!-- Timing cards -->
     <div class="flex flex-col gap-3 min-w-40">
-      <div class="p-card p-3 flex flex-col gap-3">
+      <div class="p-card p-3 flex flex-col gap-2 h-full">
         <strong class="font-semibold">Response Time</strong>
         <span [class]="getPerformanceColor(avgResponseTime, 'response')">
           {{ round(avgResponseTime) }} ms
         </span>
+        @if (minMaxResponseTime) {
+          <p class="text-xs m-0 opacity-70">
+            From
+            <span [class]="getPerformanceColor(minMaxResponseTime.max, 'response')" >{{ round(minMaxResponseTime.max) }} ms</span>
+            to
+            <span [class]="getPerformanceColor(minMaxResponseTime.min, 'response')">{{ round(minMaxResponseTime.min) }} ms</span>
+          </p>
+        }
       </div>
-      <div class="p-card p-3 flex flex-col gap-3">
+      <div class="p-card p-3 flex flex-col gap-2 h-full">
         <strong class="font-semibold">DNS Time</strong>
         <span [class]="getPerformanceColor(avgDnsTime, 'dns')">
           {{ round(avgDnsTime) }} ms
         </span>
+        @if (minMaxDnsTime) {
+          <p class="text-xs m-0 opacity-70">
+            From
+            <span [class]="getPerformanceColor(minMaxDnsTime.max, 'dns')" >{{ round(minMaxDnsTime.max) }} ms</span>
+            to
+            <span [class]="getPerformanceColor(minMaxDnsTime.min, 'dns')">{{ round(minMaxDnsTime.min) }} ms</span>
+          </p>
+        }
       </div>
-      <div class="p-card p-3 flex flex-col gap-3">
+      <div class="p-card p-3 flex flex-col gap-2 h-full">
         <strong class="font-semibold">SSL Time</strong>
         <span [class]="getPerformanceColor(avgSslTime, 'ssl')">
           {{ round(avgSslTime) }} ms
         </span>
+        @if (minMaxSslTime) {
+          <p class="text-xs m-0 opacity-70">
+            From
+            <span [class]="getPerformanceColor(minMaxSslTime.max, 'ssl')" >{{ round(minMaxSslTime.max) }} ms</span>
+            to
+            <span [class]="getPerformanceColor(minMaxSslTime.min, 'ssl')">{{ round(minMaxSslTime.min) }} ms</span>
+          </p>
+        }
       </div>
     </div>
 
     <!-- Charts -->
     <div class="p-card p-3 flex-1 flex flex-col gap-3">
       <div class="flex-1 flex flex-col justify-between">
-          <apx-chart
-            *ngIf="responseTimeChart"
-            [series]="responseTimeChart.series"
-            [chart]="responseTimeChart.chart"
-            [stroke]="responseTimeChart.stroke"
-          ></apx-chart>
-          <span class="text-center text-xs opacity-70">Response Time (ms)</span>
+        <apx-chart
+          *ngIf="responseTimeChart"
+          [series]="responseTimeChart.series"
+          [chart]="responseTimeChart.chart"
+          [stroke]="responseTimeChart.stroke"
+          [xaxis]="responseTimeChart.xaxis"
+          [tooltip]="responseTimeChart.tooltip"
+        />
+        <span class="text-center text-xs opacity-70">
+          Response Time (ms)
+          for the {{mapTimeToSentence(timeframe)}}
+        </span>
         </div>
       <div class="flex-1 flex flex-col justify-between">
         <apx-chart
@@ -65,6 +100,8 @@
           [series]="dnsTimeChart.series"
           [chart]="dnsTimeChart.chart"
           [stroke]="dnsTimeChart.stroke"
+          [xaxis]="dnsTimeChart.xaxis"
+          [tooltip]="dnsTimeChart.tooltip"
         ></apx-chart>
         <span class="text-center text-xs opacity-70">DNS Resolution Time (ms)</span>
       </div>
@@ -74,6 +111,8 @@
           [series]="sslTimeChart.series"
           [chart]="sslTimeChart.chart"
           [stroke]="sslTimeChart.stroke"
+          [xaxis]="sslTimeChart.xaxis"
+          [tooltip]="sslTimeChart.tooltip"
         ></apx-chart>
         <span class="text-center text-xs opacity-70">SSL Handshake Time (ms)</span>
       </div>
