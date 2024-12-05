@@ -34,46 +34,74 @@
   <div class="flex gap-3 w-full">
     <!-- Timing cards -->
     <div class="flex flex-col gap-3 min-w-40">
+      <!-- 1. Response time -->
       <div class="p-card p-3 flex flex-col gap-2 h-full">
         <strong class="font-semibold">Response Time</strong>
-        <span [class]="getPerformanceColor(avgResponseTime, 'response')">
-          {{ round(avgResponseTime) }} ms
-        </span>
-        @if (minMaxResponseTime) {
-          <p class="text-xs m-0 opacity-70">
-            From
-            <span [class]="getPerformanceColor(minMaxResponseTime.max, 'response')" >{{ round(minMaxResponseTime.max) }} ms</span>
-            to
-            <span [class]="getPerformanceColor(minMaxResponseTime.min, 'response')">{{ round(minMaxResponseTime.min) }} ms</span>
-          </p>
+        @if (hoveredResponseTime) {
+          <span [class]="getPerformanceColor(hoveredResponseTime.value, 'response')">
+            {{ round(hoveredResponseTime.value) }} ms
+          </span>
+          <span class="text-xs opacity-70">
+            On {{ formatTimeStamp(hoveredResponseTime.date) }}
+          </span>
+        } @else {
+          <span [class]="getPerformanceColor(avgResponseTime, 'response')">
+            {{ round(avgResponseTime) }} ms
+          </span>
+          @if (minMaxResponseTime) {
+            <p class="text-xs m-0 opacity-70">
+              From
+              <span [class]="getPerformanceColor(minMaxResponseTime.max, 'response')" >{{ round(minMaxResponseTime.max) }} ms</span>
+              to
+              <span [class]="getPerformanceColor(minMaxResponseTime.min, 'response')">{{ round(minMaxResponseTime.min) }} ms</span>
+            </p>
+          }
         }
       </div>
       <div class="p-card p-3 flex flex-col gap-2 h-full">
         <strong class="font-semibold">DNS Time</strong>
-        <span [class]="getPerformanceColor(avgDnsTime, 'dns')">
-          {{ round(avgDnsTime) }} ms
-        </span>
-        @if (minMaxDnsTime) {
-          <p class="text-xs m-0 opacity-70">
-            From
-            <span [class]="getPerformanceColor(minMaxDnsTime.max, 'dns')" >{{ round(minMaxDnsTime.max) }} ms</span>
-            to
-            <span [class]="getPerformanceColor(minMaxDnsTime.min, 'dns')">{{ round(minMaxDnsTime.min) }} ms</span>
-          </p>
+        @if (hoveredDnsTime) {
+          <span [class]="getPerformanceColor(hoveredDnsTime.value, 'dns')">
+            {{ round(hoveredDnsTime.value) }} ms
+          </span>
+          <span class="text-xs opacity-70">
+            On {{ formatTimeStamp(hoveredDnsTime.date) }}
+          </span>
+        } @else {
+          <span [class]="getPerformanceColor(avgDnsTime, 'dns')">
+            {{ round(avgDnsTime) }} ms
+          </span>
+          @if (minMaxDnsTime) {
+            <p class="text-xs m-0 opacity-70">
+              From
+              <span [class]="getPerformanceColor(minMaxDnsTime.max, 'dns')" >{{ round(minMaxDnsTime.max) }} ms</span>
+              to
+              <span [class]="getPerformanceColor(minMaxDnsTime.min, 'dns')">{{ round(minMaxDnsTime.min) }} ms</span>
+            </p>
+          }
         }
       </div>
       <div class="p-card p-3 flex flex-col gap-2 h-full">
         <strong class="font-semibold">SSL Time</strong>
-        <span [class]="getPerformanceColor(avgSslTime, 'ssl')">
-          {{ round(avgSslTime) }} ms
-        </span>
-        @if (minMaxSslTime) {
-          <p class="text-xs m-0 opacity-70">
-            From
-            <span [class]="getPerformanceColor(minMaxSslTime.max, 'ssl')" >{{ round(minMaxSslTime.max) }} ms</span>
-            to
-            <span [class]="getPerformanceColor(minMaxSslTime.min, 'ssl')">{{ round(minMaxSslTime.min) }} ms</span>
-          </p>
+        @if (hoveredSslTime) {
+          <span [class]="getPerformanceColor(hoveredSslTime.value, 'ssl')">
+            {{ round(hoveredSslTime.value) }} ms
+          </span>
+          <span class="text-xs opacity-70">
+            On {{ formatTimeStamp(hoveredSslTime.date) }}
+          </span>
+        } @else {
+          <span [class]="getPerformanceColor(avgSslTime, 'ssl')">
+            {{ round(avgSslTime) }} ms
+          </span>
+          @if (minMaxSslTime) {
+            <p class="text-xs m-0 opacity-70">
+              From
+              <span [class]="getPerformanceColor(minMaxSslTime.max, 'ssl')" >{{ round(minMaxSslTime.max) }} ms</span>
+              to
+              <span [class]="getPerformanceColor(minMaxSslTime.min, 'ssl')">{{ round(minMaxSslTime.min) }} ms</span>
+            </p>
+          }
         }
       </div>
     </div>

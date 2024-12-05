@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { NgApexchartsModule } from 'ng-apexcharts';
@@ -8,6 +8,8 @@ import { ApexOptions } from 'ng-apexcharts';
 
 interface Series { x: string; y: number };
 interface MinMax { min: number; max: number };
+interface DateValue { date: string; value: number };
+type ChartType = 'response' | 'ssl' | 'dns';
 
 @Component({
   selector: 'app-domain-sparklines',
@@ -30,9 +32,14 @@ export class DomainSparklineComponent implements OnInit {
   avgResponseTime!: number;
   avgDnsTime!: number;
   avgSslTime!: number;
+
   minMaxResponseTime!: MinMax;
   minMaxDnsTime!: MinMax;
   minMaxSslTime!: MinMax;
+
+  hoveredResponseTime: DateValue | null = null;
+  hoveredDnsTime: DateValue | null = null;
+  hoveredSslTime: DateValue | null = null;
 
   // Chart data
   responseTimeChart: any;
@@ -42,6 +49,7 @@ export class DomainSparklineComponent implements OnInit {
   constructor(
     private databaseService: DatabaseService,
     private errorHandler: ErrorHandlerService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -124,7 +132,7 @@ export class DomainSparklineComponent implements OnInit {
   }
 
   createSparklineChart(
-    id: string,
+    id: ChartType,
     data: Series[],
     color = '--blue-400',
     name: string
@@ -136,14 +144,20 @@ export class DomainSparklineComponent implements OnInit {
         type: 'line',
         height: 100,
         sparkline: { enabled: false },
-        // events: {
-        //   dataPointMouseEnter: (event, chartContext, config) => {
-        //     console.log(event, chartContext, config);
-        //   },
-        //   dataPointMouseLeave: () => {
-        //     console.log('Mouse leave');
-        //   },
-        // },
+        events: {
+          mouseMove: (event, chartContext, config) => {
+            const pointIndex = config.dataPointIndex;
+            if (!pointIndex || pointIndex < 0) {
+              this.updateHoveredValue(null, id);
+              return;
+            }
+            const hoveredNode = data[pointIndex];
+            this.updateHoveredValue({ date: hoveredNode.x, value: hoveredNode.y }, id);
+          },
+          mouseLeave: () => {
+            this.updateHoveredValue(null, id);
+          },
+        },
         zoom: {
           enabled: false,
         },
@@ -177,12 +191,30 @@ export class DomainSparklineComponent implements OnInit {
   }
   
 
-  updateHoveredValue(value: number | null): void {
-    if (value !== null) {
-      this.avgResponseTime = value;
-    } else {
-      this.avgResponseTime = this.calculateAverage(this.uptimeData.map((d) => d.response_time_ms)); // Reset to average
+  updateHoveredValue(hoveredNode: DateValue | null, chartType: ChartType | null = null): void {
+    const { date, value } = hoveredNode || {};
+    if (!value || !date || !chartType) {
+      const triggerChange = !!(this.hoveredResponseTime || this.hoveredDnsTime || this.hoveredSslTime);
+      if (triggerChange) {
+        this.hoveredResponseTime = null;
+        this.hoveredDnsTime = null;
+        this.hoveredSslTime = null;
+        this.cdr.detectChanges();
+      }
+      return;
     }
+    switch (chartType) {
+      case 'response':
+        this.hoveredResponseTime = { date, value };
+        break;
+      case 'dns':
+        this.hoveredDnsTime = { date, value };
+        break;
+      case 'ssl':
+        this.hoveredSslTime = { date, value };
+        break;
+    }
+    this.cdr.detectChanges();
   }
   
 
@@ -217,9 +249,9 @@ export class DomainSparklineComponent implements OnInit {
   
     // Define ranges for each type
     const thresholds = { // in ms
-      ssl: { green: 80, yellow: 200, orange: 400 },
+      ssl: { green: 100, yellow: 200, orange: 400 },
       dns: { green: 40, yellow: 80, orange: 150 },
-      response: { green: 200, yellow: 500, orange: 1000 }
+      response: { green: 250, yellow: 500, orange: 1000 }
     };
   
     // Ensure the type exists in thresholds
@@ -248,6 +280,18 @@ export class DomainSparklineComponent implements OnInit {
       case 'year': return 'past 12 months';
       default: return 'Unknown';
     }
+  }
+
+  public formatTimeStamp(timestamp: string): string {
+    const date = new Date(timestamp);
+    const options: Intl.DateTimeFormatOptions = {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    };
+    return date.toLocaleString('en-US', options).replace(',', '');
   }
   
 }
