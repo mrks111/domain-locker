@@ -10,6 +10,7 @@ interface Series { x: string; y: number };
 interface MinMax { min: number; max: number };
 interface DateValue { date: string; value: number };
 type ChartType = 'response' | 'ssl' | 'dns';
+type Timeframe = 'day' | 'week' | 'month' | 'year';
 
 @Component({
   selector: 'app-domain-sparklines',
@@ -23,20 +24,24 @@ export class DomainSparklineComponent implements OnInit {
   @Input() domainId!: string;
   @Input() userId!: string;
 
-  timeframe: 'day' | 'week' | 'month' | 'year' = 'day';
-  timeframeOptions = ['day', 'week', 'month', 'year'];
+  timeframe: Timeframe = 'day';
+  timeframeOptions: Timeframe[] = ['day', 'week', 'month', 'year'];
+
   uptimeData: any[] = [];
   isUp: boolean = false;
   uptimePercentage!: number;
   
+  // Averages for each metric for the given time frame
   avgResponseTime!: number;
   avgDnsTime!: number;
   avgSslTime!: number;
 
+  // Ranges (min/max) for each metric for the given time frame
   minMaxResponseTime!: MinMax;
   minMaxDnsTime!: MinMax;
   minMaxSslTime!: MinMax;
 
+  // Hovered values (will have a value if the user is hovering over a point on the chart)
   hoveredResponseTime: DateValue | null = null;
   hoveredDnsTime: DateValue | null = null;
   hoveredSslTime: DateValue | null = null;
@@ -220,7 +225,7 @@ export class DomainSparklineComponent implements OnInit {
 
   onTimeframeChange(timeframe: string): void {
     console.log(timeframe);
-    this.timeframe = timeframe as 'day' | 'week' | 'month' | 'year';
+    this.timeframe = timeframe as Timeframe;
     this.fetchUptimeData();
   }
 
@@ -272,7 +277,7 @@ export class DomainSparklineComponent implements OnInit {
     }
   }
 
-  public mapTimeToSentence(timeframe: 'day' | 'week' | 'month' | 'year'): string {
+  public mapTimeToSentence(timeframe: Timeframe): string {
     switch (timeframe) {
       case 'day': return 'past 24 hours';
       case 'week': return 'past 7 days';
