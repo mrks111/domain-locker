@@ -1,7 +1,7 @@
 <div class="domain-uptime">
   
   <div class="flex justify-between mb-3 items-end gap-3">
-    <div class="flex gap-3">
+    <div class="flex gap-3 flex-wrap">
       <div class="flex flex-col p-card p-3 w-40 gap-3">
         <strong class="font-semibold">Average Uptime</strong>
         <span *ngIf="uptimePercentage" class="text-{{ getColorClassForPercentage(uptimePercentage) }}">
@@ -16,7 +16,13 @@
       </div>
       <div class="flex flex-col p-card p-3 w-80 gap-3">
         <strong class="font-semibold">Response Codes</strong>
-        <span>PLACEHOLDER</span>
+        <ul class="list-none p-0 m-0 flex gap-1 flex-wrap">
+          <li *ngFor="let code of responseCodes; last as isLast">
+            <span [class]="getResponseCodeColor(code.code)">{{ code.code }}</span>
+            <span class="opacity-70"> ({{ code.percentage }}%)</span>
+            <span *ngIf="!isLast">, </span>
+          </li>
+        </ul>
       </div>
     </div>
     <div class="flex flex-col gap-1 flex-1 items-end">

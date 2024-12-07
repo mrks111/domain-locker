@@ -6,6 +6,15 @@ import DatabaseService from '@services/database.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { ApexOptions } from 'ng-apexcharts';
 
+interface UptimeData {
+  checked_at: string;
+  is_up: boolean;
+  response_code: number;
+  response_time_ms: number;
+  dns_lookup_time_ms: number;
+  ssl_handshake_time_ms: number;
+}
+interface ResponseCode { code: number; count: number, percentage: number };
 interface Series { x: string; y: number };
 interface MinMax { min: number; max: number };
 interface DateValue { date: string; value: number };
@@ -29,9 +38,10 @@ export class DomainSparklineComponent implements OnInit {
 
   advancedMode: boolean = false;
 
-  uptimeData: any[] = [];
+  uptimeData: UptimeData[] = [];
   isUp: boolean = false;
   uptimePercentage!: number;
+  responseCodes: ResponseCode[] = [];
   
   // Averages for each metric for the given time frame
   avgResponseTime!: number;
@@ -68,6 +78,7 @@ export class DomainSparklineComponent implements OnInit {
       if (data.data) {
         this.uptimeData = data.data;
         this.processUptimeData();
+        this.processResponseCodes();
       } else {
         this.errorHandler.handleError({
           error: data?.error,
@@ -112,6 +123,22 @@ export class DomainSparklineComponent implements OnInit {
 
     this.updateCharts(responseTimes, dnsTimes, sslTimes);
   }
+
+  processResponseCodes(): void {
+    if (!this.uptimeData.length) return;
+    const responseCodeCounts: Record<number, number> = {};
+    this.uptimeData.forEach(({ response_code }) => {
+      if (response_code != null) {
+        responseCodeCounts[response_code] = (responseCodeCounts[response_code] || 0) + 1;
+      }
+    });
+    this.responseCodes = Object.entries(responseCodeCounts).map(([code, count]) => ({
+      code: Number(code),
+      count: count as number,
+      percentage: (count / this.uptimeData.length) * 100,
+    }));
+  }
+  
 
   calculateAverage(times: number[]): number {
     const filteredTimes = times.filter((t) => t != null);
@@ -245,6 +272,7 @@ export class DomainSparklineComponent implements OnInit {
 
   public onAdvancedModeChange(): void {
     this.processUptimeData();
+    this.processResponseCodes();
   }
 
   public round(value: number | undefined | null): number {
@@ -253,6 +281,14 @@ export class DomainSparklineComponent implements OnInit {
     }
     return Math.round(value * 100) / 100;
   }
+
+  public getResponseCodeColor(code: number, prefix: string = 'text-'): string {
+    if (code >= 200 && code < 300) return `${prefix}green-400`; // Success
+    if (code >= 300 && code < 400) return `${prefix}blue-400`; // Redirection
+    if (code >= 400 && code < 500) return `${prefix}yellow-400`; // Client Error
+    if (code >= 500 && code < 600) return `${prefix}red-400`; // Server Error
+    return `${prefix}grey-400`; // Unknown/Undefined
+  }  
 
   public getColorClassForPercentage(percentage: number): string {
     if (percentage > 99) return 'green-400';

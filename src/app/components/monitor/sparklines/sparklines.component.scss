@@ -54,6 +54,14 @@
         background: var(--surface-200);
       }
     }
+    .apexcharts-datalabels {
+      .apexcharts-data-labels {
+        opacity: 0.7;
+      }
+      &:hover .apexcharts-data-labels {
+        opacity: 1;
+      }
+    }
     &:hover {
       .apexcharts-yaxis {
         opacity: 1;
