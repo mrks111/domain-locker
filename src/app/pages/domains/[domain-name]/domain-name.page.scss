@@ -1,20 +1,22 @@
 
-::ng-deep .p-card {
+::ng-deep .masonry .p-card {
   margin-bottom: 1.5rem;
   break-inside: avoid !important;
+  .p-card-content {
+    padding-top: 0;
+  }
+  .p-card-header {
+    padding: 20px 0 0 20px;
+    position: relative;
+  }
+  .p-card-body {
+    padding: 0 20px 20px 20px;
+  }
 }
-
-::ng-deep .p-card-content {
-  padding-top: 0;
-}
-
 ::ng-deep .p-card-header {
-  padding: 20px 0 0 20px;
   position: relative;
 }
-::ng-deep .p-card-body {
-  padding: 0 20px 20px 20px;
-}
+
 
 .row {
   h5 {
@@ -23,6 +25,13 @@
   }
   p {
     margin: 0;
+  }
+}
+
+.domain-perf-monitor {
+  ::ng-deep .p-card {
+    border: 2px solid var(--surface-100);
+    box-shadow: none !important;
   }
 }
 
