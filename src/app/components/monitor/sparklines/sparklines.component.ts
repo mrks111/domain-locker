@@ -27,6 +27,8 @@ export class DomainSparklineComponent implements OnInit {
   timeframe: Timeframe = 'day';
   timeframeOptions: Timeframe[] = ['day', 'week', 'month', 'year'];
 
+  advancedMode: boolean = false;
+
   uptimeData: any[] = [];
   isUp: boolean = false;
   uptimePercentage!: number;
@@ -146,8 +148,8 @@ export class DomainSparklineComponent implements OnInit {
       chart: {
         id,
         group: 'performance',
-        type: 'line',
-        height: 100,
+        type: this.advancedMode ? 'area' : 'line',
+        height: this.advancedMode ? 250 : 100,
         sparkline: { enabled: false },
         events: {
           mouseMove: (event, chartContext, config) => {
@@ -164,9 +166,22 @@ export class DomainSparklineComponent implements OnInit {
           },
         },
         zoom: {
-          enabled: false,
+          enabled: this.advancedMode ? true : false,
         },
       },
+      dataLabels: {
+        enabled: this.timeframe === 'day' && this.advancedMode,
+      },
+      colors: [`var(${color}, #60a5fa)`],
+      fill: this.advancedMode ? {
+        type: 'gradient',
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.5,
+          opacityTo: 0,
+          stops: [0, 70, 100]
+        }
+      } : {},
       series: [
         {
           name,
@@ -176,7 +191,7 @@ export class DomainSparklineComponent implements OnInit {
       ],
       stroke: {
         curve: 'smooth',
-        width: 2,
+        width: this.advancedMode ? 3: 2,
         colors: [`var(${color}, #60a5fa)`],
       },
       tooltip: {
@@ -224,9 +239,12 @@ export class DomainSparklineComponent implements OnInit {
   
 
   onTimeframeChange(timeframe: string): void {
-    console.log(timeframe);
     this.timeframe = timeframe as Timeframe;
     this.fetchUptimeData();
+  }
+
+  public onAdvancedModeChange(): void {
+    this.processUptimeData();
   }
 
   public round(value: number | undefined | null): number {

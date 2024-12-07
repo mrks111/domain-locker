@@ -1,6 +1,6 @@
 <div class="domain-uptime">
   
-  <div class="flex justify-between mb-3 items-end">
+  <div class="flex justify-between mb-3 items-end gap-3">
     <div class="flex gap-3">
       <div class="flex flex-col p-card p-3 w-40 gap-3">
         <strong class="font-semibold">Average Uptime</strong>
@@ -18,6 +18,14 @@
         <strong class="font-semibold">Response Codes</strong>
         <span>PLACEHOLDER</span>
       </div>
+    </div>
+    <div class="flex flex-col gap-1 flex-1 items-end">
+      <label for="advanced-mode-switch" class="text-sm opacity-70">Advanced</label>
+      <p-inputSwitch
+        [(ngModel)]="advancedMode"
+        (onChange)="onAdvancedModeChange()"
+        inputId="advanced-mode-switch"
+      />
     </div>
     <p-selectButton 
       [options]="timeframeOptions" 
@@ -116,6 +124,7 @@
           [stroke]="responseTimeChart.stroke"
           [xaxis]="responseTimeChart.xaxis"
           [tooltip]="responseTimeChart.tooltip"
+          [ngClass]="{'advanced-mode': advancedMode}"
         />
         <span class="text-center text-xs opacity-70">
           Response Time (ms)
@@ -130,6 +139,7 @@
           [stroke]="dnsTimeChart.stroke"
           [xaxis]="dnsTimeChart.xaxis"
           [tooltip]="dnsTimeChart.tooltip"
+          [ngClass]="{'advanced-mode': advancedMode}"
         ></apx-chart>
         <span class="text-center text-xs opacity-70">DNS Resolution Time (ms)</span>
       </div>
@@ -141,6 +151,7 @@
           [stroke]="sslTimeChart.stroke"
           [xaxis]="sslTimeChart.xaxis"
           [tooltip]="sslTimeChart.tooltip"
+          [ngClass]="{'advanced-mode': advancedMode}"
         ></apx-chart>
         <span class="text-center text-xs opacity-70">SSL Handshake Time (ms)</span>
       </div>
