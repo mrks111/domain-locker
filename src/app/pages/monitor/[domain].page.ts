@@ -13,11 +13,12 @@ import { LoadingComponent } from '@components/misc/loading.component';
 import { GlobalMessageService } from '@services/messaging.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { DomainSparklineComponent } from '@/app/components/monitor/sparklines/sparklines.component';
+import { UptimeHistoryComponent } from '@/app/components/monitor/uptime-history/uptime-history.component';
 
 @Component({
   standalone: true,
   selector: 'app-domain-details',
-  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, LoadingComponent, DomainSparklineComponent ],
+  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, LoadingComponent, DomainSparklineComponent, UptimeHistoryComponent ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './[domain].page.html',
 })
