@@ -13,7 +13,15 @@
   />
   </div>
   <div class="p-card p-3 flex flex-col gap-3 w-64">
-    Pie
+    <apx-chart
+      *ngIf="responseCodePieChart"
+      [series]="responseCodePieChart.series"
+      [chart]="responseCodePieChart.chart"
+      [labels]="responseCodePieChart.labels"
+      [colors]="responseCodePieChart.colors"
+      [tooltip]="responseCodePieChart.tooltip"
+      [legend]="responseCodePieChart.legend"
+    />
   </div>
 </div>
 

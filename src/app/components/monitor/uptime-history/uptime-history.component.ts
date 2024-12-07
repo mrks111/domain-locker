@@ -8,6 +8,8 @@ import { ApexOptions } from 'ng-apexcharts';
 
 interface UptimeData {
   checked_at: string;
+  is_up: boolean;
+  response_code: number | null;
   response_time_ms: number | null;
 }
 
@@ -24,6 +26,7 @@ export class UptimeHistoryComponent implements OnInit {
 
   uptimeData: UptimeData[] = [];
   calendarHeatmap: ApexOptions | null = null;
+  responseCodePieChart: ApexOptions | null = null;
 
   constructor(
     private databaseService: DatabaseService,
@@ -41,6 +44,7 @@ export class UptimeHistoryComponent implements OnInit {
         if (data.data) {
           this.uptimeData = data.data;
           this.generateCalendarHeatmap();
+          this.generateResponseCodePieChart();
         } else {
           this.errorHandler.handleError({
             error: data?.error,
@@ -166,6 +170,49 @@ export class UptimeHistoryComponent implements OnInit {
       },
       series,
     };
+  }
+  
+  generateResponseCodePieChart(): void {
+    const codeCounts: { [key: string]: number } = {};
+
+    this.uptimeData.forEach(({ response_code, is_up }) => {
+      const statusCode = response_code ?? (is_up ? 200 : 500);
+      const statusKey = `${statusCode}`;
+      codeCounts[statusKey] = (codeCounts[statusKey] || 0) + 1;
+    });
+
+    const series = Object.values(codeCounts);
+    const labels = Object.keys(codeCounts);
+    const colors = labels.map((code) => this.getResponseCodeColor(Number(code)));
+
+    this.responseCodePieChart = {
+      chart: {
+        type: 'pie',
+        height: 300,
+      },
+      series,
+      labels,
+      colors,
+      tooltip: {
+        y: {
+          formatter: (value: number, { seriesIndex }: { seriesIndex: number }) =>
+            `${value} checks (${((value / this.uptimeData.length) * 100).toFixed(
+              2
+            )}%)`,
+        },
+      },
+      legend: {
+        position: 'bottom',
+      },
+    };
+  }
+
+  getResponseCodeColor(code: number, prefix: string = ''): string {
+    if (code >= 200 && code < 300) return `var(--${prefix}green-400)`; // Green for success
+    if (code >= 300 && code < 400) return `var(--${prefix}blue-400)`; // Blue for redirects
+    if (code >= 400 && code < 500) return `var(--${prefix}yellow-400)`; // Yellow for client errors
+    if (code >= 500) return `var(--${prefix}red-400)`; // Red for server errors
+    return `var(--${prefix}grey-400)`; // Grey for unknown
   }
   
   /**
