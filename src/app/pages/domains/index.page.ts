@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '../../prime-ng.module';
 import DatabaseService from '@services/database.service';
 import { DbDomain } from '@/types/Database';
-import { MessageService } from 'primeng/api';
 import { DomainCollectionComponent } from '@components/domain-things/domain-collection/domain-collection.component';
 import { LoadingComponent } from '@components/misc/loading.component';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 @Component({
   standalone: true,
@@ -25,7 +25,10 @@ export default class DomainAllPageComponent implements OnInit {
   domains: DbDomain[] = [];
   loading: boolean = true;
 
-  constructor(private databaseService: DatabaseService, private messageService: MessageService) {}
+  constructor(
+    private databaseService: DatabaseService,
+    private errorHandlerService: ErrorHandlerService,
+  ) {}
 
   ngOnInit() {
     this.loadDomains();
@@ -39,13 +42,13 @@ export default class DomainAllPageComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error fetching domains:', error);
-        this.loading = false;
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: 'Couldn\'t fetch domains from database' 
+        this.errorHandlerService.handleError({
+          error,
+          message: 'Couldn\'t fetch domains from database',
+          showToast: true,
+          location: 'domains',
         });
+        this.loading = false;
       }
     });
   }
