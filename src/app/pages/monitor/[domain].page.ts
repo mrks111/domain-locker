@@ -14,11 +14,13 @@ import { GlobalMessageService } from '@services/messaging.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { DomainSparklineComponent } from '@/app/components/monitor/sparklines/sparklines.component';
 import { UptimeHistoryComponent } from '@/app/components/monitor/uptime-history/uptime-history.component';
+import { FeatureService } from '@/app/services/features.service';
+import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
 
 @Component({
   standalone: true,
   selector: 'app-domain-details',
-  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, LoadingComponent, DomainSparklineComponent, UptimeHistoryComponent ],
+  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, LoadingComponent, DomainSparklineComponent, UptimeHistoryComponent, FeatureNotEnabledComponent ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './[domain].page.html',
 })
@@ -27,11 +29,13 @@ export default class DomainDetailsPage implements OnInit {
   domainId: string | null = null;
   name: string | null = null;
   domainNotFound = false;
+  monitorEnabled$ = this.featureService.isFeatureEnabled('domainMonitor');
 
   constructor(
     private route: ActivatedRoute,
     private databaseService: DatabaseService,
     public domainUtils: DomainUtils,
+    private featureService: FeatureService,
     private router: Router,
     private globalMessageService: GlobalMessageService,
     private errorHandler: ErrorHandlerService,

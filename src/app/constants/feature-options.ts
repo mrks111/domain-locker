@@ -13,6 +13,7 @@ export type FeatureDefinitions = {
   notificationChannels: FeatureConfig<boolean>;
   changeNotifications: FeatureConfig<boolean>;
   visualStats: FeatureConfig<boolean>;
+  domainMonitor: FeatureConfig<boolean>;
   changeHistory: FeatureConfig<boolean>;
   accountSettings: FeatureConfig<boolean>;
   writePermissions: FeatureConfig<boolean>;
@@ -55,6 +56,15 @@ export const features: FeatureDefinitions = {
       enterprise: true,
     },
   },
+  domainMonitor: {
+    default: true,
+    managed: {
+      free: false,
+      hobby: false,
+      pro: true,
+      enterprise: true,
+    },
+  },
   changeHistory: {
     default: true,
     managed: {
@@ -91,6 +101,10 @@ export const featureDescriptions: Record<keyof FeatureDefinitions, { label: stri
   visualStats: {
     label: 'Stats',
     description: 'View detailed statistics for your domains',
+  },
+  domainMonitor: {
+    label: 'Domain Monitor',
+    description: 'Monitor the status of your domains for uptime, responsiveness, and more',
   },
   changeHistory: {
     label: 'Change History',

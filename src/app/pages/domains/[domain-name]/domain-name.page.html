@@ -387,27 +387,29 @@
       }
   </p-card>
 
-  <p-card>
-    <ng-template pTemplate="header">
-      <h4 class="text-surface-600 text-2xl font-bold m-0 pt-4 pl-4 block z-1 relative">Monitor</h4>
-      <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
-        <dl-icon icon="monitor" viewBox="0 0 576 512" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
-      </div>
-    </ng-template>
-    <div class="flex flex-col domain-perf-monitor">
-      <app-domain-sparklines
-        [domainId]="domain.id"
-        [userId]="domain.user_id"
-        *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
-      />
+  @if (monitorEnabled$ | async) {
+    <p-card styleClass="mt-4">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 pt-4 pl-4 block z-1 relative">Monitor</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="monitor" viewBox="0 0 576 512" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <div class="flex flex-col domain-perf-monitor">
+        <app-domain-sparklines
+          [domainId]="domain.id"
+          [userId]="domain.user_id"
+          *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
+        />
 
-      <app-uptime-history
-        *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
-        [domainId]="domain.id"
-        [userId]="domain.user_id"
-      />
-    </div>
-  </p-card>
+        <app-uptime-history
+          *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
+          [domainId]="domain.id"
+          [userId]="domain.user_id"
+        />
+      </div>
+    </p-card>
+  }
 </div>
 
 

@@ -16,6 +16,7 @@ import { DomainUpdatesComponent } from '@/app/components/domain-things/domain-up
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { DomainSparklineComponent } from '@/app/components/monitor/sparklines/sparklines.component';
 import { UptimeHistoryComponent } from '@/app/components/monitor/uptime-history/uptime-history.component';
+import { FeatureService } from '@/app/services/features.service';
 
 @Component({
   standalone: true,
@@ -38,6 +39,7 @@ export default class DomainDetailsPage implements OnInit {
   domain: DbDomain | null = null;
   name: string | null = null;
   domainNotFound = false;
+  monitorEnabled$ = this.featureService.isFeatureEnabled('domainMonitor');
 
   constructor(
     private route: ActivatedRoute,
@@ -47,6 +49,7 @@ export default class DomainDetailsPage implements OnInit {
     private router: Router,
     private globalMessageService: GlobalMessageService,
     private errorHandler: ErrorHandlerService,
+    private featureService: FeatureService,
   ) {}
 
   ngOnInit() {

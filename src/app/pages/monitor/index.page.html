@@ -1,1 +1,7 @@
 <h1>Monitor Page</h1>
+
+@if (monitorEnabled$ | async) {
+
+} @else {
+  <app-feature-not-enabled feature="domainMonitor" />
+}

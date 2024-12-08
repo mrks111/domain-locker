@@ -17,18 +17,21 @@
   ></button>
 </div>
 
+@if (!(monitorEnabled$ | async)) {
+  <app-feature-not-enabled feature="domainMonitor" />
+} @else {
+  <app-domain-sparklines
+    [domainId]="domain.id"
+    [userId]="domain.user_id"
+    *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
+  />
 
-<app-domain-sparklines
-  [domainId]="domain.id"
-  [userId]="domain.user_id"
-  *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
-/>
-
-<app-uptime-history
-  *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
-  [domainId]="domain.id"
-  [userId]="domain.user_id"
-/>
+  <app-uptime-history
+    *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
+    [domainId]="domain.id"
+    [userId]="domain.user_id"
+  />
+}
 
 <!-- Domain not found -->
 <div *ngIf="domainNotFound" class="flex flex-col gap-4 items-center justify-center max-w-[30rem] mx-auto p-card p-4 mt-8">
