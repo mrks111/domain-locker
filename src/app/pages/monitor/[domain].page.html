@@ -26,11 +26,17 @@
     *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
   />
 
-  <app-uptime-history
-    *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
-    [domainId]="domain.id"
-    [userId]="domain.user_id"
-  />
+
+  <ng-container *ngIf="shouldMountCalendar">
+    <app-uptime-history
+      *ngIf="domain && domain.id && domain.user_id && !domainNotFound"
+      [domainId]="domain.id"
+      [userId]="domain.user_id"
+    />
+  </ng-container>
+  
+  <div appLazyLoad (visible)="onCalendarVisible()"></div>
+
 }
 
 <!-- Domain not found -->

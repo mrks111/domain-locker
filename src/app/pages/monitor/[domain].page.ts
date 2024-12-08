@@ -16,11 +16,21 @@ import { DomainSparklineComponent } from '@/app/components/monitor/sparklines/sp
 import { UptimeHistoryComponent } from '@/app/components/monitor/uptime-history/uptime-history.component';
 import { FeatureService } from '@/app/services/features.service';
 import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
+import { LazyLoadDirective } from '@/app/utils/lazy.directive';
 
 @Component({
   standalone: true,
   selector: 'app-domain-details',
-  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, LoadingComponent, DomainSparklineComponent, UptimeHistoryComponent, FeatureNotEnabledComponent ],
+  imports: [
+    CommonModule,
+    PrimeNgModule,
+    DomainFaviconComponent,
+    LoadingComponent,
+    DomainSparklineComponent,
+    UptimeHistoryComponent,
+    FeatureNotEnabledComponent,
+    LazyLoadDirective,
+  ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './[domain].page.html',
 })
@@ -30,6 +40,8 @@ export default class DomainDetailsPage implements OnInit {
   name: string | null = null;
   domainNotFound = false;
   monitorEnabled$ = this.featureService.isFeatureEnabled('domainMonitor');
+
+  shouldMountCalendar = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -63,5 +75,9 @@ export default class DomainDetailsPage implements OnInit {
       this.domain = domain;
       if (domain) this.domainId = domain.id;
     });
+  }
+
+  onCalendarVisible(): void { 
+    this.shouldMountCalendar = true;
   }
 }

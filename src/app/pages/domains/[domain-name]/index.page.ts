@@ -17,6 +17,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { DomainSparklineComponent } from '@/app/components/monitor/sparklines/sparklines.component';
 import { UptimeHistoryComponent } from '@/app/components/monitor/uptime-history/uptime-history.component';
 import { FeatureService } from '@/app/services/features.service';
+import { LazyLoadDirective } from '@/app/utils/lazy.directive';
 
 @Component({
   standalone: true,
@@ -30,6 +31,7 @@ import { FeatureService } from '@/app/services/features.service';
     DomainUpdatesComponent,
     DomainSparklineComponent,
     UptimeHistoryComponent,
+    LazyLoadDirective,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './domain-name.page.html',
@@ -40,6 +42,9 @@ export default class DomainDetailsPage implements OnInit {
   name: string | null = null;
   domainNotFound = false;
   monitorEnabled$ = this.featureService.isFeatureEnabled('domainMonitor');
+
+  shouldMountMonitor = false;
+  shouldMountHistory = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -73,6 +78,14 @@ export default class DomainDetailsPage implements OnInit {
     ).subscribe(domain => {
       this.domain = domain;
     });
+  }
+
+  onMonitorVisible(): void { 
+    this.shouldMountMonitor = true;
+  }
+
+  onHistoryVisible(): void { 
+    this.shouldMountHistory = true;
   }
 
   public filterIpAddresses(ipAddresses: { ip_address: string, is_ipv6: boolean }[] | undefined, isIpv6: boolean): any[] {

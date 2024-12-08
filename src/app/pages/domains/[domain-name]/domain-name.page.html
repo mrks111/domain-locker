@@ -383,7 +383,11 @@
       </div>
     </ng-template>
       @if (name) {
-        <app-domain-updates [domainName]="name"></app-domain-updates>
+        <app-domain-updates *ngIf="shouldMountHistory; else historyWaiting" [domainName]="name"></app-domain-updates>
+        <div appLazyLoad (visible)="onHistoryVisible()"></div>
+        <ng-template #historyWaiting>
+          <p-progressSpinner class="flex mx-auto" ariaLabel="loading" />
+        </ng-template>
       }
   </p-card>
 
@@ -395,7 +399,7 @@
           <dl-icon icon="monitor" viewBox="0 0 576 512" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
         </div>
       </ng-template>
-      <div class="flex flex-col domain-perf-monitor">
+      <div *ngIf="shouldMountMonitor; else monitorWaiting" class="flex flex-col domain-perf-monitor">
         <app-domain-sparklines
           [domainId]="domain.id"
           [userId]="domain.user_id"
@@ -408,8 +412,12 @@
           [userId]="domain.user_id"
         />
       </div>
+      <ng-template #monitorWaiting>
+        <p-progressSpinner class="flex mx-auto" ariaLabel="loading" />
+      </ng-template>
     </p-card>
   }
+  <div appLazyLoad (visible)="onMonitorVisible()"></div>
 </div>
 
 
