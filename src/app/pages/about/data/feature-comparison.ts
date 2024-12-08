@@ -62,12 +62,37 @@ export const features = [
     ],
   },
   {
+    featureTitle: 'Renewal Alerts',
+    icon: 'expire',
+    iconViewBox: '0 0 448 512',
+    featureInfo: [
+      'View timeline of upcoming expirations.',
+      'Never miss a renewal deadline, with smart alerts.',
+    ],
+  },
+  {
     featureTitle: 'Monitor',
     icon: 'monitor',
     iconViewBox: '0 0 576 512',
     featureInfo: [
       'Monitor web health for domains.',
       'Track uptime, ping times, response codes and availability.',
+    ],
+  },
+  {
+    featureTitle: 'Security Check',
+    icon: 'secure',
+    featureInfo: [
+      'View and check registrar security features for each domain.',
+      'Ensure domains have the correct security controls.',
+    ],
+  },
+  {
+    featureTitle: 'Organize',
+    icon: 'organize',
+    featureInfo: [
+      'Categorise domains in your portfolio with tags.',
+      'Keep track of all domain-related links, in one easy dashboard.',
     ],
   },
   {
@@ -80,8 +105,8 @@ export const features = [
     ],
   },
   {
-    featureTitle: 'Secure & Private',
-    icon: 'secure',
+    featureTitle: 'Private & Secure',
+    icon: 'private',
     featureInfo: [
       'Full control of your data with easy import/export/deletion.',
       'SSO (GitHub, Google) and 2FA for extra security.',
