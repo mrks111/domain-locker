@@ -9,6 +9,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { GlobalMessageService } from '@services/messaging.service';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 @Component({
   selector: 'app-edit-domain',
@@ -29,6 +30,7 @@ export default class EditDomainComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private databaseService: DatabaseService,
+    private errorHandler: ErrorHandlerService,
     private globalMessageService: GlobalMessageService,
   ) {
     this.domainForm = this.fb.group({
@@ -128,9 +130,13 @@ export default class EditDomainComponent implements OnInit {
           this.router.navigate(['/domains', this.domain!.domain_name]);
         },
         error: (err) => {
-          console.error('Error updating domain:', err);
+          this.errorHandler.handleError({
+            error: err,
+            message: 'Failed to update domain',
+            showToast: true,
+            location: 'Edit Domain',
+          });
           this.isLoading = false;
-          this.globalMessageService.showMessage({ severity: 'error', summary: 'Error', detail: 'Failed to update domain' });
         }
       });
     } else {
