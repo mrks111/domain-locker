@@ -96,6 +96,14 @@ export const features = [
     ],
   },
   {
+    featureTitle: 'Link',
+    icon: 'links',
+    featureInfo: [
+      'Store all related domain links, dashboards and providers in one place.',
+      'Never loose track of a specific URL ever again.',
+    ],
+  },
+  {
     featureTitle: 'Customizable',
     icon: 'customize',
     iconViewBox: '0 0 576 512',

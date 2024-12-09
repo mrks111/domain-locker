@@ -5,6 +5,7 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import DatabaseService from '@services/database.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { ApexOptions } from 'ng-apexcharts';
+import { getUptimeColor, getResponseCodeColor, getPerformanceColor } from '@/app/pages/monitor/monitor-helpers';
 
 interface UptimeData {
   checked_at: string;
@@ -62,6 +63,10 @@ export class DomainSparklineComponent implements OnInit {
   responseTimeChart: any;
   dnsTimeChart: any;
   sslTimeChart: any;
+
+  getUptimeColor = getUptimeColor;
+  getResponseCodeColor = getResponseCodeColor;
+  getPerformanceColor = getPerformanceColor;
 
   constructor(
     private databaseService: DatabaseService,
@@ -280,55 +285,6 @@ export class DomainSparklineComponent implements OnInit {
       return 0;
     }
     return Math.round(value * 100) / 100;
-  }
-
-  public getResponseCodeColor(code: number, prefix: string = 'text-'): string {
-    if (code >= 200 && code < 300) return `${prefix}green-400`; // Success
-    if (code >= 300 && code < 400) return `${prefix}blue-400`; // Redirection
-    if (code >= 400 && code < 500) return `${prefix}yellow-400`; // Client Error
-    if (code >= 500 && code < 600) return `${prefix}red-400`; // Server Error
-    return `${prefix}grey-400`; // Unknown/Undefined
-  }  
-
-  public getColorClassForPercentage(percentage: number): string {
-    if (percentage > 99) return 'green-400';
-    if (percentage > 95) return 'yellow-400';
-    if (percentage > 90) return 'orange-400';
-    return 'bad';
-  }
-
-  public getPerformanceColor(
-    value: number,
-    type: 'ssl' | 'dns' | 'response',
-    prefix: string = 'text-',
-    postfix: string = '-400'): string {
-    if (typeof value !== 'number' || value < 0 || !type) {
-      return 'grey';
-    }
-  
-    // Define ranges for each type
-    const thresholds = { // in ms
-      ssl: { green: 100, yellow: 200, orange: 400 },
-      dns: { green: 40, yellow: 80, orange: 150 },
-      response: { green: 250, yellow: 500, orange: 1000 }
-    };
-  
-    // Ensure the type exists in thresholds
-    const typeThresholds = thresholds[type];
-    if (!typeThresholds) {
-      return `${prefix}grey${postfix}`;
-    }
-  
-    // Determine the color based on the value
-    if (value <= typeThresholds.green) {
-      return `${prefix}green${postfix}`;
-    } else if (value <= typeThresholds.yellow) {
-      return `${prefix}yellow${postfix}`;
-    } else if (value <= typeThresholds.orange) {
-      return `${prefix}orange${postfix}`;
-    } else {
-      return `${prefix}red${postfix}`;
-    }
   }
 
   public mapTimeToSentence(timeframe: Timeframe): string {

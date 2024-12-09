@@ -42,8 +42,8 @@ export function getPerformanceColor(
 
   // Ensure the type exists in thresholds
   const typeThresholds = thresholds[type];
-  if (!typeThresholds) {
-    return `${prefix}grey${postfix}`;
+  if (!typeThresholds || value === 0) {
+    return `${prefix}bluegray${postfix}`;
   }
 
   // Determine the color based on the value
