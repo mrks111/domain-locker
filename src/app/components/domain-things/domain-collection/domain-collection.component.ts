@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Fuse from 'fuse.js';
 import { DomainCardComponent } from '@components/domain-things/domain-card/domain-card.component';
@@ -18,9 +18,12 @@ export class DomainCollectionComponent implements OnInit {
   @Input() showAddButton: boolean = true;
   @Input() showFooter: boolean = true;
   @Input() preFilteredText: string | undefined;
+  
+  @Input() triggerReload: () => void = () => {};
+  @Output() $triggerReload = new EventEmitter();
 
   @ViewChild(FieldVisibilityFilterComponent)
-  filtersComp: FieldVisibilityFilterComponent = new FieldVisibilityFilterComponent;
+  filtersComp!: FieldVisibilityFilterComponent;
 
   filteredDomains: DbDomain[] = [];
   loading: boolean = false;
@@ -119,6 +122,11 @@ export class DomainCollectionComponent implements OnInit {
 
   onLayoutChange(isGrid: boolean) {
     this.isGridLayout = isGrid;
+  }
+
+  reloadDomains() {
+    console.log('Reloading domains from domain-collection.component');
+    this.$triggerReload.emit();
   }
 
   initializeFuse() {

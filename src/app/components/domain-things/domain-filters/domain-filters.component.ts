@@ -1,8 +1,10 @@
-import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomainFaviconComponent } from '../../misc/favicon.component';
 import { PrimeNgModule } from '@/app/prime-ng.module';
+import { Router } from '@angular/router';
+import QuickAddDomain from '@/app/pages/domains/add/quick-add/index.page';
 
 export interface FieldOption {
   label: string;
@@ -12,7 +14,7 @@ export interface FieldOption {
 @Component({
   selector: 'app-field-visibility-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, PrimeNgModule, DomainFaviconComponent],
+  imports: [CommonModule, FormsModule, PrimeNgModule, DomainFaviconComponent, QuickAddDomain],
   templateUrl: 'domain-filters.component.html',
   styleUrls: ['domain-filters.component.scss'],
 })
@@ -44,15 +46,47 @@ export class FieldVisibilityFilterComponent implements OnInit {
   @Output() searchChange = new EventEmitter<string>();
   @Output() layoutChange = new EventEmitter<boolean>();
   @Output() sortChange = new EventEmitter<FieldOption>();
+  
+  @Input() triggerReload: () => void = () => {};
+  @Output() $triggerReload = new EventEmitter();
 
   selectedFields: FieldOption[] = [];
   sortOrder: FieldOption = this.sortOptions[0];
   selectedLayout: boolean = true;
+  quickAddDialogOpen: boolean = false;
 
   layoutOptions = [
     { label: 'Grid', value: true, icon: 'pi pi-th-large' },
     { label: 'List', value: false, icon: 'pi pi-bars' }
   ];
+
+  addButtonLinks = [
+    {
+      label: 'Add Domain',
+      icon: 'pi pi-caret-right',
+      routerLink: ['/domains/add'],
+    },
+    {
+      label: 'Quick Add',
+      icon: 'pi pi-caret-right',
+      command: () => this.showQuickAddDialog(),
+    },
+    {
+      label: 'Bulk Add',
+      icon: 'pi pi-caret-right',
+      routerLink: ['/domains/add/bulk-add'],
+    },
+    {
+      label: 'Export Domains',
+      icon: 'pi pi-caret-down',
+      routerLink: ['/domains/export'],
+    },
+  ];
+
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+  ){}
 
   ngOnInit() {
     this.initializeSelectedFields();
@@ -83,5 +117,20 @@ export class FieldVisibilityFilterComponent implements OnInit {
 
   onLayoutChange(event: boolean) {
     this.layoutChange.emit(event === null ? true : event);
+  }
+
+  navigateToAddDomain() {
+    this.router.navigate(['/domains/add']);
+  }
+
+  showQuickAddDialog() {
+    this.quickAddDialogOpen = true;
+  }
+
+  afterDomainAdded(newDomain: string) {
+    console.log('Domain added:', newDomain);
+    this.quickAddDialogOpen = false;
+    this.cdr.detectChanges();
+    this.$triggerReload.emit();
   }
 }

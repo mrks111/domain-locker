@@ -186,7 +186,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     const domainName = this.domainForm.get('domainName')?.value;
     if (!domainName) return;
   
-    this.http.get<DomainInfo>(`/api/domain-info?domain=${domainName}`).pipe(
+    this.http.get<{ domainInfo: DomainInfo}>(`/api/domain-info?domain=${domainName}`).pipe(
       catchError(this.handleHttpError.bind(this))
     ).subscribe({
       next: (fetchedDomainInfo) => {

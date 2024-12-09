@@ -75,7 +75,9 @@ export interface SaveDomainData {
   domain: Omit<DbDomain, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'dns' | 'ipAddresses' >;
   // ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'created_at' | 'updated_at'>[];
   tags: string[];
-  notifications: { notification_type: string; is_enabled: boolean; }[];
+  notifications: { type: string; isEnabled: boolean; }[];
+  statuses: any;
+  ipAddresses: any;
   ssl?: Ssl;
   whois?: Contact;
   dns?: Dns;

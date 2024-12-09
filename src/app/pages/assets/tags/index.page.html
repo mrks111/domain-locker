@@ -58,7 +58,7 @@
     [style]="{ width: '50rem' }" 
     [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" 
     [maximizable]="true">
-    <app-tag-editor [isAddNew]="true" ($afterSave)="afterAddNewTag($event)" />
+    <app-tag-editor [isAddNew]="true" ($afterSave)="afterAddNewTag()" />
 </p-dialog>
 
 <p-confirmDialog />

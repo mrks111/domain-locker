@@ -1,12 +1,10 @@
 <h1 class="text-2xl my-3">Web Monitoring</h1>
 
-@if (monitorEnabled$ | async) {
-
-} @else {
+@if (!(monitorEnabled$ | async)) {
   <app-feature-not-enabled feature="domainMonitor" />
 }
 
-<div class="monitor-container">
+<div class="monitor-container" *ngIf="monitorEnabled$ | async">
   <div *ngIf="loading" class="loading-container">
     <p>Loading domains...</p>
   </div>
