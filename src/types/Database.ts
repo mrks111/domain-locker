@@ -55,6 +55,7 @@ export interface DbDomain extends Timestamps {
   domain_costings?: Valuation;
   notification_preferences?: { notification_type: string; is_enabled: boolean; }[];
   sub_domains?: Subdomain[];
+  domain_links?: { link_name: string; link_url: string }[];
 }
 
 export interface IpAddress extends Timestamps {
@@ -75,9 +76,9 @@ export interface SaveDomainData {
   domain: Omit<DbDomain, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'dns' | 'ipAddresses' >;
   // ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'created_at' | 'updated_at'>[];
   tags: string[];
-  notifications: { type: string; isEnabled: boolean; }[];
-  statuses: any;
-  ipAddresses: any;
+  notifications: any;
+  statuses?: any;
+  ipAddresses?: any;
   ssl?: Ssl;
   whois?: Contact;
   dns?: Dns;
@@ -85,6 +86,7 @@ export interface SaveDomainData {
   registrar?: any;
   host?: Host;
   subdomains: string[];
+  links?: { link_name: string; link_url: string }[];
 }
 
 export abstract class DatabaseService {

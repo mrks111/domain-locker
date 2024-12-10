@@ -123,9 +123,10 @@ export default class SupabaseDatabaseService extends DatabaseService {
       dns_records (record_type, record_value),
       domain_statuses (status_code),
       domain_costings (purchase_price, current_value, renewal_cost, auto_renew),
-      sub_domains (name)
+      sub_domains (name),
+      domain_links (link_name, link_url)
     `;
-  }  
+  }
   
   deleteDomain(domainId: string): Observable<void> {
     return from(this.supabase.supabase.rpc('delete_domain', { domain_id: domainId })).pipe(
@@ -472,7 +473,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
   
   private async updateDomainInternal(domainId: string, data: any): Promise<DbDomain> {
-    const { domain, tags, notifications, subdomains } = data; // Include subdomains in destructuring
+    const { domain, tags, notifications, subdomains, links } = data; // Include subdomains in destructuring
 
     // Update domain's basic information
     const { data: updatedDomain, error: updateError } = await this.supabase.supabase
@@ -497,6 +498,9 @@ export default class SupabaseDatabaseService extends DatabaseService {
 
     // Handle subdomains
     await this.updateSubdomains(domainId, subdomains);
+
+    // Handle links
+    await this.updateLinks(domainId, links);
 
     return this.getDomainById(domainId);
   }
@@ -1672,4 +1676,112 @@ export default class SupabaseDatabaseService extends DatabaseService {
       });
     }
 
+
+    /****************/
+    /* Domain Links */
+    /****************/
+
+    getDomainLinks(domainId: string): Observable<any[]> {
+      return from(
+        this.supabase.supabase
+          .from('domain_links')
+          .select('*')
+          .eq('domain_id', domainId)
+      ).pipe(
+        map(response => {
+          if (response.error) throw response.error;
+          return response.data || [];
+        }),
+        catchError(error => this.handleError(error))
+      );
+    }
+    
+    saveDomainLinks(domainId: string, links: { link_name: string; link_url: string }[]): Observable<void> {
+      return from(this.supabase.getCurrentUser().then(user => user?.id)).pipe(
+        map(userId => {
+          if (!userId) throw new Error('User must be authenticated to save links.');
+          return links.map(link => ({
+            ...link,
+            domain_id: domainId,
+            user_id: userId,
+          }));
+        }),
+        switchMap(formattedLinks =>
+          this.supabase.supabase
+            .from('domain_links')
+            .insert(formattedLinks)
+        ),
+        map(response => {
+          if (response.error) throw response.error;
+        }),
+        catchError(error => this.handleError(error))
+      );
+    }
+    
+    deleteDomainLink(linkId: string): Observable<void> {
+      return from(
+        this.supabase.supabase
+          .from('domain_links')
+          .delete()
+          .eq('id', linkId)
+      ).pipe(
+        map(response => {
+          if (response.error) throw response.error;
+        }),
+        catchError(error => this.handleError(error))
+      );
+    }
+
+    private async updateLinks(domainId: string, links: { link_name: string; link_url: string }[]): Promise<void> {
+      // Get existing links from the database
+      const { data: existingData, error } = await this.supabase.supabase
+        .from('domain_links')
+        .select('id, link_name, link_url')
+        .eq('domain_id', domainId);
+    
+      if (error) throw error;
+    
+      const existingLinks = existingData || [];
+    
+      // Determine which links to add, update, and delete
+      const linksToAdd = links.filter(newLink =>
+        !existingLinks.some(existingLink => existingLink.link_name === newLink.link_name && existingLink.link_url === newLink.link_url)
+      );
+      const linksToRemove = existingLinks.filter(existingLink =>
+        !links.some(newLink => newLink.link_name === existingLink.link_name && newLink.link_url === existingLink.link_url)
+      );
+      const linksToUpdate = links.filter(newLink =>
+        existingLinks.some(existingLink => 
+          existingLink.link_name === newLink.link_name && existingLink.link_url !== newLink.link_url)
+      );
+    
+      // Add new links
+      if (linksToAdd.length > 0) {
+        const { error: insertError } = await this.supabase.supabase
+          .from('domain_links')
+          .insert(linksToAdd.map(link => ({ ...link, domain_id: domainId })));
+        if (insertError) throw insertError;
+      }
+    
+      // Update modified links
+      for (const link of linksToUpdate) {
+        const { error: updateError } = await this.supabase.supabase
+          .from('domain_links')
+          .update({ link_url: link.link_url })
+          .eq('domain_id', domainId)
+          .eq('link_name', link.link_name);
+        if (updateError) throw updateError;
+      }
+    
+      // Remove old links
+      if (linksToRemove.length > 0) {
+        const { error: deleteError } = await this.supabase.supabase
+          .from('domain_links')
+          .delete()
+          .eq('domain_id', domainId)
+          .in('link_name', linksToRemove.map(link => link.link_name));
+        if (deleteError) throw deleteError;
+      }
+    }
+    
 }
