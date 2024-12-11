@@ -140,7 +140,7 @@ export class DomainSparklineComponent implements OnInit {
     this.responseCodes = Object.entries(responseCodeCounts).map(([code, count]) => ({
       code: Number(code),
       count: count as number,
-      percentage: (count / this.uptimeData.length) * 100,
+      percentage: Math.round((count / this.uptimeData.length) * 100),
     }));
   }
   

@@ -1,25 +1,27 @@
+
+<!-- Domain not found -->
 <div *ngIf="domainNotFound" class="flex flex-col gap-4 items-center justify-center max-w-[30rem] mx-auto p-card p-4 mt-8">
-  
   <h1 class="text-3xl">
-  <i class="pi pi-exclamation-triangle text-3xl"></i>
-  Domain Not Found
+    <i class="pi pi-exclamation-triangle text-3xl"></i>
+    Domain Not Found
   </h1>
   <p class="m-0">
-  <strong>{{ name }}</strong> hasn't yet been added to your account.
+    <strong>{{ name }}</strong> hasn't yet been added to your account.
   </p>
 
   <a [href]="'/domains/add?domain='+(name)">
-  <p-button icon="pi pi-plus" label="Add it now" class="p-button-primary" />
+    <p-button icon="pi pi-plus" label="Add it now" class="p-button-primary" />
   </a>
   <p class="text-sm opacity-70 italic">
-  Believe this is an error?
-  Check the URL is correct, ensure you are authenticated, and have the correct access rights.
-  <br>
-  For additional help contact the administrator, or see the <a href="/about#support">Help Docs</a>
+    Believe this is an error?
+    Check the URL is correct, ensure you are authenticated, and have the correct access rights.
+    <br>
+    For additional help contact the administrator, or see the <a href="/about#support">Help Docs</a>
   </p>
 </div>
 
 <div *ngIf="domain && !domainNotFound; else loading" class="domain-details p-4 flex flex-col gap-1">
+  <!-- Domain name, icon and actions header -->
   <div class="flex gap-2 justify-between align-items-center flex-wrap mb-4">
     <h1 class="text-3xl flex items-center">
       <app-domain-favicon [domain]="domain.domain_name" [size]="32" class="mr-3"></app-domain-favicon>
@@ -373,8 +375,27 @@
         </a>
       </div>
     </p-card>
+
+    <!-- Links -->
+    <p-card *ngIf="domain.domain_links && domain.domain_links.length" class="mb-6">
+      <ng-template pTemplate="header">
+        <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Links</h4>
+        <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+          <dl-icon icon="links" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+        </div>
+      </ng-template>
+      <ul class="list-none p-0 m-0 mt-2">
+        <li *ngFor="let link of domain.domain_links" class="truncate">
+          <a [href]="link.link_url" target="_blank" class="no-underline text-primary hover:opacity-95">
+            <app-domain-favicon [domain]="link.link_url" [size]="16" />
+            {{ link.link_name }}
+          </a>
+        </li>
+      </ul>
+    </p-card>
   </div>
 
+  <!-- History -->
   <p-card styleClass="mt-4">
     <ng-template pTemplate="header">
       <h4 class="text-surface-600 text-2xl font-bold m-0 pt-4 pl-4 block z-1 relative">Change History</h4>
@@ -391,6 +412,7 @@
       }
   </p-card>
 
+  <!-- Monitor -->
   @if (monitorEnabled$ | async) {
     <p-card styleClass="mt-4">
       <ng-template pTemplate="header">
