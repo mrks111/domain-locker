@@ -192,6 +192,11 @@ export const authenticatedNavLinks = [
         routerLink: '/assets/tags',
       },
       {
+        label: 'Links',
+        icon: 'pi pi-fw pi-link',
+        routerLink: '/assets/links',
+      },
+      {
         label: 'Security',
         icon: 'pi pi-fw pi-shield',
         routerLink: '/assets/statuses',
