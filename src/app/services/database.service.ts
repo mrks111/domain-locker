@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host } from '@/types/Database';
+import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host, Link } from '@/types/Database';
 import { catchError, from, map, Observable, throwError, retry, forkJoin, switchMap, of, concatMap } from 'rxjs';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
@@ -124,7 +124,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       domain_statuses (status_code),
       domain_costings (purchase_price, current_value, renewal_cost, auto_renew),
       sub_domains (name),
-      domain_links (link_name, link_url)
+      domain_links (link_name, link_url, link_description)
     `;
   }
   
@@ -1696,7 +1696,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       );
     }
     
-    saveDomainLinks(domainId: string, links: { link_name: string; link_url: string }[]): Observable<void> {
+    saveDomainLinks(domainId: string, links: Link[]): Observable<void> {
       return from(this.supabase.getCurrentUser().then(user => user?.id)).pipe(
         map(userId => {
           if (!userId) throw new Error('User must be authenticated to save links.');
@@ -1731,12 +1731,11 @@ export default class SupabaseDatabaseService extends DatabaseService {
         catchError(error => this.handleError(error))
       );
     }
-
-    private async updateLinks(domainId: string, links: { link_name: string; link_url: string }[]): Promise<void> {
+    private async updateLinks(domainId: string, links: Link[]): Promise<void> {
       // Get existing links from the database
       const { data: existingData, error } = await this.supabase.supabase
         .from('domain_links')
-        .select('id, link_name, link_url')
+        .select('id, link_name, link_url, link_description')
         .eq('domain_id', domainId);
     
       if (error) throw error;
@@ -1745,14 +1744,20 @@ export default class SupabaseDatabaseService extends DatabaseService {
     
       // Determine which links to add, update, and delete
       const linksToAdd = links.filter(newLink =>
-        !existingLinks.some(existingLink => existingLink.link_name === newLink.link_name && existingLink.link_url === newLink.link_url)
+        !existingLinks.some(existingLink => 
+          existingLink.link_name === newLink.link_name && existingLink.link_url === newLink.link_url)
       );
+      
       const linksToRemove = existingLinks.filter(existingLink =>
-        !links.some(newLink => newLink.link_name === existingLink.link_name && newLink.link_url === existingLink.link_url)
+        !links.some(newLink => 
+          newLink.link_name === existingLink.link_name && newLink.link_url === existingLink.link_url)
       );
+      
       const linksToUpdate = links.filter(newLink =>
-        existingLinks.some(existingLink => 
-          existingLink.link_name === newLink.link_name && existingLink.link_url !== newLink.link_url)
+        existingLinks.some(existingLink =>
+          existingLink.link_name === newLink.link_name &&
+          (existingLink.link_url !== newLink.link_url || existingLink.link_description !== newLink.link_description)
+        )
       );
     
       // Add new links
@@ -1767,7 +1772,10 @@ export default class SupabaseDatabaseService extends DatabaseService {
       for (const link of linksToUpdate) {
         const { error: updateError } = await this.supabase.supabase
           .from('domain_links')
-          .update({ link_url: link.link_url })
+          .update({
+            link_url: link.link_url,
+            link_description: link.link_description,
+          })
           .eq('domain_id', domainId)
           .eq('link_name', link.link_name);
         if (updateError) throw updateError;
@@ -1783,5 +1791,72 @@ export default class SupabaseDatabaseService extends DatabaseService {
         if (deleteError) throw deleteError;
       }
     }
+    
+    
+    getAllLinks(): Observable<{
+      groupedByDomain: Record<string, Link[]>;
+      linksWithDomains: {
+        link_name: string;
+        link_url: string;
+        link_description?: string;
+        domains: string[];
+      }[];
+    }> {
+      return from(
+        this.supabase.supabase
+          .from('domain_links')
+          .select(`
+            link_name,
+            link_url,
+            link_description,
+            domains(domain_name)
+          `)
+          .then(({ data, error }) => {
+            if (error) throw error;
+    
+            // Group links by domain
+            const groupedByDomain = data.reduce((acc: Record<string, Link[]>, link: any) => {
+              const domainName = link.domains?.domain_name || 'Unknown Domain';
+              if (!acc[domainName]) acc[domainName] = [];
+              acc[domainName].push({
+                link_name: link.link_name,
+                link_url: link.link_url,
+                link_description: link.link_description,
+              });
+              return acc;
+            }, {});
+    
+            // Aggregate domains for each unique link
+            const linkDomains = data.reduce(
+              (acc: Record<string, { link_name: string; link_url: string; link_description?: string; domains: Set<string> }>, link: any) => {
+                const key = `${link.link_name}|${link.link_url}`;
+                if (!acc[key]) {
+                  acc[key] = {
+                    link_name: link.link_name,
+                    link_url: link.link_url,
+                    link_description: link.link_description,
+                    domains: new Set(),
+                  };
+                }
+                if (link.domains?.domain_name) acc[key].domains.add(link.domains.domain_name);
+                return acc;
+              },
+              {}
+            );
+    
+            const linksWithDomains = Object.values(linkDomains).map(({ link_name, link_url, link_description, domains }) => ({
+              link_name,
+              link_url,
+              link_description, // Ensure link_description is included
+              domains: Array.from(domains),
+            }));
+    
+            return { groupedByDomain, linksWithDomains };
+          })
+      ).pipe(catchError((error) => this.handleError(error)));
+    }
+    
+    
+  
     
 }
