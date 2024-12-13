@@ -3,7 +3,7 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import DatabaseService from '@services/database.service';
-import { DbDomain, SaveDomainData } from '@/types/Database';
+import { DbDomain, Link, SaveDomainData } from '@/types/Database';
 import { notificationTypes, NotificationType } from '@/app/constants/notification-types';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
@@ -89,7 +89,7 @@ export default class EditDomainComponent implements OnInit {
 
     // Set link values
     (this.domain!.domain_links || []).forEach((link) => {
-      this.links.push(this.createLinkGroup(link.link_name, link.link_url));
+      this.links.push(this.createLinkGroup(link.link_name, link.link_url, link.link_description));
     });
     
     // Set notification values
@@ -129,10 +129,11 @@ export default class EditDomainComponent implements OnInit {
   onSubmit() {
     let links = this.links.value;
     try {
-      links = links.map((link: { link_name: string, link_url: string }) => {
+      links = links.map((link: Link) => {
         return {
           link_name: link.link_name,
           link_url: this.sanitizeAndStandardizeUrl(link.link_url),
+          link_description: link.link_description,
         };
       });
     } catch (error) {
@@ -184,13 +185,14 @@ export default class EditDomainComponent implements OnInit {
     }
   }
 
-  createLinkGroup(name: string = '', url: string = ''): FormGroup {
+  createLinkGroup(name: string = '', url: string = '', description: string = ''): FormGroup {
     return this.fb.group({
       link_name: [name, [Validators.required, Validators.maxLength(255)]],
       link_url: [
         url,
         [Validators.required, Validators.pattern(/^(https?:\/\/)?([\w.-]+)+(:\d+)?(\/([\w/_.]*)?)?$/)],
       ],
+      link_description: [description, [Validators.maxLength(255)]],
     });
   }
 
