@@ -11,6 +11,7 @@ import {
   Tag,
   Notification,
   Subdomain,
+  Link,
 } from './common';
 
 export {
@@ -25,6 +26,7 @@ export {
   Tag,
   Notification,
   Subdomain,
+  Link,
 };
 
 export interface DomainExpiration {
@@ -55,7 +57,7 @@ export interface DbDomain extends Timestamps {
   domain_costings?: Valuation;
   notification_preferences?: { notification_type: string; is_enabled: boolean; }[];
   sub_domains?: Subdomain[];
-  domain_links?: { link_name: string; link_url: string }[];
+  domain_links?: Link[];
 }
 
 export interface IpAddress extends Timestamps {
@@ -86,7 +88,7 @@ export interface SaveDomainData {
   registrar?: any;
   host?: Host;
   subdomains: string[];
-  links?: { link_name: string; link_url: string }[];
+  links?: Link[];
 }
 
 export abstract class DatabaseService {

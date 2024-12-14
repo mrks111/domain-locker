@@ -100,3 +100,9 @@ export interface Host {
   domain_count?: number;
   ip?: string;
 }
+
+export interface Link {
+  link_url: string;
+  link_name: string;
+  link_description?: string;
+}

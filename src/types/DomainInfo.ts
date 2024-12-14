@@ -1,4 +1,4 @@
-import { IpAddresses, Dates, Registrar, Contact, Abuse, Dns, Ssl, Host, Subdomain } from './common';
+import { IpAddresses, Dates, Registrar, Contact, Abuse, Dns, Ssl, Host, Subdomain, Link } from './common';
 
 export interface DomainInfo {
   domainName: string;
@@ -12,6 +12,7 @@ export interface DomainInfo {
   ssl: Ssl;
   host?: Host;
   subdomains?: Subdomain[];
+  links?: Link[];
 }
 
 export interface WhoisData extends Partial<Contact> {
