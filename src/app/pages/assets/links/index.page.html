@@ -1,24 +1,34 @@
 
-<div class="flex items-center justify-between">
+<div *ngIf="links?.linksWithDomains?.length" class="flex items-center justify-between">
   <h1 class="m-0">Links</h1>
-  <p-selectButton 
-    [options]="displayByOptions" 
-    [(ngModel)]="displayBy" 
-    optionLabel="label" 
-    optionValue="value"
-  />
+
+  <div class="flex gap-2 items-center">
+    <p-selectButton
+      [options]="displayByOptions" 
+      [(ngModel)]="displayBy" 
+      optionLabel="label" 
+      optionValue="value"
+    />
+    <p-button icon="pi pi-plus" label="Add Link" />
+  </div>
 </div>
 
-<!-- {{ links | json }} -->
+<!-- No links yet -->
+<div
+  *ngIf="!links?.linksWithDomains?.length"
+  class="p-card p-4 my-4 mx-auto max-w-96 flex flex-col gap-2">
+  <h2 class="m-0">
+    <i class="pi pi-link text-3xl"></i>
+    Domain Links
+  </h2>
+  <p class="m-0">
+    Here you can keep track of all domain-related links,
+    such as login portals, documentation, website analytics, associated social media profiles, etc.
+  </p>
+  <p-button icon="pi pi-plus" label="Add Link" (click)="addNewLink()" class="my-2 mx-auto" />
+</div>
 
-<!-- "groupedByDomain":
- { "microsoft.com": [
-  { "link_name": "Another link", "link_url": "https://google.com/", "link_description": null },
-  { "link_name": "Alicia", "link_url": "https://as93.net/", "link_description": "AS93" },
-  { "link_name": "Some Link", "link_url": "https://example.com/", "link_description": "Test for Example" }
-]}, -->
-
-<p-contextMenu #menu [model]="contextMenuItems" appendTo="body"></p-contextMenu>
+<p-contextMenu #menu [model]="contextMenuItems" appendTo="body" />
 
 @if (displayBy === 'all-links' && links?.linksWithDomains?.length) {
   <ul class="list-none p-0 m-0 mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -35,7 +45,7 @@
         </h3>
         <p *ngIf="link.link_description" class="m-0 italic">{{ link.link_description }}</p>
 
-        <p class="m-0 text-sm text-gray-500">
+        <p class="m-0 text-sm text-gray-500" [pTooltip]="link.domains.join(', ')">
           @if (link.domains.length === 1) {
             Associated with {{ link.domains[0] }}
           } @else {

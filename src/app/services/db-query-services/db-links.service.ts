@@ -71,14 +71,14 @@ export class LinkQueries {
     }
   }
   
-
   getAllLinks(): Observable<{
     groupedByDomain: Record<string, Link[]>;
     linksWithDomains: {
-      id: string;
+      id: string | null;
       link_name: string;
       link_url: string;
       link_description?: string;
+      link_ids: string[];
       domains: string[];
     }[];
   }> {
@@ -94,7 +94,7 @@ export class LinkQueries {
         `)
         .then(({ data, error }) => {
           if (error) throw error;
-
+  
           // Group links by domain
           const groupedByDomain = data.reduce((acc: Record<string, Link[]>, link: any) => {
             const domainName = link.domains?.domain_name || 'Unknown Domain';
@@ -107,52 +107,56 @@ export class LinkQueries {
             });
             return acc;
           }, {});
-
-          // Aggregate domains for each unique link grouped by link_url
+  
+          // Aggregate domains and link IDs for each unique link grouped by link_url
           const linkDomains = data.reduce(
             (
               acc: Record<
                 string,
                 {
-                  id: string;
                   link_name: string;
                   link_url: string;
                   link_description?: string;
+                  link_ids: Set<string>;
                   domains: Set<string>;
                 }
               >,
-              link: any,
+              link: any
             ) => {
               const key = link.link_url; // Group by link_url
               if (!acc[key]) {
                 acc[key] = {
-                  id: link.id, // Assign the first ID encountered for the link group
                   link_name: link.link_name,
                   link_url: link.link_url,
                   link_description: link.link_description,
+                  link_ids: new Set(),
                   domains: new Set(),
                 };
               }
-              if (link.domains?.domain_name) acc[key].domains.add(link.domains.domain_name);
+              acc[key].link_ids.add(link.id); // Add the link ID
+              if (link.domains?.domain_name) acc[key].domains.add(link.domains.domain_name); // Add the domain
               return acc;
             },
-            {},
+            {}
           );
-
+  
+          // Map aggregated data into the required format
           const linksWithDomains = Object.values(linkDomains).map(
-            ({ id, link_name, link_url, link_description, domains }) => ({
-              id, // Include the ID for editing purposes
+            ({ link_name, link_url, link_description, link_ids, domains }) => ({
+              id: null,
               link_name,
               link_url,
               link_description,
-              domains: Array.from(domains),
-            }),
+              link_ids: Array.from(link_ids), // Convert link_ids set to array
+              domains: Array.from(domains), // Convert domains set to array
+            })
           );
-
+  
           return { groupedByDomain, linksWithDomains };
-        }),
+        })
     ).pipe(catchError((error) => this.handleError(error)));
   }
+  
 
   addLinkToDomains(linkData: {
     link_name?: string;
@@ -202,7 +206,7 @@ export class LinkQueries {
   }
 
   updateLinkInDomains(
-    linkId: string,
+    linkIds: string | string[],
     linkData: {
       link_name?: string;
       link_url?: string;
@@ -211,11 +215,16 @@ export class LinkQueries {
     },
   ): Observable<void> {
     const { link_name, link_url, link_description, domains } = linkData;
-
+  
+    // Normalize linkIds to always be an array
+    const linkIdsArray = Array.isArray(linkIds) ? linkIds : [linkIds];
+  
     return this.listDomainNames().pipe(
       switchMap((availableDomains) => {
+        // Filter valid domains that exist in the database
         const validDomains = (domains || []).filter((domain) => availableDomains.includes(domain));
-
+  
+        // Fetch domain IDs for valid domains
         return from(
           this.supabase.from('domains').select('id, domain_name').in('domain_name', validDomains),
         ).pipe(
@@ -225,74 +234,80 @@ export class LinkQueries {
           }),
         );
       }),
-      switchMap((domainIds: string[]) => {
+      switchMap(async (domainIds: string[]) => {
         if (domainIds.length === 0) {
           throw new Error('No valid domains found to associate with the link.');
         }
-
-        return from(
-          this.supabase
-            .from('domain_links')
-            .update({
-              link_name,
-              link_url,
-              link_description,
-            })
-            .eq('id', linkId),
-        ).pipe(
-          map(({ error }) => {
-            if (error) throw error;
-            return domainIds;
-          }),
-        );
-      }),
-      switchMap(async (domainIds: string[]) => {
-        const { data: existingLinks, error } = await this.supabase
-          .from('domain_links')
-          .select('domain_id')
-          .eq('id', linkId);
-
-        if (error) throw error;
-
-        const existingDomainIds = existingLinks?.map((link) => link.domain_id) || [];
-
-        const domainsToAdd = domainIds.filter((id) => !existingDomainIds.includes(id));
-        const domainsToRemove = existingDomainIds.filter((id) => !domainIds.includes(id));
-
-        const tasks: Promise<any>[] = [];
-
-        // Add new domain associations
-        if (domainsToAdd.length > 0) {
+  
+        const tasks: PromiseLike<any>[] = [];
+  
+        for (const linkId of linkIdsArray) {
+          // Update link metadata
           tasks.push(
-            Promise.resolve(
+            this.supabase
+              .from('domain_links')
+              .update({ link_name, link_url, link_description })
+              .eq('id', linkId)
+              .then(({ error }) => {
+                if (error) throw error;
+              }),
+          );
+  
+          // Fetch existing domain associations for the link
+          const { data: existingLinks, error } = await this.supabase
+            .from('domain_links')
+            .select('domain_id')
+            .eq('id', linkId);
+  
+          if (error) throw error;
+  
+          const existingDomainIds = existingLinks?.map((link) => link.domain_id) || [];
+          const domainsToAdd = domainIds.filter((id) => !existingDomainIds.includes(id));
+          const domainsToRemove = existingDomainIds.filter((id) => !domainIds.includes(id));
+  
+          // Add new domain associations
+          if (domainsToAdd.length > 0) {
+            tasks.push(
               this.supabase
                 .from('domain_links')
-                .insert(domainsToAdd.map((domainId) => ({ id: linkId, domain_id: domainId }))),
-            ).then(({ error }) => {
-              if (error) throw error;
-            }),
-          );
-        }
+                .insert(
+                  domainsToAdd.map((domainId) => ({
+                    id: linkId,
+                    domain_id: domainId,
+                    link_name,
+                    link_url,
+                    link_description,
+                  })),
+                )
+                .then(({ error }) => {
+                  if (error) throw error;
+                }),
+            );
+          }
 
-        // Remove old domain associations
-        if (domainsToRemove.length > 0) {
-          tasks.push(
-            Promise.resolve(
+          // Remove old domain associations
+          if (domainsToRemove.length > 0) {
+            tasks.push(
               this.supabase
                 .from('domain_links')
                 .delete()
                 .eq('id', linkId)
-                .in('domain_id', domainsToRemove),
-            ).then(({ error }) => {
-              if (error) throw error;
-            }),
-          );
+                .in('domain_id', domainsToRemove)
+                .then(({ error }) => {
+                  if (error) throw error;
+                }),
+            );
+          }
         }
-
+  
+        // Execute all tasks in parallel
         await Promise.all(tasks);
       }),
-      map(() => void 0),
+      map(() => void 0), // Ensure Observable<void>
       catchError((error) => this.handleError(error)),
     );
   }
+  
+  
+  
 }

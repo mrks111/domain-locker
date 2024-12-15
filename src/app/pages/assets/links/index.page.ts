@@ -10,7 +10,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { DomainFaviconComponent } from '@components/misc/favicon.component';
 import { LinkDialogComponent, LinkDialogData } from '@components/misc/edit-link.component';
 import { ContextMenu } from 'primeng/contextmenu';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService } from 'primeng/dynamicdialog';
 
 type DisplayBy = 'all-links' | 'by-domain';
 
@@ -36,7 +36,7 @@ export default class LinksIndexPageComponent implements OnInit {
 
   // For the right-click context menu
   @ViewChild('menu') menu: ContextMenu | undefined;
-  selectedLink: Link | null = null;
+  selectedLink: Link | any | null = null;
   public contextMenuItems: MenuItem[] = [];
 
   constructor(
@@ -61,7 +61,7 @@ export default class LinksIndexPageComponent implements OnInit {
   }
 
   openLink() {
-    console.log('Open Link', this.selectedLink);
+    window.open(this.selectedLink.link_url, '_blank');
   }
   deleteLink() {}
   showEditLink() {
@@ -76,10 +76,7 @@ export default class LinksIndexPageComponent implements OnInit {
     this.loading = true;
     this.databaseService.linkQueries.getAllLinks().subscribe({
       next: (links) => {
-        console.log(links);
         this.links = links;
-        // this.links = tags.map(tag => ({ ...tag, domainCount: 0 }));
-        // this.loadDomainCounts();
       },
       error: (error) => {
         this.errorHandlerService.handleError({
@@ -103,7 +100,7 @@ export default class LinksIndexPageComponent implements OnInit {
   }
 
   
-  openLinkDialog(link: Link | null = null): void {
+  openLinkDialog(link: Link | any | null = null): void {
     const ref = this.dialogService.open(LinkDialogComponent, {
       header: link ? 'Edit Link' : 'Add New Link',
       data: { link, isEdit: !!link },
@@ -115,7 +112,7 @@ export default class LinksIndexPageComponent implements OnInit {
       if (result) {
         if (link) {
           // Handle edit logic
-          this.updateLink(link.id, result);
+          this.updateLink(link.link_ids, result);
         } else {
           // Handle add logic
           this.addLink(result);
