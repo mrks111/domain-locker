@@ -307,7 +307,20 @@ export class LinkQueries {
       catchError((error) => this.handleError(error)),
     );
   }
-  
-  
-  
+
+  deleteLinks(linkIds: string | string[]): Observable<void> {
+    const ids = Array.isArray(linkIds) ? linkIds : [linkIds];
+    return from(
+      this.supabase
+        .from('domain_links')
+        .delete()
+        .in('id', ids) // Use 'in' to delete multiple IDs
+    ).pipe(
+      map(({ error }) => {
+        if (error) throw error;
+      }),
+      catchError((error) => this.handleError(error))
+    );
+  }
+   
 }

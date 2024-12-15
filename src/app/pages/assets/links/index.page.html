@@ -9,7 +9,7 @@
       optionLabel="label" 
       optionValue="value"
     />
-    <p-button icon="pi pi-plus" label="Add Link" />
+    <p-button icon="pi pi-plus" label="Add Link" (click)="addNewLink()" />
   </div>
 </div>
 
@@ -81,4 +81,5 @@
   </div>
 }
 
+<p-confirmDialog />
 <!-- <p-contextMenu [target]="domainCard" [model]="contextMenuItems" /> -->

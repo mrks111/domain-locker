@@ -55,7 +55,7 @@ export default class LinksIndexPageComponent implements OnInit {
       { label: 'Open Link', icon: 'pi pi-external-link', command: () => this.openLink() },
       { label: 'Edit Link', icon: 'pi pi-pencil', command: () => this.showEditLink() },
       { label: 'Linked Domains', icon: 'pi pi-check-square', command: () => this.showEditLink() },
-      { label: 'Delete Link', icon: 'pi pi-trash', command: () => this.deleteLink() },
+      { label: 'Delete Link', icon: 'pi pi-trash', command: () => this.confirmDelete() },
       { label: 'Add New Link', icon: 'pi pi-plus', command: () => this.addNewLink() },
     ];
   }
@@ -63,14 +63,36 @@ export default class LinksIndexPageComponent implements OnInit {
   openLink() {
     window.open(this.selectedLink.link_url, '_blank');
   }
-  deleteLink() {}
+  
   showEditLink() {
     this.openLinkDialog(this.selectedLink);
   }
+
   addNewLink() {
     this.openLinkDialog(null);
   }
-  
+
+  deleteLink(): void {
+    const linkIds = this.selectedLink.id || this.selectedLink.link_ids;
+    this.databaseService.linkQueries.deleteLinks(linkIds).subscribe({
+      next: () => {
+        this.loadLinks(); // Refresh the list after deletion
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Link deleted successfully!',
+        });
+      },
+      error: (error) => {
+        this.errorHandlerService.handleError({
+          error,
+          message: 'Failed to delete the link.',
+          showToast: true,
+          location: 'LinksIndexPageComponent.deleteLink',
+        });
+      },
+    });
+  }  
 
   loadLinks() {
     this.loading = true;
@@ -120,7 +142,24 @@ export default class LinksIndexPageComponent implements OnInit {
       }
     });
   }
-  
+
+  confirmDelete(): void {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete the link "${this.selectedLink.link_name}"?`,
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.deleteLink(); // Proceed with deletion
+      },
+      reject: () => {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Cancelled',
+          detail: 'Deletion cancelled',
+        });
+      },
+    });
+  }
 
   private updateLink(linkId: string, linkData: LinkDialogData): void {
     this.databaseService.linkQueries.updateLinkInDomains(linkId, linkData).subscribe({
