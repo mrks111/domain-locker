@@ -30,7 +30,7 @@ export class NotificationsListComponent implements OnInit {
     const limit = this.isInModal ? this.rowsPerPage : undefined;
     const offset = page * this.rowsPerPage;
 
-    this.databaseService.getUserNotifications(limit, offset).subscribe(
+    this.databaseService.notificationQueries.getUserNotifications(limit, offset).subscribe(
       ({ notifications, total }) => {
         this.notifications = notifications;
         if (this.isInModal) this.notifications = this.sortByUnreadFirst(this.notifications);
@@ -55,7 +55,7 @@ export class NotificationsListComponent implements OnInit {
   }
 
   markAsRead(notificationId: string) {
-    this.databaseService.markNotificationReadStatus(notificationId, true).subscribe(() => {
+    this.databaseService.notificationQueries.markNotificationReadStatus(notificationId, true).subscribe(() => {
       const notification = this.notifications.find((n) => n.id === notificationId);
       if (notification) notification.read = true;
       this.updateUnreadCount();
@@ -63,7 +63,7 @@ export class NotificationsListComponent implements OnInit {
   }
 
   markAsUnread(notificationId: string) {
-    this.databaseService.markNotificationReadStatus(notificationId, false).subscribe(() => {
+    this.databaseService.notificationQueries.markNotificationReadStatus(notificationId, false).subscribe(() => {
       const notification = this.notifications.find((n) => n.id === notificationId);
       if (notification) notification.read = false;
       this.updateUnreadCount();
@@ -71,7 +71,7 @@ export class NotificationsListComponent implements OnInit {
   }
 
   async markAllAsRead(read = true) {
-    (await this.databaseService.markAllNotificationsRead(read)).subscribe(() => {
+    (await this.databaseService.notificationQueries.markAllNotificationsRead(read)).subscribe(() => {
       this.notifications.forEach((notification) => (notification.read = read));
       this.updateUnreadCount();
       this.cdr.detectChanges();

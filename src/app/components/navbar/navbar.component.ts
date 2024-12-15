@@ -119,7 +119,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   }
 
   loadUnreadNotificationCount() {
-    this.databaseService.getUnreadNotificationCount().subscribe(
+    this.databaseService.notificationQueries.getUnreadNotificationCount().subscribe(
       (count) => this.unreadNotificationsCount = count,
     );
   }

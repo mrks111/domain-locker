@@ -6,6 +6,7 @@ import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { LinkQueries } from '@/app/services/db-query-services/db-links.service';
 import { TagQueries } from '@/app/services/db-query-services/db-tags.service';
+import { NotificationQueries } from '@/app/services/db-query-services/db-notifications.service';
 
 export interface DomainExpiration {
   domain: string;
@@ -19,6 +20,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
 
   public linkQueries: LinkQueries;
   public tagQueries: TagQueries;
+  public notificationQueries: NotificationQueries;
 
   constructor(
     private supabase: SupabaseService,
@@ -31,6 +33,11 @@ export default class SupabaseDatabaseService extends DatabaseService {
       this.listDomainNames.bind(this),
     );
     this.tagQueries = new TagQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+      this.getCurrentUser.bind(this),
+    );
+    this.notificationQueries = new NotificationQueries(
       this.supabase.supabase,
       this.handleError.bind(this),
       this.getCurrentUser.bind(this),
@@ -1359,174 +1366,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
           : Promise.resolve();
 
         return forkJoin([from(addDomains), from(removeDomains)]).pipe(map(() => {}));
-      })
-    );
-  }
-
-  // Fetch notification preferences for the logged-in user
-  async getNotificationChannels() {
-    const { data, error } = await this.supabase.supabase
-      .from('user_info')
-      .select('notification_channels')
-      .single();
-
-    if (error) {
-      console.error('Error fetching preferences:', error);
-      throw error;
-    }
-    return data?.notification_channels || null;
-  }
-
-  // Update notification preferences for the logged-in user
-  async updateNotificationChannels(preferences: any) {
-    const userId = await this.supabase.getCurrentUser().then(user => user?.id);
-
-    const { error } = await this.supabase.supabase
-      .from('user_info')
-      .upsert(
-        {
-          user_id: userId,
-          notification_channels: preferences,
-        },
-        { onConflict: 'user_id' }
-      );
-
-    if (error) {
-      console.error('Error updating preferences:', error);
-      throw error;
-    }
-    return true;
-  }
-
-  getNotificationPreferences(): Observable<{ domain_id: string; notification_type: string; is_enabled: boolean }[]> {
-    return from(this.supabase.supabase.from('notification_preferences').select('domain_id, notification_type, is_enabled')).pipe(
-      map(({ data, error }) => {
-        if (error) {
-          console.error('Error fetching notification preferences:', error);
-          throw error;
-        }
-        return data;
-      }),
-      catchError((error) => {
-        console.error('Error in getNotificationPreferences:', error);
-        return of([]);
-      })
-    );
-  }
-  
-
-  updateBulkNotificationPreferences(preferences: { domain_id: string; notification_type: string; is_enabled: boolean }[]): Observable<void> {
-    const updates = preferences.map(pref =>
-      this.supabase.supabase
-        .from('notification_preferences')
-        .upsert({
-          domain_id: pref.domain_id,
-          notification_type: pref.notification_type,
-          is_enabled: pref.is_enabled,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'domain_id,notification_type' })
-    );
-  
-    return forkJoin(updates).pipe(
-      map(() => undefined), // Return void type after all updates
-      catchError(error => {
-        console.error('Error in updateBulkNotificationPreferences:', error);
-        throw error;
-      })
-    );
-  }
-  
-  
-  getUserNotifications(limit?: number, offset = 0): Observable<{ notifications: (Notification & { domain_name: string })[]; total: number }> {
-    const query = this.supabase.supabase
-      .from('notifications')
-      .select(`
-        id,
-        change_type,
-        message,
-        sent,
-        read,
-        created_at,
-        domain_id,
-        domains ( domain_name )
-      `, { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .limit(limit || 25)
-      .range(offset, offset + (limit || 25));
-  
-    return from(query).pipe(
-      map(({ data, count, error }) => {
-        if (error) {
-          console.error('Error fetching notifications:', error);
-          throw error;
-        }
-        
-        const notifications = (data || []).map((notification): Notification & { domain_name: string } => ({
-          id: notification.id,
-          domainId: notification.domain_id,
-          change_type: notification.change_type,
-          message: notification.message,
-          sent: notification.sent,
-          read: notification.read,
-          created_at: notification.created_at,
-          domain_name: ((notification.domains as unknown) as { domain_name: string }).domain_name
-        }));
-        
-        return { notifications, total: count || 0 };
-      }),
-      catchError((error) => {
-        console.error('Error in getUserNotifications:', error);
-        return of({ notifications: [], total: 0 });
-      })
-    );
-  }
-  
-  
-  async markAllNotificationsRead(read = true): Promise<Observable<void>> {
-    const userId = await this.supabase.getCurrentUser().then(user => user?.id);
-    return from(
-      this.supabase.supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('user_id', userId)
-    ).pipe(
-      map(({ error }) => {
-        if (error) {
-          console.error('Error marking all notifications as read:', error);
-          throw error;
-        }
-      })
-    );
-  }  
-
-  markNotificationReadStatus(notificationId: string, readStatus: boolean): Observable<void> {
-    return from(
-      this.supabase.supabase
-        .from('notifications')
-        .update({ read: readStatus })
-        .eq('id', notificationId)
-    ).pipe(
-      map(() => void 0)
-    );
-  }
-
-  getUnreadNotificationCount(): Observable<number> {
-    return from(
-      this.supabase.supabase
-        .from('notifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('read', false)
-    ).pipe(
-      map(({ count, error }) => {
-        if (error) {
-          console.error('Error fetching unread notifications count:', error);
-          return 0;
-        }
-        return count || 0;
-      }),
-      catchError((error) => {
-        console.error('Error in getUnreadNotificationCount:', error);
-        return of(0);
       })
     );
   }

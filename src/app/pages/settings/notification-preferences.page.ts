@@ -173,7 +173,7 @@ export default class NotificationPreferencesPage implements OnInit {
   private async loadNotificationPreferences() {
     const userEmail = (await this.supabaseService.getCurrentUser())?.email || '';
     try {
-      const preferences = await this.databaseService.getNotificationChannels();
+      const preferences = await this.databaseService.notificationQueries.getNotificationChannels();
 
       if (preferences) {
         this.notificationForm.patchValue(preferences);
@@ -249,7 +249,7 @@ export default class NotificationPreferencesPage implements OnInit {
     });
 
     if (isValid) {
-      this.databaseService.updateNotificationChannels(this.notificationForm.value)
+      this.databaseService.notificationQueries.updateNotificationChannels(this.notificationForm.value)
         .then(() => {
           this.globalMessageService.showMessage({
             severity: 'success',
