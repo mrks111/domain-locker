@@ -8,7 +8,9 @@ import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { TagEditorComponent } from '@/app/components/forms/tag-editor/tag-editor.component';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { DomainFaviconComponent } from '@components/misc/favicon.component';
+import { LinkDialogComponent, LinkDialogData } from '@components/misc/edit-link.component';
 import { ContextMenu } from 'primeng/contextmenu';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 type DisplayBy = 'all-links' | 'by-domain';
 
@@ -16,8 +18,9 @@ type DisplayBy = 'all-links' | 'by-domain';
 @Component({
   standalone: true,
   selector: 'app-tags-index',
-  imports: [CommonModule, RouterModule, PrimeNgModule, TagEditorComponent, DomainFaviconComponent],
+  imports: [CommonModule, RouterModule, PrimeNgModule, TagEditorComponent, DomainFaviconComponent, LinkDialogComponent],
   templateUrl: './index.page.html',
+  providers: [DialogService],
   // styleUrl: './tags.scss'
 })
 export default class LinksIndexPageComponent implements OnInit {
@@ -42,6 +45,7 @@ export default class LinksIndexPageComponent implements OnInit {
     private errorHandlerService: ErrorHandlerService,
     private router: Router,
     private confirmationService: ConfirmationService,
+    private dialogService: DialogService,
   ) {}
 
   ngOnInit() {
@@ -60,8 +64,12 @@ export default class LinksIndexPageComponent implements OnInit {
     console.log('Open Link', this.selectedLink);
   }
   deleteLink() {}
-  showEditLink() {}
-  addNewLink() {}
+  showEditLink() {
+    this.openLinkDialog(this.selectedLink);
+  }
+  addNewLink() {
+    this.openLinkDialog(null);
+  }
   
 
   loadLinks() {
@@ -94,5 +102,70 @@ export default class LinksIndexPageComponent implements OnInit {
     event.preventDefault();
   }
 
+  
+  openLinkDialog(link: Link | null = null): void {
+    const ref = this.dialogService.open(LinkDialogComponent, {
+      header: link ? 'Edit Link' : 'Add New Link',
+      data: { link, isEdit: !!link },
+      width: '50%',
+      height: '36rem',
+    });
+  
+    ref.onClose.subscribe((result: LinkDialogData | null) => {
+      if (result) {
+        if (link) {
+          // Handle edit logic
+          this.updateLink(link.id, result);
+        } else {
+          // Handle add logic
+          this.addLink(result);
+        }
+      }
+    });
+  }
+  
 
+  private updateLink(linkId: string, linkData: LinkDialogData): void {
+    this.databaseService.updateLinkInDomains(linkId, linkData).subscribe({
+      next: () => {
+        this.loadLinks(); // Reload the links to reflect the updates
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Link updated successfully!',
+        });
+      },
+      error: (error) => {
+        this.errorHandlerService.handleError({
+          error,
+          message: 'Failed to update the link.',
+          showToast: true,
+          location: 'LinksIndexPageComponent.updateLink',
+        });
+      },
+    });
+  }  
+
+
+  private addLink(linkData: LinkDialogData): void {
+    this.databaseService.addLinkToDomains(linkData).subscribe({
+      next: () => {
+        this.loadLinks(); // Reload the links to reflect the addition
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Link added successfully!',
+        });
+      },
+      error: (error) => {
+        this.errorHandlerService.handleError({
+          error,
+          message: 'Failed to add the link.',
+          showToast: true,
+          location: 'LinksIndexPageComponent.addLink',
+        });
+      },
+    });
+  }
+  
 }
