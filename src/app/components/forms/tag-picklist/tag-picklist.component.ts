@@ -35,7 +35,7 @@ export class TagPickListComponent implements OnInit {
 
   // Load domains already associated with the tag and all available domains
   private loadDomainsForTag(tagId: string) {
-    this.databaseService.getDomainsForTag(tagId).subscribe({
+    this.databaseService.tagQueries.getDomainsForTag(tagId).subscribe({
       next: ({ available, selected }) => {
         const selectedDomainIds = selected.map(domain => domain.id);
         this.availableDomains = available.filter(domain => !selectedDomainIds.includes(domain.id));
@@ -62,7 +62,7 @@ export class TagPickListComponent implements OnInit {
       });
       return;
     }
-    this.databaseService.saveDomainsForTag(this.tagId, this.selectedDomains).subscribe({
+    this.databaseService.tagQueries.saveDomainsForTag(this.tagId, this.selectedDomains).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',

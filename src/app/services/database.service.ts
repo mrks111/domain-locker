@@ -102,7 +102,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
     await Promise.all([
       this.saveIpAddresses(insertedDomain.id, ipAddresses),
       this.tagQueries.saveTags(insertedDomain.id, tags),
-      this.saveNotifications(insertedDomain.id, notifications),
+      this.notificationQueries.saveNotifications(insertedDomain.id, notifications),
       this.saveDnsRecords(insertedDomain.id, dns),
       this.saveSslInfo(insertedDomain.id, ssl),
       this.saveWhoisInfo(insertedDomain.id, whois),
@@ -352,25 +352,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
     if (error) throw error;
   }
   
-
-  private async saveNotifications(domainId: string, notifications: { type: string; isEnabled: boolean }[]): Promise<void> {
-    if (notifications.length === 0) return;
-
-    const dbNotifications = notifications.map(n => ({
-      domain_id: domainId,
-      notification_type: n.type,
-      is_enabled: n.isEnabled
-    }));
-
-    const { error } = await this.supabase.supabase
-      .from('notification_preferences')
-      .insert(dbNotifications);
-
-    if (error) throw error;
-  }
-
-  
-
   getDomain(domainName: string): Observable<DbDomain> {
     return from(this.supabase.supabase
       .from('domains')
@@ -1277,99 +1258,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
-  createTag(tag: Tag): Observable<any> {
-    return from(
-      this.supabase.getCurrentUser().then((user) => {
-        if (!user) throw new Error('User must be authenticated to create a tag.');
-        return this.supabase.supabase
-          .from('tags')
-          .insert([{
-            name: tag.name,
-            color: tag.color || null,
-            icon: tag.icon || null,
-            description: tag.description || null,
-            user_id: user.id,
-          }])
-          .single();
-      })
-    );
-  }  
-  
-  updateTag(tag: any): Observable<void> {
-    return from(
-      this.supabase.supabase
-        .from('tags')
-        .update({
-          name: tag.name,
-          color: tag.color || null, 
-          description: tag.description || null,
-          icon: tag.icon || null
-        })
-        .eq('name', tag.name)
-    ).pipe(
-      map(({ error }) => {
-        if (error) {
-          throw error;
-        }
-      }),
-      catchError((error) => {
-        console.error('Error updating tag:', error);
-        return throwError(() => new Error('Failed to update tag.'));
-      })
-    );
-  }
-
-   // Fetch all available domains and the selected domains for a given tag
-   getDomainsForTag(tagId: string): Observable<{ available: any[]; selected: any[] }> {
-    return forkJoin({
-      available: from(
-        this.supabase.supabase
-          .from('domains')
-          .select('*')
-      ).pipe(map(({ data }) => data || [])),
-
-      selected: from(
-        this.supabase.supabase
-          .from('domain_tags')
-          .select('domains (domain_name, id)')
-          .eq('tag_id', tagId)
-      ).pipe(map(({ data }) => (data || []).map((d) => d.domains))),
-    });
-  }
-
-  // Save domains associated with a tag
-  saveDomainsForTag(tagId: string, selectedDomains: any[]): Observable<void> {
-    // Fetch existing associations first
-    return from(
-      this.supabase.supabase
-        .from('domain_tags')
-        .select('domain_id')
-        .eq('tag_id', tagId)
-    ).pipe(
-      map(({ data }) => data?.map((item: any) => item.domain_id) || []),
-      switchMap((existingDomains: string[]) => {
-        // Identify domains to add and remove
-        const domainIdsToAdd = selectedDomains
-          .filter(domain => !existingDomains.includes(domain.id))
-          .map(domain => ({ domain_id: domain.id, tag_id: tagId }));
-
-        const domainIdsToRemove = existingDomains
-          .filter(domainId => !selectedDomains.some(domain => domain.id === domainId));
-
-        // Perform insert and delete operations
-        const addDomains = domainIdsToAdd.length
-          ? this.supabase.supabase.from('domain_tags').insert(domainIdsToAdd)
-          : Promise.resolve();
-
-        const removeDomains = domainIdsToRemove.length
-          ? this.supabase.supabase.from('domain_tags').delete().in('domain_id', domainIdsToRemove).eq('tag_id', tagId)
-          : Promise.resolve();
-
-        return forkJoin([from(addDomains), from(removeDomains)]).pipe(map(() => {}));
-      })
-    );
-  }
-
     /**
    * Fetch domain uptime data for the given user and domain.
    * @param userId The ID of the user
@@ -1384,6 +1272,4 @@ export default class SupabaseDatabaseService extends DatabaseService {
       });
     }
 
-
-    
 }

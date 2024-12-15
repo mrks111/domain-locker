@@ -9,7 +9,24 @@ export class NotificationQueries {
     private getCurrentUser: () => Promise<User | null>,
   ) {}
 
+
   
+  async saveNotifications(domainId: string, notifications: { type: string; isEnabled: boolean }[]): Promise<void> {
+    if (notifications.length === 0) return;
+
+    const dbNotifications = notifications.map(n => ({
+      domain_id: domainId,
+      notification_type: n.type,
+      is_enabled: n.isEnabled
+    }));
+
+    const { error } = await this.supabase
+      .from('notification_preferences')
+      .insert(dbNotifications);
+
+    if (error) throw error;
+  }
+
   // Fetch notification preferences for the logged-in user
   async getNotificationChannels() {
     const { data, error } = await this.supabase
