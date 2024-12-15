@@ -36,7 +36,7 @@ export default class EditDomainValuePage implements OnInit {
     this.databaseService.listDomains().subscribe({
       next: (domains) => {
         // Fetch domain costings and merge with domains
-        this.databaseService.getDomainCostings().subscribe({
+        this.databaseService.valuationQueries.getDomainCostings().subscribe({
           next: (costings) => {
             // Populate costings or default to 0.0 if not present
             this.domains = domains.map((domain) => {
@@ -87,7 +87,7 @@ export default class EditDomainValuePage implements OnInit {
       auto_renew: domain.auto_renew,
     }));
 
-    this.databaseService.updateDomainCostings(updates).subscribe({
+    this.databaseService.valuationQueries.updateDomainCostings(updates).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',

@@ -98,7 +98,7 @@ export class TagGridComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
       rejectButtonStyleClass: 'p-button-secondary p-button-sm',
       accept: () => {
-        this.databaseService.deleteTag(this.selectedTag.tag_id).subscribe({
+        this.databaseService.tagQueries.deleteTag(this.selectedTag.tag_id).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',

@@ -1,5 +1,5 @@
 import { SupabaseClient, User } from '@supabase/supabase-js';
-import { catchError, forkJoin, from, map, Observable, switchMap } from 'rxjs';
+import { catchError, concatMap, forkJoin, from, map, Observable, switchMap } from 'rxjs';
 import { Tag } from '@/types/Database';
 
 export class TagQueries {
@@ -223,6 +223,26 @@ export class TagQueries {
     });
   }
 
+  deleteTag(id: string): Observable<void> {
+    return from(this.supabase
+      .from('domain_tags')
+      .delete()
+      .eq('tag_id', id)
+    ).pipe(
+      concatMap(() => 
+        this.supabase
+          .from('tags')
+          .delete()
+          .eq('id', id)
+      ),
+      map(({ error }) => {
+        if (error) throw error;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }  
+
+
   // Save domains associated with a tag
   saveDomainsForTag(tagId: string, selectedDomains: any[]): Observable<void> {
     // Fetch existing associations first
@@ -256,5 +276,25 @@ export class TagQueries {
     );
   }
 
+  
+  getDomainCountsByTag(): Observable<Record<string, number>> {
+    return from(this.supabase
+      .from('domain_tags')
+      .select('tags(name), domain_id', { count: 'exact' })
+      .select('domain_id')
+      .select('tags(name)')
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        const counts: Record<string, number> = {};
+        data.forEach((item: any) => {
+          const tagName = item.tags?.name;
+          counts[tagName] = (counts[tagName] || 0) + 1;
+        });
+        return counts;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
 
 }

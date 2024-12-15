@@ -56,7 +56,7 @@ export default class ValuationPageComponent implements OnInit {
     this.loading = true;
     this.databaseService.listDomains().subscribe({
       next: (domains) => {
-        this.databaseService.getDomainCostings().subscribe({
+        this.databaseService.valuationQueries.getDomainCostings().subscribe({
           next: (costings) => {
             // Populate costings or default to 0.0 if not present
             this.domains = domains.map((domain) => {

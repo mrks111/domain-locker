@@ -43,7 +43,7 @@ export class TagEditorComponent {
   }
 
   private createTag() {
-    this.databaseService.createTag(this.tag).subscribe({
+    this.databaseService.tagQueries.createTag(this.tag).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',

@@ -38,7 +38,7 @@ export class DomainValuationChartComponent implements OnInit {
   }
 
   loadDomainCostings(): void {
-    this.databaseService.getDomainCostings().subscribe(
+    this.databaseService.valuationQueries.getDomainCostings().subscribe(
       (domains) => {
         const autoRenewData: DomainCostingPoints = [] as DomainCostingPoints;
         const noAutoRenewData: DomainCostingPoints = [] as DomainCostingPoints;

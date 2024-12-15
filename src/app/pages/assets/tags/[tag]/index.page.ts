@@ -104,7 +104,7 @@ export default class TagDomainsPageComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
       rejectButtonStyleClass: 'p-button-secondary p-button-sm',
       accept: () => {
-        this.databaseService.deleteTag(this.tag.id).subscribe({
+        this.databaseService.tagQueries.deleteTag(this.tag.id).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',

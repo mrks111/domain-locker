@@ -9,8 +9,6 @@ export class NotificationQueries {
     private getCurrentUser: () => Promise<User | null>,
   ) {}
 
-
-  
   async saveNotifications(domainId: string, notifications: { type: string; isEnabled: boolean }[]): Promise<void> {
     if (notifications.length === 0) return;
 
@@ -194,4 +192,84 @@ export class NotificationQueries {
       })
     );
   }
+
+
+  /**
+   * NOTIFICATION PREFERENCES 
+   */
+  
+  
+  addNotification(notification: Omit<Notification, 'id' | 'created_at' | 'updated_at'>): Observable<Notification> {
+    return from(this.supabase
+      .from('notification_preferences')
+      .insert(notification)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('Failed to add notification');
+        return data as Notification;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  updateNotification(id: string, notification: Partial<Notification>): Observable<Notification> {
+    return from(this.supabase
+      .from('notification_preferences')
+      .update(notification)
+      .eq('id', id)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        if (!data) throw new Error('Notification not found');
+        return data as Notification;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  deleteNotification(id: string): Observable<void> {
+    return from(this.supabase
+      .from('notification_preferences')
+      .delete()
+      .eq('id', id)
+    ).pipe(
+      map(({ error }) => {
+        if (error) throw error;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+  
+  // Method to update notifications
+  async updateNotificationTypes(domainId: string, notifications: { notification_type: string; is_enabled: boolean }[]): Promise<void> {
+    for (const notification of notifications) {
+      const { data: existingNotification, error: notificationError } = await this.supabase
+        .from('notification_preferences')
+        .select('id')
+        .eq('domain_id', domainId)
+        .eq('notification_type', notification.notification_type)
+        .single();
+  
+      if (existingNotification) {
+        await this.supabase
+          .from('notification_preferences')
+          .update({ is_enabled: notification.is_enabled })
+          .eq('domain_id', domainId)
+          .eq('notification_type', notification.notification_type);
+      } else {
+        await this.supabase
+          .from('notification_preferences')
+          .insert({
+            domain_id: domainId,
+            notification_type: notification.notification_type,
+            is_enabled: notification.is_enabled
+          });
+      }
+    }
+  }
+
 }

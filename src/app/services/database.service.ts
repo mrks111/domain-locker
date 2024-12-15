@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
-import { SupabaseService } from './supabase.service';
-import { DatabaseService, DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host, Link } from '@/types/Database';
-import { catchError, from, map, Observable, throwError, retry, forkJoin, switchMap, of, concatMap } from 'rxjs';
+import { SupabaseService } from '@/app/services/supabase.service';
+import { DatabaseService, DbDomain, IpAddress, SaveDomainData, Registrar, Host } from '@/types/Database';
+import { catchError, from, map, Observable, throwError, retry } from 'rxjs';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+
+// Database queries grouped by functionality into sub-services
 import { LinkQueries } from '@/app/services/db-query-services/db-links.service';
 import { TagQueries } from '@/app/services/db-query-services/db-tags.service';
 import { NotificationQueries } from '@/app/services/db-query-services/db-notifications.service';
+import { HistoryQueries } from '@/app/services/db-query-services/db-history.service';
+import { ValuationQueries } from '@/app/services/db-query-services/db-valuations.service';
 
 export interface DomainExpiration {
   domain: string;
@@ -21,6 +25,8 @@ export default class SupabaseDatabaseService extends DatabaseService {
   public linkQueries: LinkQueries;
   public tagQueries: TagQueries;
   public notificationQueries: NotificationQueries;
+  public historyQueries: HistoryQueries;
+  public valuationQueries: ValuationQueries;
 
   constructor(
     private supabase: SupabaseService,
@@ -42,6 +48,14 @@ export default class SupabaseDatabaseService extends DatabaseService {
       this.handleError.bind(this),
       this.getCurrentUser.bind(this),
     );
+    this.historyQueries = new HistoryQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+    );
+    this.valuationQueries = new ValuationQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+    );
   }
 
   private handleError(error: any): Observable<never> {
@@ -51,7 +65,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       location: 'database.service',
       showToast: false,
     });
-    return throwError(() => new Error('An error occurred while processing your request.'));
+    return throwError(() => error || new Error('An error occurred while processing your request.'));
   }
 
   async getCurrentUser() {
@@ -455,7 +469,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
     await this.tagQueries.updateTags(domainId, tags);
 
     // Handle notifications
-    await this.updateNotificationTypes(domainId, notifications);
+    await this.notificationQueries.updateNotificationTypes(domainId, notifications);
 
     // Handle subdomains
     await this.updateSubdomains(domainId, subdomains);
@@ -523,36 +537,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       if (deleteError) throw deleteError;
     }
   }
-
-  
-  // Method to update notifications
-  private async updateNotificationTypes(domainId: string, notifications: { notification_type: string; is_enabled: boolean }[]): Promise<void> {
-    for (const notification of notifications) {
-      const { data: existingNotification, error: notificationError } = await this.supabase.supabase
-        .from('notification_preferences')
-        .select('id')
-        .eq('domain_id', domainId)
-        .eq('notification_type', notification.notification_type)
-        .single();
-  
-      if (existingNotification) {
-        await this.supabase.supabase
-          .from('notification_preferences')
-          .update({ is_enabled: notification.is_enabled })
-          .eq('domain_id', domainId)
-          .eq('notification_type', notification.notification_type);
-      } else {
-        await this.supabase.supabase
-          .from('notification_preferences')
-          .insert({
-            domain_id: domainId,
-            notification_type: notification.notification_type,
-            is_enabled: notification.is_enabled
-          });
-      }
-    }
-  }
-  
+ 
   addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'created_at' | 'updated_at'>): Observable<IpAddress> {
     return from(this.supabase.supabase
       .from('ip_addresses')
@@ -681,139 +666,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
       map(({ data, error }) => {
         if (error) throw error;
         return data.map(domain => this.formatDomainData(domain));
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-   // Get all domains with costings info
-   getDomainCostings(): Observable<any[]> {
-    return from(this.supabase.supabase
-      .from('domain_costings')
-      .select(`
-        domain_id, 
-        purchase_price, 
-        current_value, 
-        renewal_cost, 
-        auto_renew, 
-        domains (
-          domain_name, 
-          expiry_date, 
-          registrar_id, 
-          registrars (name)
-        )
-      `)
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-  
-        return data.map((item: any) => ({
-          domain_id: item.domain_id,
-          domain_name: item.domains?.domain_name,
-          expiry_date: item.domains?.expiry_date,
-          registrar: item.domains?.registrars?.name,
-          purchase_price: item.purchase_price,
-          current_value: item.current_value,
-          renewal_cost: item.renewal_cost,
-          auto_renew: item.auto_renew
-        }));
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }  
-
-  // Update costings for all edited domains
-  updateDomainCostings(updates: any[]): Observable<void> {
-    return from(
-      this.supabase.supabase
-        .from('domain_costings')
-        .upsert(updates, { onConflict: 'domain_id' }) // Use the unique constraint on domain_id
-        .then((response) => {
-          if (response.error) {
-            throw response.error;
-          }
-        })
-    );
-  }  
-
-  deleteTag(id: string): Observable<void> {
-    return from(this.supabase.supabase
-      .from('domain_tags')
-      .delete()
-      .eq('tag_id', id)
-    ).pipe(
-      concatMap(() => 
-        this.supabase.supabase
-          .from('tags')
-          .delete()
-          .eq('id', id)
-      ),
-      map(({ error }) => {
-        if (error) throw error;
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }  
-
-  addNotification(notification: Omit<Notification, 'id' | 'created_at' | 'updated_at'>): Observable<Notification> {
-    return from(this.supabase.supabase
-      .from('notification_preferences')
-      .insert(notification)
-      .single()
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        if (!data) throw new Error('Failed to add notification');
-        return data as Notification;
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  updateNotification(id: string, notification: Partial<Notification>): Observable<Notification> {
-    return from(this.supabase.supabase
-      .from('notification_preferences')
-      .update(notification)
-      .eq('id', id)
-      .single()
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        if (!data) throw new Error('Notification not found');
-        return data as Notification;
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  deleteNotification(id: string): Observable<void> {
-    return from(this.supabase.supabase
-      .from('notification_preferences')
-      .delete()
-      .eq('id', id)
-    ).pipe(
-      map(({ error }) => {
-        if (error) throw error;
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  getDomainCountsByTag(): Observable<Record<string, number>> {
-    return from(this.supabase.supabase
-      .from('domain_tags')
-      .select('tags(name), domain_id', { count: 'exact' })
-      .select('domain_id')
-      .select('tags(name)')
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        const counts: Record<string, number> = {};
-        data.forEach((item: any) => {
-          const tagName = item.tags?.name;
-          counts[tagName] = (counts[tagName] || 0) + 1;
-        });
-        return counts;
       }),
       catchError(error => this.handleError(error))
     );
@@ -1089,66 +941,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
   
-  getDomainUpdates(domainName?: string, start: number = 0, end: number = 24, category?: string, changeType?: string, filterDomain?: string): Observable<any[]> {
-    let query = this.supabase.supabase
-      .from('domain_updates')
-      .select(`
-        *,
-        domains!inner(domain_name)
-      `)
-      .order('date', { ascending: false })
-      .range(start, end);
-  
-    if (domainName) {
-      query = query.eq('domains.domain_name', domainName);
-    }
-    if (category) {
-      query = query.eq('change', category);
-    }
-    if (changeType) {
-      query = query.eq('change_type', changeType);
-    }
-    if (filterDomain) {
-      query = query.ilike('domains.domain_name', `%${filterDomain}%`);
-    }
-  
-    return from(query).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data;
-      }),
-      catchError((error) => {
-        console.error('Error fetching domain updates:', error);
-        return of([]);
-      })
-    );
-  }
-  
-  
-  
-  getTotalUpdateCount(domainName?: string): Observable<number> {
-    let query = this.supabase.supabase
-      .from('domain_updates')
-      .select('id', { count: 'exact' });
-  
-    if (domainName) {
-      query = this.supabase.supabase
-        .from('domain_updates')
-        .select('id, domains!inner(domain_name)', { count: 'exact' })
-        .eq('domains.domain_name', domainName);
-    }
-  
-    return from(query.then(({ count, error }) => {
-      if (error) throw error;
-      return count || 0;
-    })).pipe(
-      catchError(error => {
-        console.error('Error fetching total update count:', error);
-        return of(0);
-      })
-    );
-  }
-  
   fetchAllForExport(domainName: string, includeFields: {label: string, value: string}[]): Observable<any[]> {
     const fieldMap: { [key: string]: string } = {
       domain_statuses: 'domain_statuses(status_code)',
@@ -1215,49 +1007,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
   
-  getChangeHistory(domainName?: string, days: number = 7): Observable<any[]> {
-    let query = this.supabase.supabase
-      .from('domain_updates')
-      .select('change_type, date')
-      .gte('date', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
-  
-    if (domainName) {
-      query = query.eq('domains.domain_name', domainName);
-    }
-  
-    return from(query).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-  
-        // Process data to group by date and change_type
-        const historyMap: Record<string, { added: number, removed: number, updated: number }> = {};
-  
-        data.forEach((entry: { date: string, change_type: string }) => {
-          const date = new Date(entry.date).toISOString().split('T')[0]; // Extract day
-          if (!historyMap[date]) {
-            historyMap[date] = { added: 0, removed: 0, updated: 0 };
-          }
-          if (entry.change_type === 'added') {
-            historyMap[date].added += 1;
-          } else if (entry.change_type === 'removed') {
-            historyMap[date].removed += 1;
-          } else {
-            historyMap[date].updated += 1;
-          }
-        });
-  
-        return Object.entries(historyMap).map(([date, counts]) => ({
-          date,
-          ...counts,
-        }));
-      }),
-      catchError((error) => {
-        console.error('Error fetching change history:', error);
-        return of([]);
-      })
-    );
-  }
-
     /**
    * Fetch domain uptime data for the given user and domain.
    * @param userId The ID of the user

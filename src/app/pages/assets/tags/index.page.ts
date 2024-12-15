@@ -50,7 +50,7 @@ export default class TagsIndexPageComponent implements OnInit {
   }
 
   loadDomainCounts() {
-    this.databaseService.getDomainCountsByTag().subscribe({
+    this.databaseService.tagQueries.getDomainCountsByTag().subscribe({
       next: (counts) => {
         this.tags = this.tags.map(tag => ({
           ...tag,
@@ -91,7 +91,7 @@ export default class TagsIndexPageComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
       rejectButtonStyleClass: 'p-button-secondary p-button-sm',
       accept: () => {
-        this.databaseService.deleteTag(tag.id).subscribe({
+        this.databaseService.tagQueries.deleteTag(tag.id).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
