@@ -64,7 +64,7 @@ export class DomainTagCloudComponent implements OnInit, OnDestroy {
 
   loadTagsWithCounts(): void {
     this.loading = true;
-    const sub = this.databaseService.getTagsWithDomainCounts().pipe(
+    const sub = this.databaseService.tagQueries.getTagsWithDomainCounts().pipe(
       debounceTime(300) // Debounce incoming data
     ).subscribe({
       next: (tagsWithCounts) => {

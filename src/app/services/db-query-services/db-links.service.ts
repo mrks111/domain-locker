@@ -9,6 +9,69 @@ export class LinkQueries {
     private listDomainNames: () => Observable<string[]>,
   ) {}
 
+
+  async updateLinks(domainId: string, links: Link[]): Promise<void> {
+    // Get existing links from the database
+    const { data: existingData, error } = await this.supabase
+      .from('domain_links')
+      .select('id, link_name, link_url, link_description')
+      .eq('domain_id', domainId);
+  
+    if (error) throw error;
+  
+    const existingLinks = existingData || [];
+  
+    // Determine which links to add, update, and delete
+    const linksToAdd = links.filter(newLink =>
+      !existingLinks.some(existingLink => 
+        existingLink.link_name === newLink.link_name && existingLink.link_url === newLink.link_url)
+    );
+    
+    const linksToRemove = existingLinks.filter(existingLink =>
+      !links.some(newLink => 
+        newLink.link_name === existingLink.link_name && newLink.link_url === existingLink.link_url)
+    );
+    
+    const linksToUpdate = links.filter(newLink =>
+      existingLinks.some(existingLink =>
+        existingLink.link_name === newLink.link_name &&
+        (existingLink.link_url !== newLink.link_url || existingLink.link_description !== newLink.link_description)
+      )
+    );
+  
+    // Add new links
+    if (linksToAdd.length > 0) {
+      const { error: insertError } = await this.supabase
+        .from('domain_links')
+        .insert(linksToAdd.map(link => ({ ...link, domain_id: domainId })));
+      if (insertError) throw insertError;
+    }
+  
+    // Update modified links
+    for (const link of linksToUpdate) {
+      const { error: updateError } = await this.supabase
+        .from('domain_links')
+        .update({
+          link_url: link.link_url,
+          link_description: link.link_description,
+        })
+        .eq('domain_id', domainId)
+        .eq('link_name', link.link_name);
+      if (updateError) throw updateError;
+    }
+  
+    // Remove old links
+    if (linksToRemove.length > 0) {
+      const { error: deleteError } = await this.supabase
+        .from('domain_links')
+        .delete()
+        .eq('domain_id', domainId)
+        .in('link_name', linksToRemove.map(link => link.link_name));
+      if (deleteError) throw deleteError;
+    }
+  }
+  
+
   getAllLinks(): Observable<{
     groupedByDomain: Record<string, Link[]>;
     linksWithDomains: {

@@ -32,7 +32,7 @@ export default class TagsIndexPageComponent implements OnInit {
 
   loadTags() {
     this.loading = true;
-    this.databaseService.getTags().subscribe({
+    this.databaseService.tagQueries.getTags().subscribe({
       next: (tags) => {
         this.tags = tags.map(tag => ({ ...tag, domainCount: 0 }));
         this.loadDomainCounts();

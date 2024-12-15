@@ -46,7 +46,7 @@ export default class TagDomainsPageComponent implements OnInit {
 
   loadTag() {
     this.loading = true;
-    this.databaseService.getTag(this.tagName).subscribe({
+    this.databaseService.tagQueries.getTag(this.tagName).subscribe({
       next: (tag) => {
         this.tag = tag;
         if (tag.icon && !tag.icon.includes('/')) {

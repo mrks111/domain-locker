@@ -36,7 +36,7 @@ export class TagGridComponent implements OnInit {
 
   loadTagsWithCounts() {
     this.loading = true;
-    this.databaseService.getTagsWithDomainCounts().subscribe({
+    this.databaseService.tagQueries.getTagsWithDomainCounts().subscribe({
       next: (tagsWithCounts) => {
         this.tags = tagsWithCounts;
         this.loading = false;
