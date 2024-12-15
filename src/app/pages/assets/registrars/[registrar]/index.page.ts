@@ -52,7 +52,7 @@ export default class RegistrarDomainsPageComponent implements OnInit {
 
   loadDomains() {
     this.loading = true;
-    this.databaseService.getDomainsByRegistrar(this.registrarName).subscribe({
+    this.databaseService.registrarQueries.getDomainsByRegistrar(this.registrarName).subscribe({
       next: (domains) => {
         this.domains = domains;
         this.loading = false;

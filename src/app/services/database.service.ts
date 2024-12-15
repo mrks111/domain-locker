@@ -11,6 +11,14 @@ import { TagQueries } from '@/app/services/db-query-services/db-tags.service';
 import { NotificationQueries } from '@/app/services/db-query-services/db-notifications.service';
 import { HistoryQueries } from '@/app/services/db-query-services/db-history.service';
 import { ValuationQueries } from '@/app/services/db-query-services/db-valuations.service';
+import { RegistrarQueries } from '@/app/services/db-query-services/db-registrars.service';
+import { DnsQueries } from '@/app/services/db-query-services/db-dns.service';
+import { HostsQueries } from '@/app/services/db-query-services/db-hosts.service';
+import { IpQueries } from '@/app/services/db-query-services/db-ips.service';
+import { SslQueries } from '@/app/services/db-query-services/db-ssl.service';
+import { WhoisQueries } from '@/app/services/db-query-services/db-whois.service';
+import { StatusQueries } from '@/app/services/db-query-services/db-statuses.service';
+import { SubdomainsQueries } from '@/app/services/db-query-services/db-subdomains.service';
 
 export interface DomainExpiration {
   domain: string;
@@ -27,6 +35,14 @@ export default class SupabaseDatabaseService extends DatabaseService {
   public notificationQueries: NotificationQueries;
   public historyQueries: HistoryQueries;
   public valuationQueries: ValuationQueries;
+  public registrarQueries: RegistrarQueries;
+  public dnsQueries: DnsQueries;
+  public hostsQueries: HostsQueries;
+  public ipQueries: IpQueries;
+  public sslQueries: SslQueries;
+  public whoisQueries: WhoisQueries;
+  public statusQueries: StatusQueries;
+  public subdomainsQueries: SubdomainsQueries;
 
   constructor(
     private supabase: SupabaseService,
@@ -55,6 +71,49 @@ export default class SupabaseDatabaseService extends DatabaseService {
     this.valuationQueries = new ValuationQueries(
       this.supabase.supabase,
       this.handleError.bind(this),
+    );
+    this.registrarQueries = new RegistrarQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+      this.getCurrentUser.bind(this),
+      this.formatDomainData.bind(this),
+    );
+    this.dnsQueries = new DnsQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+      this.getCurrentUser.bind(this),
+    );
+    this.hostsQueries = new HostsQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+      this.formatDomainData.bind(this),
+    );
+    this.ipQueries = new IpQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+      this.getCurrentUser.bind(this),
+    );
+    this.sslQueries = new SslQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+      this.getCurrentUser.bind(this),
+      this.getFullDomainQuery.bind(this),
+      this.formatDomainData.bind(this),
+    );
+    this.whoisQueries = new WhoisQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+      this.getCurrentUser.bind(this),
+    );
+    this.statusQueries = new StatusQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+      this.getCurrentUser.bind(this),
+    );
+    this.subdomainsQueries = new SubdomainsQueries(
+      this.supabase.supabase,
+      this.handleError.bind(this),
+      this.getCurrentUser.bind(this),
     );
   }
 
@@ -114,29 +173,19 @@ export default class SupabaseDatabaseService extends DatabaseService {
     if (!insertedDomain) this.handleError(new Error('Failed to insert domain'));
   
     await Promise.all([
-      this.saveIpAddresses(insertedDomain.id, ipAddresses),
+      this.ipQueries.saveIpAddresses(insertedDomain.id, ipAddresses),
       this.tagQueries.saveTags(insertedDomain.id, tags),
       this.notificationQueries.saveNotifications(insertedDomain.id, notifications),
-      this.saveDnsRecords(insertedDomain.id, dns),
-      this.saveSslInfo(insertedDomain.id, ssl),
-      this.saveWhoisInfo(insertedDomain.id, whois),
-      this.saveRegistrar(insertedDomain.id, registrar),
-      this.saveHost(insertedDomain.id, host),
-      this.saveStatuses(insertedDomain.id, statuses),
-      this.saveSubdomains(insertedDomain.id, subdomains),
+      this.dnsQueries.saveDnsRecords(insertedDomain.id, dns),
+      this.sslQueries.saveSslInfo(insertedDomain.id, ssl),
+      this.whoisQueries.saveWhoisInfo(insertedDomain.id, whois),
+      this.registrarQueries.saveRegistrar(insertedDomain.id, registrar),
+      this.hostsQueries.saveHost(insertedDomain.id, host),
+      this.statusQueries.saveStatuses(insertedDomain.id, statuses),
+      this.subdomainsQueries.saveSubdomains(insertedDomain.id, subdomains),
     ]);
     return this.getDomainById(insertedDomain.id);
   }
-  
-  private async saveSubdomains(domainId: string, subdomains: string[]): Promise<void> {
-    if (!subdomains || subdomains.length === 0) return;
-    const formattedSubdomains = subdomains.map(name => ({ domain_id: domainId, name }));
-    const { error: subdomainError } = await this.supabase.supabase
-      .from('sub_domains')
-      .insert(formattedSubdomains);
-    if (subdomainError) this.handleError(subdomainError);
-  }
-  
 
   private async getDomainById(id: string): Promise<DbDomain> {
     const { data, error } = await this.supabase.supabase
@@ -178,194 +227,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
     );
   }
 
-  private async saveIpAddresses(domainId: string, ipAddresses: Omit<IpAddress, 'id' | 'domainId' | 'created_at' | 'updated_at'>[]): Promise<void> {
-    if (ipAddresses.length === 0) return;
-
-    const dbIpAddresses = ipAddresses.map(ip => ({
-      domain_id: domainId,
-      ip_address: ip.ipAddress,
-      is_ipv6: ip.isIpv6
-    }));
-
-    const { error } = await this.supabase.supabase
-      .from('ip_addresses')
-      .insert(dbIpAddresses);
-
-    if (error) throw error;
-  }
-
-  private async saveDnsRecords(domainId: string, dns: SaveDomainData['dns']): Promise<void> {
-    if (!dns) return;
-    const dnsRecords: { domain_id: string; record_type: string; record_value: string }[] = [];
-    
-    const recordTypes = ['mxRecords', 'txtRecords', 'nameServers'] as const;
-    const typeMap = { mxRecords: 'MX', txtRecords: 'TXT', nameServers: 'NS' };
-
-    recordTypes.forEach(type => {
-      dns[type]?.forEach(record => {
-        dnsRecords.push({ domain_id: domainId, record_type: typeMap[type], record_value: record });
-      });
-    });
-
-    if (dnsRecords.length > 0) {
-      const { error } = await this.supabase.supabase.from('dns_records').insert(dnsRecords);
-      if (error) throw error;
-    }
-  }
-
-  private async saveSslInfo(domainId: string, ssl: SaveDomainData['ssl']): Promise<void> {
-    if (!ssl) return;
-  
-    const sslData = {
-      domain_id: domainId,
-      issuer: ssl.issuer,
-      issuer_country: ssl.issuerCountry,
-      subject: ssl.subject,
-      valid_from: new Date(ssl.validFrom),
-      valid_to: new Date(ssl.validTo),
-      fingerprint: ssl.fingerprint,
-      key_size: ssl.keySize,
-      signature_algorithm: ssl.signatureAlgorithm
-    };
-  
-    const { error } = await this.supabase.supabase
-      .from('ssl_certificates')
-      .insert(sslData);
-  
-    if (error) throw error;
-  }
-
-  private async saveWhoisInfo(domainId: string, whois: SaveDomainData['whois']): Promise<void> {
-    if (!whois) return;
-
-    const whoisData = {
-      domain_id: domainId,
-      name: whois.name,
-      organization: whois.organization,
-      country: whois.country,
-      street: whois.street,
-      city: whois.city,
-      state: whois.stateProvince,
-      postal_code: whois.postalCode,
-    };
-  
-    const { error } = await this.supabase.supabase
-      .from('whois_info')
-      .insert(whoisData);
-  
-    if (error) throw error;
-  }
-
-  private async saveRegistrar(domainId: string, registrar: Omit<Registrar, 'id'>): Promise<void> {
-    if (!registrar?.name) return;
-  
-    const { data: existingRegistrar, error: fetchError } = await this.supabase.supabase
-      .from('registrars')
-      .select('id')
-      .eq('name', registrar.name)
-      .single();
-  
-    if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
-    let registrarId: string;
-
-    if (existingRegistrar) {
-      registrarId = existingRegistrar.id;
-    } else {
-      const { data: newRegistrar, error: insertError } = await this.supabase.supabase
-        .from('registrars')
-        .insert({ name: registrar['name'], url: registrar['url'] })
-        .select('id')
-        .single();
-  
-      if (insertError) throw insertError;
-      if (!newRegistrar) throw new Error('Failed to insert registrar');
-  
-      registrarId = newRegistrar.id;
-    }
-
-    const { error: updateError } = await this.supabase.supabase
-      .from('domains')
-      .update({ registrar_id: registrarId })
-      .eq('id', domainId);
-  
-    if (updateError) throw updateError;
-  }
-
-  private async saveHost(domainId: string, host?: Host): Promise<void> {
-    if (!host || !host?.isp) return;
-    // First, try to find an existing host with the same ISP
-    const { data: existingHost, error: fetchError } = await this.supabase.supabase
-      .from('hosts')
-      .select('id')
-      .eq('isp', host.isp)
-      .single();
-  
-    if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
-  
-    let hostId: string;
-  
-    if (existingHost) {
-      hostId = existingHost.id;
-      
-      // Update the existing host with the new information
-      const { error: updateError } = await this.supabase.supabase
-        .from('hosts')
-        .update({
-          ip: host.query,
-          lat: host.lat,
-          lon: host.lon,
-          org: host.org,
-          as_number: host.asNumber,
-          city: host.city,
-          region: host.region,
-          country: host.country
-        })
-        .eq('id', hostId);
-  
-      if (updateError) throw updateError;
-    } else {
-      // If no existing host found, insert a new one
-      const { data: newHost, error: insertError } = await this.supabase.supabase
-        .from('hosts')
-        .insert({
-          ip: host.query,
-          lat: host.lat,
-          lon: host.lon,
-          isp: host.isp,
-          org: host.org,
-          as_number: host.asNumber,
-          city: host.city,
-          region: host.region,
-          country: host.country
-        })
-        .select('id')
-        .single();
-  
-      if (insertError) throw insertError;
-      if (!newHost) throw new Error('Failed to insert host');
-      hostId = newHost.id;
-    }
-  
-    // Link the host to the domain
-    const { error: linkError } = await this.supabase.supabase
-      .from('domain_hosts')
-      .insert({ domain_id: domainId, host_id: hostId });
-  
-    if (linkError) throw linkError;
-  }
-
-  private async saveStatuses(domainId: string, statuses: string[]): Promise<void> {
-    if (!statuses || statuses.length === 0) return;
-    const statusEntries = statuses.map(status => ({
-      domain_id: domainId,
-      status_code: status,
-    }));
-    const { error } = await this.supabase.supabase
-      .from('domain_statuses')
-      .insert(statusEntries);
-    if (error) throw error;
-  }
-  
   getDomain(domainName: string): Observable<DbDomain> {
     return from(this.supabase.supabase
       .from('domains')
@@ -456,7 +317,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       .update({
         expiry_date: domain.expiry_date,
         notes: domain.notes,
-        registrar_id: await this.getOrInsertRegistrarId(domain.registrar)
+        registrar_id: await this.registrarQueries.getOrInsertRegistrarId(domain.registrar)
       })
       .eq('id', domainId)
       .select()
@@ -472,128 +333,14 @@ export default class SupabaseDatabaseService extends DatabaseService {
     await this.notificationQueries.updateNotificationTypes(domainId, notifications);
 
     // Handle subdomains
-    await this.updateSubdomains(domainId, subdomains);
+    await this.subdomainsQueries.updateSubdomains(domainId, subdomains);
 
     // Handle links
     await this.linkQueries.updateLinks(domainId, links);
 
     return this.getDomainById(domainId);
   }
-  
-  // Method to get or insert registrar by name
-  private async getOrInsertRegistrarId(registrarName: string): Promise<string> {
-    const { data: existingRegistrar, error: registrarError } = await this.supabase.supabase
-      .from('registrars')
-      .select('id')
-      .eq('name', registrarName)
-      .single();
-  
-    if (registrarError && registrarError.code !== 'PGRST116') throw registrarError;
-  
-    if (existingRegistrar) {
-      return existingRegistrar.id;
-    } else {
-      const { data: newRegistrar, error: insertError } = await this.supabase.supabase
-        .from('registrars')
-        .insert({ name: registrarName })
-        .select('id')
-        .single();
-  
-      if (insertError) throw insertError;
-      return newRegistrar.id;
-    }
-  }
-  
-  private async updateSubdomains(domainId: string, subdomains: string[]): Promise<void> {
-    // Get existing subdomains from the database
-    const { data: existingData, error } = await this.supabase.supabase
-      .from('sub_domains')
-      .select('name')
-      .eq('domain_id', domainId);
-
-    if (error) throw error;
-
-    const existingSubdomains = (existingData || []).map((sd: { name: string }) => sd.name);
-
-    // Determine which subdomains to add and remove
-    const subdomainsToAdd = subdomains.filter(sd => !existingSubdomains.includes(sd));
-    const subdomainsToRemove = existingSubdomains.filter(sd => !subdomains.includes(sd));
-
-    // Insert new subdomains
-    if (subdomainsToAdd.length > 0) {
-      const { error: insertError } = await this.supabase.supabase
-        .from('sub_domains')
-        .insert(subdomainsToAdd.map(name => ({ domain_id: domainId, name })));
-      if (insertError) throw insertError;
-    }
-
-    // Remove old subdomains
-    if (subdomainsToRemove.length > 0) {
-      const { error: deleteError } = await this.supabase.supabase
-        .from('sub_domains')
-        .delete()
-        .eq('domain_id', domainId)
-        .in('name', subdomainsToRemove);
-      if (deleteError) throw deleteError;
-    }
-  }
- 
-  addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'created_at' | 'updated_at'>): Observable<IpAddress> {
-    return from(this.supabase.supabase
-      .from('ip_addresses')
-      .insert(ipAddress)
-      .single()
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        if (!data) throw new Error('Failed to add IP address');
-        return data as IpAddress;
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  getIpAddresses(isIpv6: boolean): Observable<{ ip_address: string; domains: string[] }[]> {
-    return from(this.supabase.supabase
-      .rpc('get_ip_addresses_with_domains', { p_is_ipv6: isIpv6 })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data as { ip_address: string; domains: string[] }[];
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  updateIpAddress(id: string, ipAddress: Partial<IpAddress>): Observable<IpAddress> {
-    return from(this.supabase.supabase
-      .from('ip_addresses')
-      .update(ipAddress)
-      .eq('id', id)
-      .single()
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        if (!data) throw new Error('IP address not found');
-        return data as IpAddress;
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  deleteIpAddress(id: string): Observable<void> {
-    return from(this.supabase.supabase
-      .from('ip_addresses')
-      .delete()
-      .eq('id', id)
-    ).pipe(
-      map(({ error }) => {
-        if (error) throw error;
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
+    
   getStatusesWithDomainCounts(): Observable<{ eppCode: string; description: string; domainCount: number }[]> {
     return from(this.supabase.supabase
       .rpc('get_statuses_with_domain_counts')  // Use the updated RPC function
@@ -699,199 +446,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       catchError(error => this.handleError(error))
     );
   }
-
-  getRegistrars(): Observable<Registrar[]> {
-    return from(this.supabase.supabase
-      .from('registrars')
-      .select('*')
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data as Registrar[];
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  getDomainCountsByRegistrar(): Observable<Record<string, number>> {
-    return from(this.supabase.supabase
-      .from('domains')
-      .select('registrars(name), id', { count: 'exact' })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        const counts: Record<string, number> = {};
-        data.forEach((item: any) => {
-          const registrarName = item.registrars?.name;
-          if (registrarName) {
-            counts[registrarName] = (counts[registrarName] || 0) + 1;
-          }
-        });
-        return counts;
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
   
-  getDomainsByRegistrar(registrarName: string): Observable<DbDomain[]> {
-    return from(this.supabase.supabase
-      .from('domains')
-      .select(`
-        *,
-        registrars!inner (name, url),
-        ip_addresses (ip_address, is_ipv6),
-        ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
-        whois_info (name, organization, country, street, city, state, postal_code),
-        domain_hosts (
-          hosts (
-            ip, lat, lon, isp, org, as_number, city, region, country
-          )
-        ),
-        dns_records (record_type, record_value),
-        domain_tags (
-          tags (name)
-        )
-      `)
-      .eq('registrars.name', registrarName)
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data.map(domain => this.formatDomainData(domain));
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  getHosts(): Observable<Host[]> {
-    return from(this.supabase.supabase
-      .from('hosts')
-      .select('*')
-      .order('isp', { ascending: true })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data as Host[];
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  getDomainCountsByHost(): Observable<Record<string, number>> {
-    return from(this.supabase.supabase
-      .from('domain_hosts')
-      .select('hosts(isp), domain_id', { count: 'exact' })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        const counts: Record<string, number> = {};
-        data.forEach((item: any) => {
-          const isp = item.hosts?.isp;
-          if (isp) {
-            counts[isp] = (counts[isp] || 0) + 1;
-          }
-        });
-        return counts;
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  getDomainsByHost(hostIsp: string): Observable<DbDomain[]> {
-    return from(this.supabase.supabase
-      .from('domains')
-      .select(`
-        *,
-        registrars (name, url),
-        ip_addresses (ip_address, is_ipv6),
-        ssl_certificates (issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm),
-        whois_info (name, organization, country, street, city, state, postal_code),
-        domain_hosts!inner (
-          hosts!inner (
-            ip, lat, lon, isp, org, as_number, city, region, country
-          )
-        ),
-        dns_records (record_type, record_value),
-        domain_tags (
-          tags (name)
-        )
-      `)
-      .eq('domain_hosts.hosts.isp', hostIsp)
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data.map(domain => this.formatDomainData(domain));
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  getHostsWithDomainCounts(): Observable<(Host & { domain_count: number })[]> {
-    return from(this.supabase.supabase
-      .from('hosts')
-      .select(`
-        *,
-        domain_hosts (domain_id),
-        domains!inner(user_id)
-      `)
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data.map(host => ({
-          ...host,
-          domain_count: host.domain_hosts.length,
-        }));
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-  
-  getSslIssuersWithDomainCounts(): Observable<{ issuer: string; domain_count: number }[]> {
-    return from(this.supabase.supabase
-      .rpc('get_ssl_issuers_with_domain_counts')
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data as { issuer: string; domain_count: number }[];
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  getDomainsBySslIssuer(issuer: string): Observable<DbDomain[]> {
-    return from(this.supabase.supabase
-      .from('domains')
-      .select(this.getFullDomainQuery())
-      .eq('ssl_certificates.issuer', issuer)
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data.map(domain => this.formatDomainData(domain));
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
-  getDnsRecords(recordType: string): Observable<any[]> {
-    return from(this.supabase.supabase
-      .from('dns_records')
-      .select(`
-        record_value,
-        domains (domain_name)
-      `)
-      .eq('record_type', recordType)
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) throw error;
-        return data.map(record => ({
-          record_value: record.record_value,
-          // @ts-ignore: Check if record.domains is an object, and handle accordingly
-          domains: record.domains ? [record.domains.domain_name] : []
-        }));
-      }),
-      catchError(error => this.handleError(error))
-    );
-  }
-
   getDomainExpirations(): Observable<DomainExpiration[]> {
     return from(this.supabase.supabase
       .from('domains')

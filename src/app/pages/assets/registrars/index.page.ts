@@ -28,7 +28,7 @@ export default class RegistrarsIndexPageComponent implements OnInit {
 
   loadRegistrars() {
     this.loading = true;
-    this.databaseService.getRegistrars().subscribe({
+    this.databaseService.registrarQueries.getRegistrars().subscribe({
       next: (registrars) => {
         this.registrars = registrars.map(registrar => ({ ...registrar, domainCount: 0 }));
         this.loadDomainCounts();
@@ -46,7 +46,7 @@ export default class RegistrarsIndexPageComponent implements OnInit {
   }
 
   loadDomainCounts() {
-    this.databaseService.getDomainCountsByRegistrar().subscribe({
+    this.databaseService.registrarQueries.getDomainCountsByRegistrar().subscribe({
       next: (counts) => {
         this.registrars = this.registrars.map(registrar => ({
           ...registrar,

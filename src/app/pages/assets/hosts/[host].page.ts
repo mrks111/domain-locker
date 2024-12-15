@@ -41,7 +41,7 @@ export default class HostDomainsPageComponent implements OnInit {
 
   loadDomains() {
     this.loading = true;
-    this.databaseService.getDomainsByHost(this.hostIsp).subscribe({
+    this.databaseService.hostsQueries.getDomainsByHost(this.hostIsp).subscribe({
       next: (domains) => {
         this.domains = domains;
         this.loading = false;

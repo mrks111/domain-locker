@@ -47,7 +47,7 @@ export default class SslIssuersIndexPageComponent implements OnInit {
 
   loadSslIssuers() {
     this.loading = true;
-    this.databaseService.getSslIssuersWithDomainCounts().subscribe({
+    this.databaseService.sslQueries.getSslIssuersWithDomainCounts().subscribe({
       next: (issuers) => {
         this.sslIssuers = issuers.map(issuer => ({
           issuer: issuer.issuer,

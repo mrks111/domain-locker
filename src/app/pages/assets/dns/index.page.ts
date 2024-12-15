@@ -47,7 +47,7 @@ export default class DnsRecordsPageComponent implements OnInit {
   loadDnsRecords() {
     this.loadingTxt = this.loadingNs = this.loadingMx = true;
 
-    this.databaseService.getDnsRecords('TXT').subscribe({
+    this.databaseService.dnsQueries.getDnsRecords('TXT').subscribe({
       next: (records) => {
         this.txtRecords = records;
         this.txtDomains = this.groupByDomain(records);
@@ -56,7 +56,7 @@ export default class DnsRecordsPageComponent implements OnInit {
       error: () => this.handleError('TXT'),
     });
 
-    this.databaseService.getDnsRecords('NS').subscribe({
+    this.databaseService.dnsQueries.getDnsRecords('NS').subscribe({
       next: (records) => {
         this.nsRecords = records;
         this.nsDomains = this.groupByDomain(records);
@@ -65,7 +65,7 @@ export default class DnsRecordsPageComponent implements OnInit {
       error: () => this.handleError('NS'),
     });
 
-    this.databaseService.getDnsRecords('MX').subscribe({
+    this.databaseService.dnsQueries.getDnsRecords('MX').subscribe({
       next: (records) => {
         this.mxRecords = records;
         this.mxDomains = this.groupByDomain(records);
