@@ -74,7 +74,7 @@ export default class LinksIndexPageComponent implements OnInit {
 
   loadLinks() {
     this.loading = true;
-    this.databaseService.getAllLinks().subscribe({
+    this.databaseService.linkQueries.getAllLinks().subscribe({
       next: (links) => {
         console.log(links);
         this.links = links;
@@ -126,7 +126,7 @@ export default class LinksIndexPageComponent implements OnInit {
   
 
   private updateLink(linkId: string, linkData: LinkDialogData): void {
-    this.databaseService.updateLinkInDomains(linkId, linkData).subscribe({
+    this.databaseService.linkQueries.updateLinkInDomains(linkId, linkData).subscribe({
       next: () => {
         this.loadLinks(); // Reload the links to reflect the updates
         this.messageService.add({
@@ -148,7 +148,7 @@ export default class LinksIndexPageComponent implements OnInit {
 
 
   private addLink(linkData: LinkDialogData): void {
-    this.databaseService.addLinkToDomains(linkData).subscribe({
+    this.databaseService.linkQueries.addLinkToDomains(linkData).subscribe({
       next: () => {
         this.loadLinks(); // Reload the links to reflect the addition
         this.messageService.add({

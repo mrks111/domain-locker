@@ -102,6 +102,7 @@ export interface Host {
 }
 
 export interface Link {
+  id: string;
   link_url: string;
   link_name: string;
   link_description?: string;
