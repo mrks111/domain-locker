@@ -199,8 +199,8 @@ export default defineEventHandler(async (event) => {
         street: whoisData.registrantStreet || dunno,
         city: whoisData.registrantCity || dunno,
         country: whoisData.registrantCountry || dunno,
-        stateProvince: whoisData.registrantStateProvince || dunno,
-        postalCode: whoisData.registrantPostalCode || dunno,
+        state: whoisData.registrantStateProvince || dunno,
+        postal_code: whoisData.registrantPostalCode || dunno,
       },
       abuse: {
         email: whoisData.abuseContactEmail || whoisData.registrarAbuseContactEmail || dunno,
