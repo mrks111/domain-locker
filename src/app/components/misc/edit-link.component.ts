@@ -8,6 +8,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { Observable } from 'rxjs';
 
 export interface LinkDialogData {
+  link_ids?: string[];
   id?: string;
   link_name?: string;
   link_url?: string;

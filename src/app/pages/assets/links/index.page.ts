@@ -161,8 +161,8 @@ export default class LinksIndexPageComponent implements OnInit {
     });
   }
 
-  private updateLink(linkId: string, linkData: LinkDialogData): void {
-    this.databaseService.linkQueries.updateLinkInDomains(linkId, linkData).subscribe({
+  private updateLink(linkId: string, linkData: any): void {
+    this.databaseService.linkQueries.updateLinkInDomains(linkData).subscribe({
       next: () => {
         this.loadLinks(); // Reload the links to reflect the updates
         this.messageService.add({
