@@ -45,11 +45,11 @@
         </h3>
         <p *ngIf="link.link_description" class="m-0 italic">{{ link.link_description }}</p>
 
-        <p class="m-0 text-sm text-gray-500" [pTooltip]="link.domains.join(', ')">
-          @if (link.domains.length === 1) {
+        <p class="m-0 text-sm text-gray-500" [pTooltip]="link.domains?.join(', ')">
+          @if (link.domains && link.domains.length === 1) {
             Associated with {{ link.domains[0] }}
           } @else {
-            Associated with {{ link.domains.length }} domains
+            Associated with {{ link.domains?.length }} domains
           }
         </p>
       </a>

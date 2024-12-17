@@ -8,11 +8,22 @@ import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { TagEditorComponent } from '@/app/components/forms/tag-editor/tag-editor.component';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { DomainFaviconComponent } from '@components/misc/favicon.component';
-import { LinkDialogComponent, LinkDialogData } from '@components/misc/edit-link.component';
+import { LinkDialogComponent } from '@components/misc/edit-link.component';
 import { ContextMenu } from 'primeng/contextmenu';
 import { DialogService } from 'primeng/dynamicdialog';
 
 type DisplayBy = 'all-links' | 'by-domain';
+
+export interface ModifiedLink extends Omit<Link, 'id'> {
+  id?: string;
+  link_ids?: string[];
+  domains?: string[];
+}
+
+export interface LinkResponse {
+  groupedByDomain: Record<string, ModifiedLink[]>;
+  linksWithDomains: ModifiedLink[];
+}
 
 
 @Component({
@@ -25,7 +36,7 @@ type DisplayBy = 'all-links' | 'by-domain';
 })
 export default class LinksIndexPageComponent implements OnInit {
   
-  links: any;
+  links!: LinkResponse;
   loading: boolean = true;
 
   displayBy: DisplayBy = 'all-links';
@@ -36,7 +47,7 @@ export default class LinksIndexPageComponent implements OnInit {
 
   // For the right-click context menu
   @ViewChild('menu') menu: ContextMenu | undefined;
-  selectedLink: Link | any | null = null;
+  selectedLink: ModifiedLink | null = null;
   public contextMenuItems: MenuItem[] = [];
 
   constructor(
@@ -61,7 +72,9 @@ export default class LinksIndexPageComponent implements OnInit {
   }
 
   openLink() {
-    window.open(this.selectedLink.link_url, '_blank');
+    if (this.selectedLink) {
+      window.open(this.selectedLink.link_url, '_blank');
+    }
   }
   
   showEditLink() {
@@ -73,7 +86,9 @@ export default class LinksIndexPageComponent implements OnInit {
   }
 
   deleteLink(): void {
+    if (!this.selectedLink) return;
     const linkIds = this.selectedLink.id || this.selectedLink.link_ids;
+    if (!linkIds) return;
     this.databaseService.linkQueries.deleteLinks(linkIds).subscribe({
       next: () => {
         this.loadLinks(); // Refresh the list after deletion
@@ -99,6 +114,7 @@ export default class LinksIndexPageComponent implements OnInit {
     this.databaseService.linkQueries.getAllLinks().subscribe({
       next: (links) => {
         this.links = links;
+        console.log(links);
       },
       error: (error) => {
         this.errorHandlerService.handleError({
@@ -112,7 +128,7 @@ export default class LinksIndexPageComponent implements OnInit {
     });
   }
 
-  onRightClick(event: MouseEvent, link: Link) {
+  onRightClick(event: MouseEvent, link: ModifiedLink) {
     console.log(link);
     this.selectedLink = link;
     if (this.menu) {
@@ -122,7 +138,7 @@ export default class LinksIndexPageComponent implements OnInit {
   }
 
   
-  openLinkDialog(link: Link | any | null = null): void {
+  openLinkDialog(link: ModifiedLink | null = null): void {
     const ref = this.dialogService.open(LinkDialogComponent, {
       header: link ? 'Edit Link' : 'Add New Link',
       data: { link, isEdit: !!link },
@@ -130,11 +146,11 @@ export default class LinksIndexPageComponent implements OnInit {
       height: '36rem',
     });
   
-    ref.onClose.subscribe((result: LinkDialogData | null) => {
+    ref.onClose.subscribe((result: ModifiedLink | null) => {
       if (result) {
-        if (link) {
+        if (link && link.id) {
           // Handle edit logic
-          this.updateLink(link.link_ids, result);
+          this.updateLink(link.id, result);
         } else {
           // Handle add logic
           this.addLink(result);
@@ -145,7 +161,7 @@ export default class LinksIndexPageComponent implements OnInit {
 
   confirmDelete(): void {
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete the link "${this.selectedLink.link_name}"?`,
+      message: `Are you sure you want to delete the link "${this.selectedLink?.link_name}"?`,
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
@@ -161,7 +177,7 @@ export default class LinksIndexPageComponent implements OnInit {
     });
   }
 
-  private updateLink(linkId: string, linkData: any): void {
+  private updateLink(linkId: string, linkData: ModifiedLink): void {
     this.databaseService.linkQueries.updateLinkInDomains(linkData).subscribe({
       next: () => {
         this.loadLinks(); // Reload the links to reflect the updates
@@ -183,7 +199,7 @@ export default class LinksIndexPageComponent implements OnInit {
   }  
 
 
-  private addLink(linkData: LinkDialogData): void {
+  private addLink(linkData: ModifiedLink): void {
     this.databaseService.linkQueries.addLinkToDomains(linkData).subscribe({
       next: () => {
         this.loadLinks(); // Reload the links to reflect the addition

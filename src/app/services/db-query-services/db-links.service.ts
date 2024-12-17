@@ -1,6 +1,7 @@
 import { SupabaseClient, User } from '@supabase/supabase-js';
 import { catchError, from, map, Observable, switchMap } from 'rxjs';
 import { Link } from '@/types/Database';
+import { LinkResponse, ModifiedLink } from '@/app/pages/assets/links/index.page';
 
 export class LinkQueries {
   constructor(
@@ -71,17 +72,7 @@ export class LinkQueries {
     }
   }
   
-  getAllLinks(): Observable<{
-    groupedByDomain: Record<string, Link[]>;
-    linksWithDomains: {
-      id: string | null;
-      link_name: string;
-      link_url: string;
-      link_description?: string;
-      link_ids: string[];
-      domains: string[];
-    }[];
-  }> {
+  getAllLinks(): Observable<LinkResponse> {
     return from(
       this.supabase
         .from('domain_links')
@@ -143,7 +134,7 @@ export class LinkQueries {
           // Map aggregated data into the required format
           const linksWithDomains = Object.values(linkDomains).map(
             ({ link_name, link_url, link_description, link_ids, domains }) => ({
-              id: null,
+              id: undefined,
               link_name,
               link_url,
               link_description,
@@ -206,13 +197,7 @@ export class LinkQueries {
   }
 
   updateLinkInDomains(
-    linkData: {
-      link_ids: string[]; // Array of IDs for existing links
-      link_name?: string;
-      link_url?: string;
-      link_description?: string;
-      domains?: string[];
-    },
+    linkData: ModifiedLink,
   ): Observable<void> {
     const { link_ids, link_name, link_url, link_description, domains } = linkData;
     console.log(linkData);
@@ -236,6 +221,7 @@ export class LinkQueries {
         );
       }),
       switchMap(async (domainData) => {
+        if (!link_ids) return;
         const { data: existingLinks, error } = await this.supabase
           .from('domain_links')
           .select('id, domain_id')

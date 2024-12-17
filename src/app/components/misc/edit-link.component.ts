@@ -6,15 +6,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@/app/services/database.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { Observable } from 'rxjs';
-
-export interface LinkDialogData {
-  link_ids?: string[];
-  id?: string;
-  link_name?: string;
-  link_url?: string;
-  link_description?: string;
-  domains?: string[];
-}
+import { ModifiedLink } from '@/app/pages/assets/links/index.page';
 
 @Component({
   standalone: true,
@@ -28,7 +20,7 @@ export class LinkDialogComponent implements OnInit {
   visible = true;
 
   isEdit: boolean;
-  link: LinkDialogData | null;
+  link: ModifiedLink | null;
 
   constructor(
     private fb: FormBuilder,
