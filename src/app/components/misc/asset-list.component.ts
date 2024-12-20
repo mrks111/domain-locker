@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { DlIconComponent } from '@components/misc/svg-icon.component';
 import DatabaseService from '@services/database.service';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 interface Asset {
   title: string;
@@ -62,12 +63,14 @@ export default class AssetListComponent implements OnInit {
     { title: 'SSL Certificates', link: '/assets/certs', icon: 'ssl' },
     { title: 'Hosts', link: '/assets/hosts', icon: 'host' },
     { title: 'DNS Records', link: '/assets/dns', icon: 'dns', viewBox: '0 0 620 512' },
-    { title: 'Tags', link: '/assets/tags', icon: 'tags' }
+    { title: 'Tags', link: '/assets/tags', icon: 'tags' },
+    { title: 'Links', link: '/assets/links', icon: 'links' },
   ];
 
   constructor(
     private databaseService: DatabaseService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private errorHandlerService: ErrorHandlerService,
   ) {}
 
   ngOnInit() {
@@ -86,7 +89,7 @@ export default class AssetListComponent implements OnInit {
             asset.count = count;
           });
         },
-        error => console.error(`Error fetching count for ${asset.title}:`, error)
+        error => this.errorHandlerService.handleError({ error, message: `Error fetching count for ${asset.title}:` })
       );
     });
   }
