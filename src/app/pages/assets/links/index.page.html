@@ -8,6 +8,7 @@
       [(ngModel)]="displayBy" 
       optionLabel="label" 
       optionValue="value"
+      (onChange)="onDisplayByChange($event)"
     />
     <p-button icon="pi pi-plus" label="Add Link" (click)="addNewLink()" />
   </div>
@@ -31,55 +32,61 @@
 <p-contextMenu #menu [model]="contextMenuItems" appendTo="body" />
 
 @if (displayBy === 'all-links' && links?.linksWithDomains?.length) {
-  <ul class="list-none p-0 m-0 mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+  <ul class="list-none p-0 m-0 mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3">
     <li *ngFor="let link of links?.linksWithDomains" class="w-full flex">
-      <a
-        [href]="link.link_url"
-        target="_blank"
-        (contextmenu)="onRightClick($event, link)"
-        class="p-card px-3 py-2 flex flex-col gap-1 w-full no-underline justify-between"
-      >
-        <h3 class="flex gap-2 m-0 text-lg font-semibold">
-          <app-domain-favicon [domain]="link.link_url" [size]="24" />
-          {{ link.link_name }}
-        </h3>
-        <p *ngIf="link.link_description" class="m-0 italic">{{ link.link_description }}</p>
-
-        <p class="m-0 text-sm text-gray-500" [pTooltip]="link.domains?.join(', ')">
-          @if (link.domains && link.domains.length === 1) {
-            Associated with {{ link.domains[0] }}
-          } @else {
-            Associated with {{ link.domains?.length }} domains
-          }
-        </p>
-      </a>
+      <app-domain-link
+        class="w-full"
+        [linkUrl]="link.link_url"
+        [linkName]="link.link_name"
+        [linkDescription]="link.link_description"
+        [associatedDomains]="link.domains"
+        (contextMenu)="onRightClick($event, link)"
+      />
     </li>
   </ul>
 }
 
 @if (displayBy === 'by-domain') {
-  <div *ngFor="let domain of links?.groupedByDomain | keyvalue" class="mt-4">
+  <div *ngFor="let domain of links?.groupedByDomain | keyvalue; last as isLast" class="mt-4">
     <a [routerLink]="'/domains/' + domain.key" class="no-underline text-default hover:text-primary">
       <h2 class="mt-3 mb-2">{{ domain.key }}</h2>
     </a>
-    <ul class="list-none p-0 m-0 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-      <li *ngFor="let link of domain.value" class="w-full flex">
-        <a
-          [href]="link.link_url"
-          target="_blank"
-          (contextmenu)="onRightClick($event, link)"
-          class="p-card px-3 py-2 flex flex-col gap-1 w-full no-underline justify-between"
-        >
-          <h3 class="flex gap-2 my-0 text-lg font-semibold">
-            <app-domain-favicon [domain]="link.link_url" [size]="24" />
-            {{ link.link_name }}
-          </h3>
-          <p *ngIf="link.link_description" class="m-0 italic">{{ link.link_description }}</p>
-        </a>
-      </li>
-    </ul>
+    
+    <!-- User's Links -->
+    @if (domain.value && domain.value.length) {
+      <h3 class="uppercase text-surface-200 text-sm mt-4 mb-2">Links</h3>
+      <ul class="list-none p-0 m-0 mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3">
+        <li *ngFor="let link of (domain.value)" class="w-full flex">
+          <app-domain-link
+            class="w-full"
+            [linkUrl]="link.link_url"
+            [linkName]="link.link_name"
+            [linkDescription]="link.link_description"
+            (contextMenu)="onRightClick($event, link)"
+          />
+        </li>
+      </ul>
+    }
+
+    <!-- Auto-links (subdomains, IPs, providers, core pages) -->
+    @if (customSections[domain.key] && customSections[domain.key]) {
+      @for (subHeading of objKeys(customSections[domain.key]); track subHeading) {
+        <h3 class="uppercase text-surface-200 text-sm mt-4 mb-2">{{ subHeading }}</h3>
+        <ul class="list-none p-0 m-0 mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3">
+          <li *ngFor="let link of customSections[domain.key][subHeading]" class="w-full flex">
+            <app-domain-link
+              class="w-full"
+              [linkUrl]="link.link_url"
+              [linkName]="link.link_name"
+              [linkDescription]="link.link_description"
+            />
+          </li>
+        </ul>
+      }
+    }
+    <p-divider *ngIf="!isLast" class="my-4" />
   </div>
 }
 
 <p-confirmDialog />
-<!-- <p-contextMenu [target]="domainCard" [model]="contextMenuItems" /> -->
+

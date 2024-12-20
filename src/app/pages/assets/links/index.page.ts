@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { PrimeNgModule } from '@/app/prime-ng.module';
-import { Link } from '@/types/Database';
+import { DbDomain, Link } from '@/types/Database';
 import DatabaseService from '@/app/services/database.service';
 import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { TagEditorComponent } from '@/app/components/forms/tag-editor/tag-editor.component';
@@ -11,6 +11,8 @@ import { DomainFaviconComponent } from '@components/misc/favicon.component';
 import { LinkDialogComponent } from '@components/misc/edit-link.component';
 import { ContextMenu } from 'primeng/contextmenu';
 import { DialogService } from 'primeng/dynamicdialog';
+import { SelectButtonChangeEvent } from 'primeng/selectbutton';
+import { DomainLinkComponent } from './domain-link.component';
 
 type DisplayBy = 'all-links' | 'by-domain';
 
@@ -21,15 +23,22 @@ export interface ModifiedLink extends Omit<Link, 'id'> {
 }
 
 export interface LinkResponse {
-  groupedByDomain: Record<string, ModifiedLink[]>;
-  linksWithDomains: ModifiedLink[];
+  groupedByDomain?: Record<string, ModifiedLink[]>;
+  linksWithDomains?: ModifiedLink[];
+}
+
+interface CustomSections {
+  [key: string]: {
+    [key: string]: Omit<Link, 'id'>[];
+
+  };
 }
 
 
 @Component({
   standalone: true,
   selector: 'app-tags-index',
-  imports: [CommonModule, RouterModule, PrimeNgModule, TagEditorComponent, DomainFaviconComponent, LinkDialogComponent],
+  imports: [CommonModule, RouterModule, PrimeNgModule, TagEditorComponent, DomainFaviconComponent, LinkDialogComponent, DomainLinkComponent],
   templateUrl: './index.page.html',
   providers: [DialogService],
   // styleUrl: './tags.scss'
@@ -38,6 +47,8 @@ export default class LinksIndexPageComponent implements OnInit {
   
   links!: LinkResponse;
   loading: boolean = true;
+  fetchedExtraLinks: boolean = false;
+  customSections: CustomSections = {};
 
   displayBy: DisplayBy = 'all-links';
   displayByOptions: { label: string; value: DisplayBy }[] = [
@@ -54,7 +65,6 @@ export default class LinksIndexPageComponent implements OnInit {
     private databaseService: DatabaseService,
     private messageService: MessageService,
     private errorHandlerService: ErrorHandlerService,
-    private router: Router,
     private confirmationService: ConfirmationService,
     private dialogService: DialogService,
   ) {}
@@ -71,6 +81,12 @@ export default class LinksIndexPageComponent implements OnInit {
     ];
   }
 
+  onDisplayByChange(changeTo: SelectButtonChangeEvent) {
+    if (changeTo?.value === 'by-domain' && !this.fetchedExtraLinks) {
+      this.loadDomainData();
+    }
+  }
+
   openLink() {
     if (this.selectedLink) {
       window.open(this.selectedLink.link_url, '_blank');
@@ -83,6 +99,10 @@ export default class LinksIndexPageComponent implements OnInit {
 
   addNewLink() {
     this.openLinkDialog(null);
+  }
+
+  objKeys(obj: any): string[] {
+    return Object.keys(obj);
   }
 
   deleteLink(): void {
@@ -114,7 +134,6 @@ export default class LinksIndexPageComponent implements OnInit {
     this.databaseService.linkQueries.getAllLinks().subscribe({
       next: (links) => {
         this.links = links;
-        console.log(links);
       },
       error: (error) => {
         this.errorHandlerService.handleError({
@@ -128,8 +147,104 @@ export default class LinksIndexPageComponent implements OnInit {
     });
   }
 
+  async loadDomainData() {
+    this.loading = true;
+
+    this.databaseService.listDomains().subscribe({
+      next: (domains) => {
+        this.autoLinksFromDomainData(domains);
+        this.fetchedExtraLinks = true;
+        this.loading = false; 
+      },
+      error: (error) => {
+        this.errorHandlerService.handleError({
+          error,
+          message: 'Failed to load domain data.',
+          showToast: true,
+          location: 'LinksIndexPageComponent.loadDomainData',
+        });
+      }
+    });
+  }
+
+  async autoLinksFromDomainData(domains: DbDomain[]) {
+    // If no user-added links, create an empty object before we begin
+    if (!this.links.groupedByDomain) {
+      this.links.groupedByDomain = {};
+    };
+
+    for (const eachDomain of domains) { 
+      // Add sections for domains without any user-added links
+      if (!this.links.groupedByDomain[eachDomain.domain_name]) {
+        this.links.groupedByDomain[eachDomain.domain_name] = [];
+      }
+
+      // Create object for domain, ready to add additional sections
+      this.customSections[eachDomain.domain_name] = {};
+
+      // Subdomains
+      if (eachDomain.sub_domains && eachDomain.sub_domains.length) {
+        this.customSections[eachDomain.domain_name]['subdomains'] =
+          eachDomain.sub_domains.map((sd: { name: string }) => ({
+            link_name: sd.name,
+            link_url: `https://${sd.name}.${eachDomain.domain_name}`,
+            link_description: `${sd.name}.${eachDomain.domain_name}`,
+          })) || [];
+      }
+
+      // Public IPs
+      if (eachDomain.ip_addresses && eachDomain.ip_addresses.length) {
+        this.customSections[eachDomain.domain_name]['public_ips'] =
+          eachDomain.ip_addresses.map((ip: { is_ipv6: boolean, ip_address: string }, ipIndex: number) => ({
+            link_name: `${ip.is_ipv6 ? 'IPv6' : 'IPv4'} Address ${ipIndex + 1}`,
+            link_url: `https://${ip.ip_address}`,
+            link_description: ip.ip_address,
+          })) || [];
+      }
+
+      // Providers
+      const cleanName = (name: string) => name.replace(/,|Inc|[^a-zA-Z0-9\s-]/g, '').trim(); 
+      let providers = [];
+      if (eachDomain.host?.isp) providers.push({ type: 'Host', name: eachDomain.host.isp });
+      if (eachDomain.registrar?.name) providers.push({ type: 'Registrar', name: eachDomain.registrar.name });
+      if (eachDomain.ssl?.issuer) providers.push({ type: 'SSL Issuer', name: eachDomain.ssl.issuer });
+
+      const providerNames = providers.map(provider => cleanName(provider.name));
+
+      if (providerNames.length) {
+        try {
+          const providerLinks = await this.fetchProviders(providerNames);
+          if (providerLinks.length) {
+            this.customSections[eachDomain.domain_name]['providers'] = providerLinks
+              .filter((provider: { link: string }) => provider.link)
+              .map((provider: { name: string; link: string }) => ({
+                link_name: provider.name,
+                link_url: provider.link,
+                link_description: providers.find(p => cleanName(p.name) === cleanName(provider.name))?.type || '',
+              })
+            );
+          }
+        } catch (error) {
+          this.errorHandlerService.handleError({
+            error,
+            message: `Failed to fetch providers for ${eachDomain.domain_name}`,
+            showToast: false,
+            location: 'Links',
+          });
+        }
+      }
+    }
+  }
+
+  async fetchProviders(providerNames: string[]): Promise<any[]> {
+    const response = await fetch(
+      `https://find-company-domain.as93.workers.dev/?names=${providerNames.join(',')}`,
+    );
+    if (!response.ok) throw new Error('Failed to fetch provider links.');
+    return await response.json();
+  }
+  
   onRightClick(event: MouseEvent, link: ModifiedLink) {
-    console.log(link);
     this.selectedLink = link;
     if (this.menu) {
       this.menu.show(event);
