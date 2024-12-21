@@ -23,9 +23,16 @@ interface Asset {
         <a pAnimateOnScroll class="asset-card-link" [routerLink]="asset.link">
           <div class="p-card asset-card">
             <h4>{{ asset.title }}</h4>
-            <p class="text-surface-400 my-0" *ngIf="asset.count !== undefined">{{ asset.count }} {{ asset.title }}</p>
+            <p class="text-surface-400 my-0" *ngIf="asset.count !== undefined">
+              {{ asset.count }} {{ asset.title }}
+            </p>
             <div class="absolute top-2 right-4 h-16 w-16 opacity-70">
-              <dl-icon [icon]="asset.icon" [viewBox]="asset.viewBox || '0 0 512 512'" classNames="w-full h-full" color="var(--surface-200)"></dl-icon>
+              <dl-icon
+                [icon]="asset.icon"
+                [viewBox]="asset.viewBox || '0 0 512 512'"
+                classNames="w-full h-full"
+                color="var(--surface-200)"
+              />
             </div>
           </div>
         </a>
@@ -65,6 +72,7 @@ export default class AssetListComponent implements OnInit {
     { title: 'DNS Records', link: '/assets/dns', icon: 'dns', viewBox: '0 0 620 512' },
     { title: 'Tags', link: '/assets/tags', icon: 'tags' },
     { title: 'Links', link: '/assets/links', icon: 'links' },
+    { title: 'Domain Statuses', link: '/assets/statuses', icon: 'status' },
   ];
 
   constructor(
@@ -82,15 +90,20 @@ export default class AssetListComponent implements OnInit {
 
   private fetchAssetCounts() {
     this.assets.forEach(asset => {
-      this.databaseService.getAssetCount(asset.title.toLowerCase()).subscribe(
-        count => {
-          // Run the update inside Angular's zone to trigger change detection
+      this.databaseService.getAssetCount(asset.title.toLowerCase()).subscribe({
+        next: count => {
           this.ngZone.run(() => {
             asset.count = count;
           });
         },
-        error => this.errorHandlerService.handleError({ error, message: `Error fetching count for ${asset.title}:` })
-      );
+        error: error => {
+          this.errorHandlerService.handleError({
+            error,
+            message: `Error fetching count for ${asset.title}`,
+            location: 'AssetListComponent.fetchAssetCounts',
+          });
+        }
+      });
     });
   }
 }

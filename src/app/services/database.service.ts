@@ -487,6 +487,9 @@ export default class SupabaseDatabaseService extends DatabaseService {
       case 'links':
         table = 'domain_links';
         break;
+      case 'domain statuses':
+        table = 'domain_statuses';
+        break;
       default:
         throw new Error(`Unknown asset type: ${assetType}`);
     }
