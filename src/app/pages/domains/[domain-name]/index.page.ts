@@ -18,6 +18,7 @@ import { DomainSparklineComponent } from '@/app/components/monitor/sparklines/sp
 import { UptimeHistoryComponent } from '@/app/components/monitor/uptime-history/uptime-history.component';
 import { FeatureService } from '@/app/services/features.service';
 import { LazyLoadDirective } from '@/app/utils/lazy.directive';
+import { AdditionalResourcesComponent } from '@/app/components/misc/external-links.component';
 
 @Component({
   standalone: true,
@@ -32,6 +33,7 @@ import { LazyLoadDirective } from '@/app/utils/lazy.directive';
     DomainSparklineComponent,
     UptimeHistoryComponent,
     LazyLoadDirective,
+    AdditionalResourcesComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './domain-name.page.html',

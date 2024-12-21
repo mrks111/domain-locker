@@ -440,6 +440,20 @@
     </p-card>
   }
   <div appLazyLoad (visible)="onMonitorVisible()"></div>
+
+
+  <p-card styleClass="mt-4">
+    <ng-template pTemplate="header">
+      <h4 class="text-surface-600 text-2xl font-bold m-0 pt-4 pl-4 block z-1 relative">External Tools</h4>
+      <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+        <dl-icon icon="external" viewBox="0 0 448 512" classNames="w-full h-full" color= "var(--surface-200)" />
+      </div>
+    </ng-template>
+    <div class="flex flex-col">
+      <app-additional-resources [url]="domain.domain_name" />
+    </div>
+  </p-card>
+
 </div>
 
 

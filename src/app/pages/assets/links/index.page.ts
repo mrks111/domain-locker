@@ -192,16 +192,6 @@ export default class LinksIndexPageComponent implements OnInit {
           })) || [];
       }
 
-      // Public IPs
-      if (eachDomain.ip_addresses && eachDomain.ip_addresses.length) {
-        this.customSections[eachDomain.domain_name]['public_ips'] =
-          eachDomain.ip_addresses.map((ip: { is_ipv6: boolean, ip_address: string }, ipIndex: number) => ({
-            link_name: `${ip.is_ipv6 ? 'IPv6' : 'IPv4'} Address ${ipIndex + 1}`,
-            link_url: `https://${ip.ip_address}`,
-            link_description: ip.ip_address,
-          })) || [];
-      }
-
       // Providers
       const cleanName = (name: string) => name.replace(/,|Inc|[^a-zA-Z0-9\s-]/g, '').trim(); 
       let providers = [];
@@ -232,6 +222,23 @@ export default class LinksIndexPageComponent implements OnInit {
             location: 'Links',
           });
         }
+      }
+
+      // Homepage
+      this.customSections[eachDomain.domain_name]['homepage'] = [{
+        link_name: 'Homepage',
+        link_url: `https://${eachDomain.domain_name}`,
+        link_description: eachDomain.domain_name,
+      }];
+
+      // Public IPs
+      if (eachDomain.ip_addresses && eachDomain.ip_addresses.length) {
+        this.customSections[eachDomain.domain_name]['public_ips'] =
+          eachDomain.ip_addresses.map((ip: { is_ipv6: boolean, ip_address: string }, ipIndex: number) => ({
+            link_name: `${ip.is_ipv6 ? 'IPv6' : 'IPv4'} Address ${ipIndex + 1}`,
+            link_url: `https://${ip.ip_address}`,
+            link_description: ip.ip_address,
+          })) || [];
       }
     }
   }
