@@ -35,6 +35,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
   private existingDomains: string[] = [];
   public showDomainError = false;
   public readonly notificationOptions = notificationTypes;
+  private subdomainInfo: { subdomain: string; [key: string]: any }[] = [];
   public initialDomain = '';
 
   public readonly saveOptions: MenuItem[] = [
@@ -189,13 +190,16 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     this.http.get<{ domainInfo: DomainInfo}>(`/api/domain-info?domain=${domainName}`).pipe(
       catchError(this.handleHttpError.bind(this))
     ).subscribe({
-      next: (fetchedDomainInfo) => {
+      next: async (fetchedDomainInfo) => {
         const domainInfo = fetchedDomainInfo.domainInfo;
         if (this.isDomainInfoValid(domainInfo)) {
           this.domainInfo = domainInfo;
           this.updateFormWithDomainInfo();
           this.prepareTableData();
           this.domainForm.patchValue({ statuses: domainInfo.status || [] });
+
+        // At this point, domain is valid, and we fetch subdomains in the background
+        await this.fetchSubdomains(domainName);
         } else {
           this.messageService.add({
             severity: 'warn',
@@ -209,6 +213,31 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
         this.handleError(error);
       }
     });
+  }
+
+  /**
+   * Fetches subdomains, and subdomain info for the current domain
+   */
+  private async fetchSubdomains(domainName: string): Promise<void> {
+    try {
+      const response = await this.http.get(`/api/domain-subs?domain=${domainName}`).toPromise();
+      if (Array.isArray(response)) {
+        this.subdomainInfo = response;
+        const subdomainNames = response.map((sub) => sub.subdomain);
+  
+        // Populate the subdomains in the form
+        this.domainForm.patchValue({ subdomains: subdomainNames });
+      } else {
+        console.warn('Unexpected subdomain data format:', response);
+      }
+    } catch (error) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Unable to fetch subdomain information.',
+      });
+      console.error('Error fetching subdomains:', error);
+    }
   }
   
 
@@ -284,7 +313,15 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     if (this.domainForm.valid) {
       try {
         const formValue = this.domainForm.value;
-        const subdomains = formValue.subdomains.map((sd: string) => this.cleanSubdomain(sd));
+
+        const subdomains = formValue.subdomains.map((sd: string) => {
+          const subdomainData = this.subdomainInfo.find((info) => info.subdomain === sd);
+          return {
+            name: this.cleanSubdomain(sd),
+            sd_info: subdomainData ? JSON.stringify(subdomainData) : null, // Include the JSON data
+          };
+        });
+
         const domainData: SaveDomainData = {
           domain: {
             domain_name: this.formatDomainName(formValue.domainName),

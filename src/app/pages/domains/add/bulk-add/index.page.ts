@@ -127,9 +127,11 @@ export default class BulkAddComponent implements OnInit {
   
     this.databaseService.listDomainNames().pipe(
       concatMap(existingDomains => {
-        const saveDomainObservables = this.domains.controls.map((domainForm, index) => {
+        const saveDomainObservables = this.domains.controls.map((domainForm) => {
           const domainName = domainForm.get('domainName')?.value;
           const domainInfo = this.domainsInfo[domainName];
+
+          const subdomains = (domainForm.get('subdomains')?.value || []).map((sd: string) => ({ name: sd }) );
   
           const domainData: SaveDomainData = {
             domain: {
@@ -155,7 +157,8 @@ export default class BulkAddComponent implements OnInit {
             host: domainInfo?.host ? {
               ...domainInfo.host,
               asNumber: domainInfo.host.as.split(' ')[0].substring(2)
-            } : undefined
+            } : undefined,
+            subdomains,
           };
   
           const operation = existingDomains.includes(domainName) 

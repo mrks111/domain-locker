@@ -70,8 +70,9 @@ export default class AssetListComponent implements OnInit {
     { title: 'SSL Certificates', link: '/assets/certs', icon: 'ssl' },
     { title: 'Hosts', link: '/assets/hosts', icon: 'host' },
     { title: 'DNS Records', link: '/assets/dns', icon: 'dns', viewBox: '0 0 620 512' },
-    { title: 'Tags', link: '/assets/tags', icon: 'tags' },
+    { title: 'Subdomains', link: '/assets/subdomains', icon: 'subdomains' },
     { title: 'Links', link: '/assets/links', icon: 'links' },
+    { title: 'Tags', link: '/assets/tags', icon: 'tags' },
     { title: 'Domain Statuses', link: '/assets/statuses', icon: 'status' },
   ];
 

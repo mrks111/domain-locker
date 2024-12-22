@@ -144,7 +144,7 @@ export default class EditDomainComponent implements OnInit {
       this.isLoading = true;
       const formValue = this.domainForm.value;
 
-      const subdomains = formValue.subdomains.map((sd: string) => this.cleanSubdomain(sd));
+      const subdomains = formValue.subdomains.map((sd: string) => ({ name: this.cleanSubdomain(sd)}) );
 
       // Prepare updated domain data
       const updatedDomain: SaveDomainData = {
