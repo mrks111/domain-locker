@@ -113,7 +113,6 @@ export default class SupabaseDatabaseService extends DatabaseService {
     this.subdomainsQueries = new SubdomainsQueries(
       this.supabase.supabase,
       this.handleError.bind(this),
-      this.getCurrentUser.bind(this),
     );
   }
 
@@ -152,7 +151,19 @@ export default class SupabaseDatabaseService extends DatabaseService {
   }
 
   private async saveDomainInternal(data: SaveDomainData): Promise<DbDomain> {
-    const { domain, ipAddresses, tags, notifications, dns, ssl, whois, registrar, host, statuses, subdomains } = data;
+    const {
+      domain,
+      ipAddresses,
+      tags,
+      notifications,
+      dns,
+      ssl,
+      whois,
+      registrar,
+      host,
+      statuses,
+      subdomains,
+    } = data;
   
     const dbDomain: Partial<DbDomain> = {
       domain_name: domain.domain_name,
@@ -160,7 +171,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       registration_date: domain.registration_date,
       updated_date: domain.updated_date,
       notes: domain.notes,
-      user_id: await this.supabase.getCurrentUser().then(user => user?.id)
+      user_id: await this.supabase.getCurrentUser().then((user) => user?.id),
     };
   
     const { data: insertedDomain, error: domainError } = await this.supabase.supabase
@@ -184,6 +195,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       this.statusQueries.saveStatuses(insertedDomain.id, statuses),
       this.subdomainsQueries.saveSubdomains(insertedDomain.id, subdomains),
     ]);
+  
     return this.getDomainById(insertedDomain.id);
   }
 
@@ -486,6 +498,9 @@ export default class SupabaseDatabaseService extends DatabaseService {
         break;
       case 'links':
         table = 'domain_links';
+        break;
+      case 'subdomains':
+        table = 'sub_domains';
         break;
       case 'domain statuses':
         table = 'domain_statuses';
