@@ -39,8 +39,6 @@ export class SubdomainsQueries {
     }
   }
 
-  
-
   async updateSubdomains(domainId: string, subdomains: { name: string; sd_info?: string }[]): Promise<void> {
     console.log('Updating subdomains:', subdomains);
   
@@ -103,6 +101,97 @@ export class SubdomainsQueries {
       }
     }
   }
+
+  getAllSubdomains(): Observable<any[]> {
+    return from(
+      this.supabase
+        .from('sub_domains')
+        .select(`
+          name,
+          sd_info,
+          domains (domain_name)
+        `)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        // Flatten the result so `domain_name` is at the same level as other fields
+        return (data || []).map((subdomain) => ({
+          ...subdomain,
+          // @ts-ignore - `domains` is a relation. It DOES exist. Fuck you Typescript.
+          // domain_name: subdomain.domains?.domain_name,
+        }));
+      })
+    );
+  }
   
+  
+  getSubdomainsByDomain(domain: string): Observable<any[]> {
+    return from(
+      this.supabase
+        .from('sub_domains')
+        .select('name, sd_info')
+        .eq('domain_id', domain)
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data || [];
+      })
+    );
+  }
+  
+  getSubdomainInfo(domain: string, subdomain: string): Observable<any> {
+    return from(
+      this.supabase
+        .from('sub_domains')
+        .select('name, sd_info')
+        .eq('domain_id', domain)
+        .eq('name', subdomain)
+        .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return data;
+      })
+    );
+  }
+
+  // Helper to group and parse subdomains
+  groupSubdomains(subdomains: any[]): { domain: string; subdomains: Subdomain[] }[] {
+    const grouped = subdomains.reduce((acc, subdomain) => {
+      const domainName = subdomain.domains?.domain_name;
+  
+      // Skip subdomains without a domain name
+      if (!domainName) return acc;
+  
+      // Safely parse the `sd_info` JSON
+      let parsedSdInfo = null;
+      if (subdomain.sd_info) {
+        try {
+          parsedSdInfo = JSON.parse(subdomain.sd_info);
+        } catch (error) {
+          console.warn(`Failed to parse sd_info for subdomain ${subdomain.name}:`, error);
+        }
+      }
+  
+      // Find the group for this domain or create it
+      if (!acc[domainName]) {
+        acc[domainName] = [];
+      }
+  
+      // Push the subdomain into the appropriate group
+      acc[domainName].push({
+        ...subdomain,
+        sd_info: parsedSdInfo, // Replace the original `sd_info` with the parsed object
+      });
+  
+      return acc;
+    }, {} as Record<string, any[]>);
+  
+    // Convert the grouped object into an array
+    return Object.keys(grouped).map((domain) => ({
+      domain,
+      subdomains: grouped[domain],
+    }));
+  }
   
 }
