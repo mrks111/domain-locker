@@ -134,8 +134,20 @@ async function mergeResponses(domain: string): Promise<Subdomain[]> {
   
     return unique;
   }, [] as Subdomain[]);
-  
 }
+
+function removeDuplicates(subdomains: Subdomain[]): Subdomain[] {
+  const uniqueMap = new Map<string, Subdomain>();
+
+  subdomains.forEach((sub) => {
+    if (!uniqueMap.has(sub.subdomain)) {
+      uniqueMap.set(sub.subdomain, sub);
+    }
+  });
+
+  return Array.from(uniqueMap.values());
+}
+
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
@@ -165,7 +177,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    return subdomains;
+    return removeDuplicates(subdomains);
   } catch (error) {
     console.error('Error in API handler:', error);
     return { error: 'Failed to retrieve subdomains' };
