@@ -26,6 +26,7 @@ export interface Subdomain {
   id: string;
   domainId: string;
   name: string;
+  sd_info?: any; // JSONB, could be anything
 }
 
 export interface Valuation {
