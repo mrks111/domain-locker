@@ -1,0 +1,12 @@
+
+<h1>All Subdomains</h1>
+<p-progressSpinner *ngIf="loading"></p-progressSpinner>
+
+<div *ngIf="!loading && subdomains.length">
+  <div *ngFor="let group of subdomains" class="mt-4">
+    <h2>{{ group.domain }}</h2>
+    <app-subdomain-list [domain]="group.domain" [subdomains]="group.subdomains"></app-subdomain-list>
+  </div>
+</div>
+<p *ngIf="!loading && !subdomains.length">No subdomains found.</p>
+  
