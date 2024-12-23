@@ -187,6 +187,11 @@ export const authenticatedNavLinks = [
         routerLink: '/assets/dns',
       },
       {
+        label: 'Subdomains',
+        icon: 'pi pi-fw pi-arrows-v',
+        routerLink: '/assets/subdomains',
+      },
+      {
         label: 'Tags',
         icon: 'pi pi-fw pi-tags',
         routerLink: '/assets/tags',
