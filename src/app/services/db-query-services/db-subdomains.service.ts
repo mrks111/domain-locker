@@ -146,18 +146,18 @@ export class SubdomainsQueries {
         .select('name, sd_info, domains(domain_name)')
         .eq('domains.domain_name', domain)
         .eq('name', subdomain)
-        .single()
     ).pipe(
       map(({ data, error }) => {
-        if (data && data.sd_info && typeof data.sd_info === 'string') {
+        if (error) throw error;
+        const firstResult = Array.isArray(data) && data.length > 0 ? data[0] : null;
+        if (firstResult && firstResult.sd_info && typeof firstResult.sd_info === 'string') {
           try {
-            data.sd_info = JSON.parse(data.sd_info);
+            firstResult.sd_info = JSON.parse(firstResult.sd_info);
           } catch (error2) {
             this.handleError({ error: error2, message: 'Failed to parse subdomain info' });
           }
         }
-        if (error) throw error;
-        return data;
+        return firstResult;
       })
     );
   }

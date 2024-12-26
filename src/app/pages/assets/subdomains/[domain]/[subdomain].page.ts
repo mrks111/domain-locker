@@ -5,6 +5,7 @@ import DatabaseService from '@/app/services/database.service';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { makeKVList } from './../subdomain-utils';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
   standalone: true,
@@ -15,7 +16,6 @@ import { makeKVList } from './../subdomain-utils';
 export default class SubdomainDetailPageComponent implements OnInit {
   domain: string = '';
   subdomainName: string = '';
-  subdomainParentName: string = '';
   subdomainInfo: { key: string; value: string }[] = [];
   subdomain: any = null;
   loading: boolean = true;
@@ -23,7 +23,9 @@ export default class SubdomainDetailPageComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private databaseService: DatabaseService,
-    private errorHandler: ErrorHandlerService
+    private errorHandler: ErrorHandlerService,
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService,
   ) {}
 
   ngOnInit() {
@@ -38,9 +40,7 @@ export default class SubdomainDetailPageComponent implements OnInit {
       .getSubdomainInfo(this.domain, this.subdomainName)
       .subscribe({
         next: (subdomain) => {
-          console.log('Subdomain:', subdomain);
           this.subdomain = subdomain;
-          this.subdomainParentName = subdomain.domains?.domain_name;
           this.subdomainInfo = makeKVList(subdomain.sd_info);
           this.loading = false;
         },
@@ -49,6 +49,25 @@ export default class SubdomainDetailPageComponent implements OnInit {
           this.loading = false;
         },
       });
+  }
+
+
+  confirmDelete(event: Event): void {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete the link "${this.subdomainName}.${this.domain}"?`,
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        // TODO: Implement deletion
+      },
+      reject: () => {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Cancelled',
+          detail: 'Deletion cancelled',
+        });
+      },
+    });
   }
 }
 
