@@ -4,23 +4,19 @@ import { CommonModule } from '@angular/common';
 import DatabaseService from '@/app/services/database.service';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { makeKVList } from './../subdomain-utils';
 
 @Component({
   standalone: true,
   selector: 'app-subdomain-detail',
   imports: [CommonModule, PrimeNgModule],
-  template: `
-    <h1>{{ subdomain?.name || 'Subdomain Details' }}</h1>
-    <p-progressSpinner *ngIf="loading"></p-progressSpinner>
-    <div *ngIf="!loading && subdomain">
-      <pre>{{ subdomain.sd_info | json }}</pre>
-    </div>
-    <p *ngIf="!loading && !subdomain">Subdomain not found.</p>
-  `,
+  templateUrl: './[subdomain].page.html',
 })
 export default class SubdomainDetailPageComponent implements OnInit {
   domain: string = '';
   subdomainName: string = '';
+  subdomainParentName: string = '';
+  subdomainInfo: { key: string; value: string }[] = [];
   subdomain: any = null;
   loading: boolean = true;
 
@@ -42,7 +38,10 @@ export default class SubdomainDetailPageComponent implements OnInit {
       .getSubdomainInfo(this.domain, this.subdomainName)
       .subscribe({
         next: (subdomain) => {
+          console.log('Subdomain:', subdomain);
           this.subdomain = subdomain;
+          this.subdomainParentName = subdomain.domains?.domain_name;
+          this.subdomainInfo = makeKVList(subdomain.sd_info);
           this.loading = false;
         },
         error: (error) => {
@@ -52,3 +51,6 @@ export default class SubdomainDetailPageComponent implements OnInit {
       });
   }
 }
+
+
+

@@ -143,17 +143,25 @@ export class SubdomainsQueries {
     return from(
       this.supabase
         .from('sub_domains')
-        .select('name, sd_info')
-        .eq('domain_id', domain)
+        .select('name, sd_info, domains(domain_name)')
+        .eq('domains.domain_name', domain)
         .eq('name', subdomain)
         .single()
     ).pipe(
       map(({ data, error }) => {
+        if (data && data.sd_info && typeof data.sd_info === 'string') {
+          try {
+            data.sd_info = JSON.parse(data.sd_info);
+          } catch (error2) {
+            this.handleError({ error: error2, message: 'Failed to parse subdomain info' });
+          }
+        }
         if (error) throw error;
         return data;
       })
     );
   }
+
 
   // Helper to group and parse subdomains
   groupSubdomains(subdomains: any[]): { domain: string; subdomains: Subdomain[] }[] {
