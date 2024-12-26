@@ -47,7 +47,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   userPlan: EnvironmentType | UserType | null = null;
   planColor: string = 'primary';
 
-  private subscriptions: Subscription = new Subscription(); 
+  private subscriptions: Subscription = new Subscription();
   private platformId = inject(PLATFORM_ID);
 
   constructor(
@@ -80,18 +80,18 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   loadUserPlanEnvironment() {
     const environmentType = this.environmentService.getEnvironmentType();
     if (environmentType === 'managed') {
-    this.billingService.getUserPlan().subscribe(plan => {
-      this.userPlan = plan || 'free';
-      this.planColor = this.getColorForPlan(this.userPlan);
-      this.cdr.detectChanges();
-    });
+      this.billingService.getUserPlan().subscribe(plan => {
+        this.userPlan = plan;
+        this.planColor = this.getColorForPlan(this.userPlan);
+        this.cdr.detectChanges();
+      });
     } else {
       this.userPlan = environmentType;
       this.cdr.detectChanges();
     }
   }
 
-  getColorForPlan(plan: EnvironmentType | UserType): string {
+  getColorForPlan(plan: EnvironmentType | UserType | null): string {
     switch (plan) {
       case 'free':
         return 'cyan';
@@ -152,7 +152,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     this.sidebarVisible = false;
     this.cdr.detectChanges();
   }
-  
+
   toggleNotifications(event: Event) {
     this.notificationsVisible = true;
     this.notificationsOverlay.toggle(event);

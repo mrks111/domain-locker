@@ -84,8 +84,8 @@ export class BillingService {
   /**
    * All the special plans (like sponsor, complimentary, etc.) are mapped
    * to the corresponding billing plan, used for feature availability checks.
-   * @param plan 
-   * @returns 
+   * @param plan
+   * @returns
    */
   private mapSpecialPlanToBillingPlan(plan: UserType): BillingPlans {
     if (['free', 'hobby', 'pro', 'enterprise'].includes(plan)) {

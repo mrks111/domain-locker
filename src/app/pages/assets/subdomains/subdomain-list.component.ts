@@ -52,8 +52,6 @@ export class SubdomainListComponent {
     if (sdInfo['asn_name']) results.push({ key: 'ASN Name', value: sdInfo['asn_name'] });
     if (sdInfo['asn_range']) results.push({ key: 'ASN Range', value: sdInfo['asn_range'] });
 
-    
-
     return results;
   }
 }

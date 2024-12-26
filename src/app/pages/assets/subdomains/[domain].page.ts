@@ -41,6 +41,15 @@ export default class SubdomainsDomainPageComponent implements OnInit {
     this.loading = true;
     this.databaseService.subdomainsQueries.getSubdomainsByDomain(this.domain).subscribe({
       next: (subdomains) => {
+        subdomains.forEach((sd) => {
+          if (sd.sd_info && typeof sd.sd_info === 'string') {
+            try {
+              sd.sd_info = JSON.parse(sd.sd_info);
+            } catch (error) {
+              this.errorHandler.handleError({ error, message: 'Failed to parse subdomain info' });
+            }
+          }
+        });
         this.subdomains = subdomains;
         this.loading = false;
       },
