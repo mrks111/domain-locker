@@ -28,6 +28,6 @@ module.exports = {
   ],
   plugins: [],
   corePlugins: {
-    preflight: false,  // Disable preflight if it causes too many issues
+    preflight: false,
   },
 }
