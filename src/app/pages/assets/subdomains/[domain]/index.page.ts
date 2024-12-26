@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { SubdomainListComponent } from './subdomain-list.component';
+import { SubdomainListComponent } from './../subdomain-list.component';
 import DatabaseService from '@/app/services/database.service';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
@@ -35,6 +35,7 @@ export default class SubdomainsDomainPageComponent implements OnInit {
   ngOnInit() {
     this.domain = this.route.snapshot.params['domain'];
     this.loadSubdomains();
+    console.log(this.route.snapshot.params);
   }
 
   loadSubdomains() {
