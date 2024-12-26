@@ -5,7 +5,7 @@ import { PrimeNgModule } from '../../../prime-ng.module';
 import DatabaseService from '@services/database.service';
 import { type DbDomain } from '@typings/Database';
 import { DomainUtils } from '@services/domain-utils.service';
-import { DomainFaviconComponent } from '@components/misc/favicon.component'; 
+import { DomainFaviconComponent } from '@components/misc/favicon.component';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -19,6 +19,7 @@ import { UptimeHistoryComponent } from '@/app/components/monitor/uptime-history/
 import { FeatureService } from '@/app/services/features.service';
 import { LazyLoadDirective } from '@/app/utils/lazy.directive';
 import { AdditionalResourcesComponent } from '@/app/components/misc/external-links.component';
+import { DomainInfoComponent } from '@/app/components/domain-things/domain-info/domain-info.component';
 
 @Component({
   standalone: true,
@@ -34,6 +35,7 @@ import { AdditionalResourcesComponent } from '@/app/components/misc/external-lin
     UptimeHistoryComponent,
     LazyLoadDirective,
     AdditionalResourcesComponent,
+    DomainInfoComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './domain-name.page.html',
@@ -82,11 +84,11 @@ export default class DomainDetailsPage implements OnInit {
     });
   }
 
-  onMonitorVisible(): void { 
+  onMonitorVisible(): void {
     this.shouldMountMonitor = true;
   }
 
-  onHistoryVisible(): void { 
+  onHistoryVisible(): void {
     this.shouldMountHistory = true;
   }
 
