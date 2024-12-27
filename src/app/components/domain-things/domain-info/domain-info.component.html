@@ -94,7 +94,10 @@
     </ng-template>
     <ul class="list-none p-0 m-0">
       <li *ngFor="let subdomain of domain.sub_domains" class="mb-2 truncate">
-        {{ subdomain.name }}.{{domain.domain_name}}
+        <a [routerLink]="['/', 'assets', 'subdomains', domain.domain_name, subdomain.name]"
+          class="no-underline text-primary hover:underline">
+          {{ subdomain.name }}.{{domain.domain_name}}
+        </a>
       </li>
     </ul>
   </p-card>
