@@ -60,7 +60,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
   private updateBreadcrumbs(): void {
     // Check that we're on a page which isn't excluded from breadcrumbs
     this.shouldShowBreadcrumbs = this.determineIfBreadcrumbsShouldBeShown();
-    
+
     // Generate breadcrumbs from page path, if breadcrumbs isn't already provided
     if (this.pagePath) {
       this.breadcrumbs = this.pagePath.split('?')[0]
@@ -79,7 +79,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
   }
 
   private determineIfBreadcrumbsShouldBeShown(): boolean {
-    if (!this.breadcrumbs && !this.pagePath) return false; 
+    if (!this.breadcrumbs && !this.pagePath) return false;
     const hideOnPages = ['/'];
     if (this.pagePath && !hideOnPages.includes(this.pagePath.split('?')[0])) return true;
     return false;
@@ -112,7 +112,8 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'edit-events': 'Edit Events',
       'external-tools': 'External Tools',
     };
-    const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+    const capitalizeFirstLetter = (str: string) =>
+        str.includes('.') ? str : str.charAt(0).toUpperCase() + str.slice(1);
     path = decodeURIComponent(path);
     return labels[path] || capitalizeFirstLetter(path);
   }
