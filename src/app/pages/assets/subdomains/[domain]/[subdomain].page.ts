@@ -6,11 +6,17 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { makeKVList } from './../subdomain-utils';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { DomainInfoComponent } from '@/app/components/domain-things/domain-info/domain-info.component';
+import { DomainInfo } from '@/types/DomainInfo';
+import { HttpClient } from '@angular/common/http';
+import { catchError } from 'rxjs';
+import { DbDomain } from '@/types/Database';
+import { DomainUtils } from '@services/domain-utils.service';
 
 @Component({
   standalone: true,
   selector: 'app-subdomain-detail',
-  imports: [CommonModule, PrimeNgModule],
+  imports: [CommonModule, PrimeNgModule, DomainInfoComponent],
   templateUrl: './[subdomain].page.html',
 })
 export default class SubdomainDetailPageComponent implements OnInit {
@@ -19,19 +25,26 @@ export default class SubdomainDetailPageComponent implements OnInit {
   subdomainInfo: { key: string; value: string }[] = [];
   subdomain: any = null;
   loading: boolean = true;
+  subdomainWebsiteInfo: DomainInfo | null = null;
 
   constructor(
+    private http: HttpClient,
     private route: ActivatedRoute,
+    private domainUtils: DomainUtils,
+    private messageService: MessageService,
     private databaseService: DatabaseService,
     private errorHandler: ErrorHandlerService,
-    private messageService: MessageService,
     private confirmationService: ConfirmationService,
   ) {}
 
   ngOnInit() {
+    // Get parent domain and subdomain name from URL params
     this.domain = this.route.snapshot.params['domain'];
     this.subdomainName = this.route.snapshot.params['subdomain'];
+    // Load subdomain info from db
     this.loadSubdomain();
+    // Fetch live data about the website
+    this.loadDomainInfo();
   }
 
   loadSubdomain() {
@@ -50,6 +63,26 @@ export default class SubdomainDetailPageComponent implements OnInit {
         },
       });
   }
+
+  private async loadDomainInfo(): Promise<void> {
+    const domainName = this.domain;
+      this.http.get<{ domainInfo: DomainInfo}>(`/api/domain-info?domain=${domainName}`).pipe(
+        catchError((error) => { throw error })
+      ).subscribe({
+        next: async (fetchedDomainInfo) => {
+          // this.subdomainWebsiteInfo = this.domainUtils.formatDomainData(fetchedDomainInfo);
+          this.subdomainWebsiteInfo = fetchedDomainInfo.domainInfo;
+          console.log(this.subdomainWebsiteInfo);
+        },
+        error: (error) => {
+          this.errorHandler.handleError({
+            error,
+            message: 'Failed to determine additional subdomain info',
+            showToast: true,
+          });
+        }
+      });
+    }
 
 
   confirmDelete(event: Event): void {

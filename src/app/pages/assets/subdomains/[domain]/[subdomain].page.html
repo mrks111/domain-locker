@@ -58,6 +58,11 @@
       </p>
     </div>
   </div>
+
+  <!-- Auto-fetched domain info -->
+  <div class="mt-4 relative flex flex-col gap-1">
+    <app-domain-info *ngIf="subdomainWebsiteInfo" [domain]="subdomainWebsiteInfo" />
+  </div>
 </div>
 
 <p *ngIf="!loading && !subdomain">Subdomain not found.</p>

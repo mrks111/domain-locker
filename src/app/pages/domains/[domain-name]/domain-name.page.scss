@@ -1,23 +1,4 @@
 
-::ng-deep .masonry .p-card {
-  margin-bottom: 1.5rem;
-  break-inside: avoid !important;
-  .p-card-content {
-    padding-top: 0;
-  }
-  .p-card-header {
-    padding: 20px 0 0 20px;
-    position: relative;
-  }
-  .p-card-body {
-    padding: 0 20px 20px 20px;
-  }
-}
-::ng-deep .p-card-header {
-  position: relative;
-}
-
-
 .row {
   h5 {
     color: var(--surface-400);
@@ -34,4 +15,3 @@
     box-shadow: none !important;
   }
 }
-

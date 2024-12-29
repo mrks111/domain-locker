@@ -11,6 +11,7 @@ import { type DbDomain } from '@typings/Database';
   selector: 'app-domain-info',
   imports: [CommonModule, PrimeNgModule, DlIconComponent, DomainFaviconComponent],
   templateUrl: './domain-info.component.html',
+  styleUrls: ['./domain-info.component.scss'],
 })
 export class DomainInfoComponent {
   @Input() domain: DbDomain | null = null;

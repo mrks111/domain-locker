@@ -136,7 +136,7 @@
   </p-card>
 
   <!-- IP Addresses -->
-  <p-card *ngIf="domain.ip_addresses?.length" class="mb-6">
+  <p-card *ngIf="domain.ip_addresses" class="mb-6">
     <ng-template pTemplate="header">
       <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">IP Addresses</h4>
       <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
