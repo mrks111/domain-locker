@@ -3,7 +3,7 @@ import { IpAddresses, Dates, Registrar, Contact, Abuse, Dns, Ssl, Host, Subdomai
 export interface DomainInfo {
   domainName: string;
   status: string[];
-  ipAddresses: IpAddresses;
+  ip_addresses: IpAddresses;
   dates: Dates;
   registrar: Registrar;
   whois: Contact;

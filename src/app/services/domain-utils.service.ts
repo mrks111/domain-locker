@@ -56,13 +56,13 @@ export class DomainUtils {
       ],
       ssl: domainInfo.ssl ? {
         issuer: domainInfo.ssl.issuer,
-        issuer_country: domainInfo.ssl.issuerCountry,
-        valid_from: domainInfo.ssl.validFrom,
-        valid_to: domainInfo.ssl.validTo,
+        issuer_country: domainInfo.ssl.issuer_country,
+        valid_from: domainInfo.ssl.valid_from,
+        valid_to: domainInfo.ssl.valid_to,
         subject: domainInfo.ssl.subject,
         fingerprint: domainInfo.ssl.fingerprint,
-        key_size: domainInfo.ssl.keySize,
-        signature_algorithm: domainInfo.ssl.signatureAlgorithm,
+        key_size: domainInfo.ssl.key_size,
+        signature_algorithm: domainInfo.ssl.signature_algorithm,
       } : undefined,
       whois: domainInfo.whois ? {
         name: domainInfo.whois.name,
@@ -100,7 +100,7 @@ export class DomainUtils {
         mxRecords: domainInfo.dns.mxRecords,
         txtRecords: domainInfo.dns.txtRecords,
       },
-      statuses: domainInfo.status || [],
+      statuses: makeEppArrayFromLabels(domainInfo.status) || [],
       domain_costings: undefined, // Placeholder for domain costings
       notification_preferences: undefined, // Placeholder for notification preferences
       sub_domains: domainInfo.subdomains || [],

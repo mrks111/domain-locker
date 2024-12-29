@@ -32,8 +32,6 @@ export class SubdomainsQueries {
         sd_info: sd.sd_info || null,
       }));
 
-      console.log('Subdomains to Insert:', formattedSubdomains);
-
       const { error: subdomainError } = await this.supabase.from('sub_domains').insert(formattedSubdomains);
       if (subdomainError) this.handleError(subdomainError);
     }

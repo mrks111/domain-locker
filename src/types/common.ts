@@ -42,9 +42,9 @@ export interface IpAddresses {
 }
 
 export interface Dates {
-  expiry: string;
-  updated: string;
-  creation: string;
+  expiry_date: string;
+  updated_date: string;
+  creation_date: string;
 }
 
 export interface Registrar {

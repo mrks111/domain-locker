@@ -56,7 +56,7 @@ export default class QuickAddDomain {
       // Construct and save domain data
       const domainData = this.constructDomainData(domainInfo);
       await this.databaseService.saveDomain(domainData);
-      
+
       this.messagingService.showSuccess('Domain added successfully.', `${domainName} has been added to your collection and is now ready to use.`);
       if (this.isInModal) {
         this.$afterSave.emit(domainName);
@@ -103,11 +103,11 @@ export default class QuickAddDomain {
       },
       ssl: {
         issuer: domainInfo.ssl?.issuer || 'Unknown',
-        validFrom: domainInfo.ssl?.validFrom || null,
-        validTo: domainInfo.ssl?.validTo || null,
+        valid_from: domainInfo.ssl?.valid_from || null,
+        valid_to: domainInfo.ssl?.valid_to || null,
         subject: domainInfo.ssl?.subject || 'Unknown',
-        keySize: domainInfo.ssl?.keySize || 0,
-        signatureAlgorithm: domainInfo.ssl?.signatureAlgorithm || 'Unknown',
+        key_size: domainInfo.ssl?.key_size || 0,
+        signature_algorithm: domainInfo.ssl?.signature_algorithm || 'Unknown',
       },
       host: {
         country: domainInfo.host?.country || 'Unknown',

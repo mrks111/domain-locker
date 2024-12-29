@@ -37,26 +37,26 @@ export class SslQueries {
     );
   }
 
-  
+
   async saveSslInfo(domainId: string, ssl: SaveDomainData['ssl']): Promise<void> {
     if (!ssl) return;
-  
+
     const sslData = {
       domain_id: domainId,
       issuer: ssl.issuer,
-      issuer_country: ssl.issuerCountry,
+      issuer_country: ssl.issuer_country,
       subject: ssl.subject,
-      valid_from: new Date(ssl.validFrom),
-      valid_to: new Date(ssl.validTo),
+      valid_from: new Date(ssl.valid_from),
+      valid_to: new Date(ssl.valid_to),
       fingerprint: ssl.fingerprint,
-      key_size: ssl.keySize,
-      signature_algorithm: ssl.signatureAlgorithm
+      key_size: ssl.key_size,
+      signature_algorithm: ssl.signature_algorithm
     };
-  
+
     const { error } = await this.supabase
       .from('ssl_certificates')
       .insert(sslData);
-  
+
     if (error) throw error;
   }
 

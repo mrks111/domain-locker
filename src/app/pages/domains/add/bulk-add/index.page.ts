@@ -45,13 +45,13 @@ export default class BulkAddComponent implements OnInit {
     });
   }
 
-  
+
   ngOnInit() {}
 
   get domains(): FormArray {
     return this.bulkAddForm.get('domains') as FormArray;
   }
-  
+
   getDomainFormGroup(index: number): FormGroup {
     return this.domains.at(index) as FormGroup;
   }
@@ -60,15 +60,15 @@ export default class BulkAddComponent implements OnInit {
     this.processingDomains = true;
     const rawDomains = this.bulkAddForm.get('domainList')?.value;
     const domainList = this.parseDomainList(rawDomains);
-  
+
     if (domainList.length === 0) {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No valid domains found' });
       this.processingDomains = false;
       return;
     }
-  
+
     forkJoin(
-      domainList.map(domain => 
+      domainList.map(domain =>
         this.http.get<{domainInfo: DomainInfo}>(`/api/domain-info?domain=${domain}`).pipe(
           catchError(error => {
             this.messageService.add({ severity: 'warn', summary: 'Warning', detail: `Failed to fetch info for ${domain}` });
@@ -106,7 +106,7 @@ export default class BulkAddComponent implements OnInit {
       this.domains.push(this.fb.group({
         domainName: [domain, Validators.required],
         registrar: [info?.registrar?.name || ''],
-        expiryDate: [info?.dates?.expiry && this.isValidDate(info.dates.expiry) ? new Date(info.dates.expiry) : null],
+        expiryDate: [info?.dates?.expiry_date && this.isValidDate(info.dates.expiry) ? new Date(info.dates.expiry) : null],
         tags: [[]],
         notes: ['']
       }));
@@ -124,7 +124,7 @@ export default class BulkAddComponent implements OnInit {
     this.savedDomains = [];
     this.failedDomains = [];
     const notificationSettings = this.bulkAddForm.get('notifications')?.value;
-  
+
     this.databaseService.listDomainNames().pipe(
       concatMap(existingDomains => {
         const saveDomainObservables = this.domains.controls.map((domainForm) => {
@@ -132,7 +132,7 @@ export default class BulkAddComponent implements OnInit {
           const domainInfo = this.domainsInfo[domainName];
 
           const subdomains = (domainForm.get('subdomains')?.value || []).map((sd: string) => ({ name: sd }) );
-  
+
           const domainData: SaveDomainData = {
             domain: {
               domain_name: domainName,
@@ -160,11 +160,11 @@ export default class BulkAddComponent implements OnInit {
             } : undefined,
             subdomains,
           };
-  
-          const operation = existingDomains.includes(domainName) 
+
+          const operation = existingDomains.includes(domainName)
             ? this.databaseService.updateDomain(domainName, domainData)
             : this.databaseService.saveDomain(domainData);
-  
+
           return operation.pipe(
             map(() => ({ domain: domainName, success: true })),
             catchError(error => {
@@ -173,7 +173,7 @@ export default class BulkAddComponent implements OnInit {
             })
           );
         });
-  
+
         return forkJoin(saveDomainObservables);
       })
     ).subscribe({
@@ -181,36 +181,36 @@ export default class BulkAddComponent implements OnInit {
         results.forEach(result => {
           if (result.success) {
             this.savedDomains.push(result.domain);
-            this.messageService.add({ 
-              severity: 'success', 
-              summary: 'Success', 
-              detail: `Saved domain: ${result.domain}` 
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: `Saved domain: ${result.domain}`
             });
           } else {
             this.failedDomains.push(result.domain);
-            this.messageService.add({ 
-              severity: 'error', 
-              summary: 'Error', 
-              detail: `Failed to save domain: ${result.domain}` 
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: `Failed to save domain: ${result.domain}`
             });
           }
         });
       },
       error: error => {
         console.error('An unexpected error occurred:', error);
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: 'An unexpected error occurred while saving domains.' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'An unexpected error occurred while saving domains.'
         });
       },
       complete: () => {
         this.savingDomains = false;
         this.step = 4; // Always move to summary screen
-        this.messageService.add({ 
-          severity: 'info', 
-          summary: 'Complete', 
-          detail: `Bulk add process completed. Saved: ${this.savedDomains.length}, Failed: ${this.failedDomains.length}` 
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Complete',
+          detail: `Bulk add process completed. Saved: ${this.savedDomains.length}, Failed: ${this.failedDomains.length}`
         });
       }
     });

@@ -178,14 +178,14 @@ export default defineEventHandler(async (event) => {
     const domainInfo: DomainInfo = {
       domainName: whoisData.domainName || dunno,
       status: makeStatusArray(whoisData.domainStatus),
-      ipAddresses: {
+      ip_addresses: {
         ipv4: ipv4Addresses || [],
         ipv6: ipv6Addresses || [],
       },
       dates: {
-        expiry: whoisData.registrarRegistrationExpirationDate || dunno,
-        updated: whoisData.updatedDate || dunno,
-        creation: whoisData.creationDate || dunno,
+        expiry_date: whoisData.registrarRegistrationExpirationDate || dunno,
+        updated_date: whoisData.updatedDate || dunno,
+        creation_date: whoisData.creationDate || dunno,
       },
       registrar: {
         name: whoisData.registrarName || whoisData.registrar || dunno,
@@ -214,13 +214,13 @@ export default defineEventHandler(async (event) => {
       },
       ssl: {
         issuer: sslInfo?.issuer?.O || dunno,
-        issuerCountry: sslInfo?.issuer?.C || dunno,
-        validFrom: sslInfo?.valid_from || dunno,
-        validTo: sslInfo?.valid_to || dunno,
+        issuer_country: sslInfo?.issuer?.C || dunno,
+        valid_from: sslInfo?.valid_from || dunno,
+        valid_to: sslInfo?.valid_to || dunno,
         subject: sslInfo?.subject?.CN || dunno,
         fingerprint: sslInfo?.fingerprint || dunno,
-        keySize: sslInfo?.bits || 0,
-        signatureAlgorithm: sslInfo?.asn1Curve || dunno,
+        key_size: sslInfo?.bits || 0,
+        signature_algorithm: sslInfo?.asn1Curve || dunno,
       },
       host: hostInfo,
     };
