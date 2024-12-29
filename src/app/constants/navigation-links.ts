@@ -1,88 +1,129 @@
+import { MenuItem } from 'primeng/api';
 
-export const statsLinks = [
-  { 
+export interface ExtendedMenuItem extends MenuItem {
+  svgIcon?: string;
+  description?: string;
+  // [Symbol.iterator](): IterableIterator<ExtendedMenuItem>;
+}
+
+export const statsLinks: ExtendedMenuItem = [
+  {
     label: 'Timeline',
     icon: 'pi pi-calendar',
     routerLink: '/stats/registration-timeline',
     description: 'Schedule chart illustrating the lifespan of all domains',
     color: 'blue',
   },
-  { 
+  {
     label: 'Map',
     icon: 'pi pi-map-marker',
     routerLink: '/stats/host-map',
     description: 'Geographical map showing where your domains are hosted',
     color: 'green',
   },
-  { 
+  {
     label: 'Domain Providers',
     icon: 'pi pi-chart-pie',
     routerLink: '/stats/domain-providers',
     description: 'Breakdown of domains with each registrar, SSL issuer and host',
     color: 'yellow',
   },
-  { 
+  {
     label: 'Security Profile',
     icon: 'pi pi-unlock',
     routerLink: '/stats/security-profile',
     description: 'Proportion of which domains have valid domain security features enabled',
     color: 'cyan',
   },
-  { 
+  {
     label: 'Tag Cloud',
     icon: 'pi pi-tags',
     routerLink: '/stats/tag-cloud',
     description: 'Tags and domain count grouped by category',
     color: 'pink',
   },
-  { 
+  {
     label: 'SSL Lifespan',
     icon: 'pi pi-chart-bar',
     routerLink: '/stats/ssl-lifespan',
     description: 'Histogram illustrating SSL validity times',
     color: 'indigo',
   },
-  { 
+  {
     label: 'Subdomain Map',
     icon: 'pi pi-sitemap',
     routerLink: '/stats/tld-sub-map',
     description: 'Organisational chart listing subdomains for each domain',
     color: 'teal',
   },
-  { 
+  {
     label: 'Response Times',
     icon: 'pi pi-wave-pulse',
     routerLink: '/stats/uptime',
     description: 'Heatmap of average historical response times and status codes for each site',
     color: 'orange',
   },
-  { 
+  {
     label: 'Change Frequency',
     icon: 'pi pi-history',
     routerLink: '/stats/change-frequency',
     description: 'Summary of recent changes recorded for each domain',
     color: 'purple',
   },
-  { 
+  {
     label: 'Payments Chart',
     icon: 'pi pi-credit-card',
     routerLink: '/stats/renewal-payments',
     description: 'Calendar of upcoming renewal payments',
     color: 'red',
   },
-  { 
+  {
     label: 'Domain Valuations',
     icon: 'pi pi-chart-scatter',
     routerLink: '/stats/cost-analysis',
     description: 'Bubble chart plotting domain value against cost',
     color: 'blue',
   },
-  { 
+  {
     label: 'Upcoming Expiries',
     icon: 'pi pi-clock',
     routerLink: '/stats/upcoming-expirations',
     description: 'Timeline of upcoming domain expirations and renewals',
     color: 'green',
+  },
+];
+
+export const toolsLinks = [
+  {
+    label: 'Availability Search',
+    icon: '',
+    routerLink: '/tools/availability-search',
+    svgIcon: 'availabilitySearch',
+    description: 'Find all unregistered domains across extensions from your search term',
+  },
+  {
+    label: 'Registrar Price Comparison',
+    svgIcon: 'priceComparison',
+    routerLink: '',
+    description: 'Find the lowest cost registrar for purchasing, renewing and transferring domains',
+  },
+  {
+    label: 'Web Analysis',
+    svgIcon: 'webAnalysis',
+    routerLink: '',
+    description: 'Get a detailed report on the security, configuration and architecture of a website',
+  },
+  {
+    label: 'Domain Name Valuation',
+    svgIcon: 'domainValuation',
+    routerLink: '',
+    description: 'Estimate the value of a domain based on a variety of factors',
+  },
+  {
+    label: 'Smart Domain Finder',
+    svgIcon: 'domainFinder',
+    routerLink: '',
+    description: 'AI-powered smart search, to help you discover new domains based on your criteria',
   },
 ];
 

@@ -3,19 +3,38 @@ import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { MenuItem } from 'primeng/api';
 import { DomainFaviconComponent } from '@components/misc/favicon.component';
-import { statsLinks, settingsLinks, aboutLinks, authenticatedNavLinks, unauthenticatedNavLinks } from '@/app/constants/navigation-links';
+import { DlIconComponent } from '@components/misc/svg-icon.component';
+import {
+  statsLinks,
+  settingsLinks,
+  aboutLinks,
+  authenticatedNavLinks,
+  unauthenticatedNavLinks,
+  ExtendedMenuItem,
+  toolsLinks,
+} from '@/app/constants/navigation-links';
 
 @Component({
   standalone: true,
   selector: 'breadcrumbs',
-  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent],
+  imports: [CommonModule, PrimeNgModule, DomainFaviconComponent, DlIconComponent],
   template: `
   <p-breadcrumb styleClass="ml-2 mb-2" *ngIf="shouldShowBreadcrumbs" [model]="breadcrumbs">
     <ng-template pTemplate="item" let-item>
       <ng-container *ngIf="item.route; else elseBlock">
         <a [routerLink]="item.route" class="p-menuitem-link">
-          <span [ngClass]="['mr-2 text-primary', item.icon ? item.icon : '!mr-0']"></span>
+          <span *ngIf="item.icon" [ngClass]="['mr-2 text-primary', item.icon]"></span>
           <app-domain-favicon *ngIf="isDomainPage(item.label)" [domain]="item.label" [size]="20" class="mr-1" />
+          <dl-icon *ngIf="item.svgIcon"
+            [icon]="item.svgIcon"
+            class="w-[1.25rem] h-5 mr-1"
+            classNames="w-full h-full text-primary"
+            color="var(--primary-color)"
+          />
+          <dl-icon
+            icon="webHook"
+            classNames="w-full h-full text-primary"
+          />
           <span class="text-primary font-semibold">{{ item.label }}</span>
         </a>
       </ng-container>
@@ -39,7 +58,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
   @Input() breadcrumbs?: MenuItem[];
   @Input() pagePath?: string;
   public shouldShowBreadcrumbs: boolean = true;
-  private navLinksMap: { [key: string]: { label: string, icon: string } } = {};
+  private navLinksMap: { [key: string]: ExtendedMenuItem } = {};
 
   ngOnInit(): void {
     this.flattenNavLinks();
@@ -72,6 +91,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
           label: this.getLabelForPath(cleanPath),
           route: this.getRouteForPath(paths.map(p => p.split('?')[0]), index),
           icon: this.getIconForPath(cleanPath),
+          svgIcon: this.getSvgIconForPath(cleanPath),
         };
       });
       this.breadcrumbs.unshift({ label: 'Home', route: '/', icon: 'pi pi-home' });
@@ -104,6 +124,15 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
     return ` pi pi-${iconName}`;
   }
 
+  private getSvgIconForPath(path: string) {
+    if (this.navLinksMap[path] && this.navLinksMap[path].svgIcon) {
+      return this.navLinksMap[path].svgIcon;
+    }
+    const icons: { [key: string]: string } = {};
+    if (!icons[path]) return;
+    return icons[path];
+  }
+
   private getLabelForPath(path: string) {
     const labels: { [key: string]: string } = {
       'certs': 'Certificates',
@@ -128,7 +157,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
         if (link.routerLink) {
           const path = link.routerLink.split('/').pop();
           if (path) {
-            this.navLinksMap[path] = { label: link.label, icon: link.icon };
+            this.navLinksMap[path] = { label: link.label, icon: link.icon, svgIcon: link.svgIcon };
           }
         }
         if (link.items) {
@@ -137,11 +166,12 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       }
     };
     const allLinks = [
-      ...statsLinks,
+      ...statsLinks as ExtendedMenuItem[],
       ...settingsLinks,
       ...aboutLinks,
       ...authenticatedNavLinks,
       ...unauthenticatedNavLinks,
+      ...toolsLinks,
     ];
     addLinksToMap(allLinks);
   }

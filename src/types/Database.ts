@@ -34,10 +34,6 @@ export interface DomainExpiration {
   expiration: Date;
 }
 
-
-import { Observable } from 'rxjs';
-// import { DbDomain, IpAddress, Notification, Tag, SaveDomainData, Registrar, Host, DomainExpiration } from '@/types/Database';
-
 export interface DbDomain extends Timestamps {
   id: string;
   user_id: string;
