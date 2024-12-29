@@ -5,11 +5,12 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@/app/services/database.service';
 import { SubdomainListComponent } from './subdomain-list.component';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { DomainFaviconComponent } from '@/app/components/misc/favicon.component';
 
 @Component({
   standalone: true,
   selector: 'app-subdomains-index',
-  imports: [CommonModule, RouterModule, PrimeNgModule, SubdomainListComponent],
+  imports: [CommonModule, RouterModule, PrimeNgModule, SubdomainListComponent, DomainFaviconComponent],
   templateUrl: './subdomains.page.html',
 })
 export default class SubdomainsIndexPageComponent implements OnInit {

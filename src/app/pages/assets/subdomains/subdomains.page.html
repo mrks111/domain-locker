@@ -6,6 +6,7 @@
   <div *ngFor="let group of subdomains" class="mt-4">
     <h2>
       <a [routerLink]="'/assets/subdomains/'+group.domain" class="no-underline text-default hover:text-primary">
+        <app-domain-favicon [domain]="group.domain" />
         {{ group.domain }}
       </a>
     </h2>
