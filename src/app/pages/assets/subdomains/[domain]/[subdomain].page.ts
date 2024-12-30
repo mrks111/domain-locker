@@ -25,7 +25,7 @@ export default class SubdomainDetailPageComponent implements OnInit {
   subdomainInfo: { key: string; value: string }[] = [];
   subdomain: any = null;
   loading: boolean = true;
-  subdomainWebsiteInfo: DbDomain | null = null;
+  subdomainWebsiteInfo: DomainInfo | null = null;
 
   constructor(
     private http: HttpClient,
@@ -65,20 +65,13 @@ export default class SubdomainDetailPageComponent implements OnInit {
   }
 
   private async loadDomainInfo(): Promise<void> {
-    const domainName = this.domain;
-      this.http.get<{ domainInfo: DomainInfo}>(`/api/domain-info?domain=${domainName}`).pipe(
+    const domainName = this.subdomainName + '.' + this.domain;
+    console.log(domainName);
+    this.http.get<{ domainInfo: DomainInfo}>(`/api/domain-info?domain=${domainName}`).pipe(
         catchError((error) => { throw error })
       ).subscribe({
         next: async (fetchedDomainInfo) => {
-          // this.subdomainWebsiteInfo = this.domainUtils.formatDomainData(fetchedDomainInfo);
           const results = { ...fetchedDomainInfo.domainInfo };
-          // results = fetchedDomainInfo.domainInfo;
-          // this.subdomainWebsiteInfo.statuses
-
-
-          // if (results.status) {
-          //   results.statuses = makeStatuses(this.subdomainWebsiteInfo.status);
-          // }
           this.subdomainWebsiteInfo = results;
           console.log(this.subdomainWebsiteInfo);
         },

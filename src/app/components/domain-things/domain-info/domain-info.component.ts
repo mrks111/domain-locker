@@ -17,6 +17,8 @@ import { SecurityCategory, makeEppArrayFromLabels } from '@/app/constants/securi
 export class DomainInfoComponent implements OnInit {
   @Input() domain: DbDomain | null = null;
 
+  subdomainsExpanded = false;
+
   constructor(public domainUtils: DomainUtils) {}
 
   ngOnInit() {
@@ -54,6 +56,10 @@ public filterIpAddresses(
 
   return [];
 }
+
+  toggleSubdomainsExpand() {
+    this.subdomainsExpanded = !this.subdomainsExpanded;
+  }
 
 
   public makeStatuses(statuses: string[] | SecurityCategory[]) {

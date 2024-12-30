@@ -4,7 +4,7 @@ export const makeKVList = (sdInfo: any): { key: string; value: string }[] => {
   if (!sdInfo) return [];
   const results = [];
   if (sdInfo['type']) results.push({ key: 'Type', value: `${sdInfo['type']} Record` });
-  if (sdInfo['ip']) results.push({ key: 'IP', value: sdInfo['ip'] });
+  if (sdInfo['ip']) results.push({ key: 'Value', value: sdInfo['ip'] });
   if (sdInfo['ports'] && sdInfo['ports'].length) {
     results.push({ key: 'Ports', value: sdInfo['ports'].join(', ') });
   }

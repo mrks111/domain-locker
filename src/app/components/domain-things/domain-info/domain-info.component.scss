@@ -15,3 +15,10 @@
 ::ng-deep .p-card-header {
   position: relative;
 }
+
+::ng-deep h5 {
+  @apply mt-3 mb-1;
+}
+::ng-deep p {
+  @apply m-0;
+}

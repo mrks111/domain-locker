@@ -17,9 +17,16 @@ const safeExecute = async <T>(fn: () => Promise<T>, errorMsg: string, errors: st
   }
 };
 
+const getParentDomain = (domain: string): string => {
+  const parts = domain.split('.');
+  return parts.length > 2 && parts[parts.length - 2].length > 3
+    ? parts.slice(-2).join('.')
+    : domain;
+}
+
 const getWhoisData = async (domain: string): Promise<any | null> => {
   return new Promise((resolve) => {
-    whois(domain)
+    whois(getParentDomain(domain))
       .then((data: any) => {
         if (data && typeof data === 'object') {
           resolve(data as Contact);
@@ -90,11 +97,13 @@ const getMxRecords = async (domain: string): Promise<string[]> => {
 // Utility function to get TXT records
 const getTxtRecords = async (domain: string): Promise<string[]> => {
   return new Promise((resolve) => {
-    dns.resolveTxt(domain, (err: any, records: { flat: () => string[] | PromiseLike<string[]>; }) => {
-      if (err || !records) {
-        resolve([]); // return empty array on error
+    dns.resolveTxt(domain, (err, addresses) => {
+      if (err || !addresses) {
+        resolve([]); // Return empty array on error
       } else {
-        resolve(records.flat()); // flatten the records array as it can be nested
+        // Flatten the array of arrays into a single array
+        const flattenedRecords = addresses.flatMap(record => record);
+        resolve(flattenedRecords);
       }
     });
   });
@@ -183,9 +192,9 @@ export default defineEventHandler(async (event) => {
         ipv6: ipv6Addresses || [],
       },
       dates: {
-        expiry_date: whoisData.registrarRegistrationExpirationDate || dunno,
-        updated_date: whoisData.updatedDate || dunno,
-        creation_date: whoisData.creationDate || dunno,
+        expiry_date: whoisData.registrarRegistrationExpirationDate,
+        updated_date: whoisData.updatedDate,
+        creation_date: whoisData.creationDate,
       },
       registrar: {
         name: whoisData.registrarName || whoisData.registrar || dunno,
