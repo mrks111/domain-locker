@@ -6,11 +6,12 @@ import { DlIconComponent } from '@components/misc/svg-icon.component';
 import { DomainFaviconComponent } from '@components/misc/favicon.component';
 import { type DbDomain } from '@typings/Database';
 import { SecurityCategory, makeEppArrayFromLabels } from '@/app/constants/security-categories';
+import { SafeDatePipe } from '@/app/utils/safe-date.pipe';
 
 @Component({
   standalone: true,
   selector: 'app-domain-info',
-  imports: [CommonModule, PrimeNgModule, DlIconComponent, DomainFaviconComponent],
+  imports: [CommonModule, PrimeNgModule, DlIconComponent, DomainFaviconComponent, SafeDatePipe],
   templateUrl: './domain-info.component.html',
   styleUrls: ['./domain-info.component.scss'],
 })

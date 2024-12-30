@@ -33,7 +33,7 @@
     <div *ngIf="domain.expiry_date" class="row">
       <h5 class="mt-3 mb-1">Expiry</h5>
       <p class="m-0">
-        {{ domain.expiry_date | date:'mediumDate' }}
+        {{ domain.expiry_date | safeDate:'medium' }}
         <p-tag class="float-right opacity-70"
           [value]="domainUtils.getRemainingDaysText(domain.expiry_date)"
           [severity]="domainUtils.getExpirySeverity(domain.expiry_date)"
@@ -43,12 +43,12 @@
 
     <div *ngIf="domain.registration_date" class="row">
       <h5 class="mt-3 mb-1">Registration</h5>
-      <p class="m-0">{{ domain.registration_date | date:'mediumDate' }}</p>
+      <p class="m-0">{{ domain.registration_date | safeDate:'medium' }}</p>
     </div>
 
     <div *ngIf="domain.updated_date" class="row">
       <h5 class="mt-3 mb-1">Updated</h5>
-      <p class="m-0">{{ domain.updated_date | date:'mediumDate' }}</p>
+      <p class="m-0">{{ domain.updated_date | safeDate:'medium' }}</p>
     </div>
   </p-card>
 
@@ -204,11 +204,11 @@
       </div>
       <div class="row" *ngIf="domain.ssl.valid_from">
         <h5>Valid From</h5>
-        <p>{{ domain.ssl.valid_from | date:'mediumDate' }}</p>
+        <p>{{ domain.ssl.valid_from | safeDate:'medium' }}</p>
       </div>
       <div class="row" *ngIf="domain.ssl.valid_to">
         <h5>Valid To</h5>
-        <p>{{ domain.ssl.valid_to | date:'mediumDate' }}</p>
+        <p>{{ domain.ssl.valid_to | safeDate:'medium' }}</p>
       </div>
       <div class="row" *ngIf="domain.ssl.key_size">
         <h5>Key Size</h5>

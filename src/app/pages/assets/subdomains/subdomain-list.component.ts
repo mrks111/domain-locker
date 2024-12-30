@@ -2,17 +2,20 @@ import { Component, Input, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Subdomain } from '@/types/Database';
+import DatabaseService from '@/app/services/database.service';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { DomainFaviconComponent } from '@components/misc/favicon.component';
 import { ConfirmationService } from 'primeng/api';
 import { makeKVList } from './subdomain-utils';
 import { MenuItem } from 'primeng/api';
 import { ContextMenu } from 'primeng/contextmenu';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { GlobalMessageService } from '@/app/services/messaging.service';
 
 @Component({
   standalone: true,
   selector: 'app-subdomain-list',
-  imports: [CommonModule, RouterModule, PrimeNgModule, DomainFaviconComponent],
+  imports: [CommonModule, RouterModule, PrimeNgModule, DomainFaviconComponent ],
   template: `
     <ul class="list-none p-0 m-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <li
@@ -55,6 +58,9 @@ export class SubdomainListComponent {
 
   constructor(
     private confirmationService: ConfirmationService,
+    private messagingService: GlobalMessageService,
+    private databaseService: DatabaseService,
+    private errorHandler: ErrorHandlerService,
     private router: Router,
 ) {}
 
@@ -88,7 +94,7 @@ export class SubdomainListComponent {
       {
         label: 'Delete Subdomain',
         icon: 'pi pi-trash',
-        command: () => this.confirmDeleteSubdomain(this.selectedSubdomain!),
+        command: () => this.deleteSubdomain(this.selectedSubdomain!),
       },
       {
         separator: true,
@@ -115,13 +121,30 @@ export class SubdomainListComponent {
     console.log('Editing subdomain:', subdomain);
   }
 
-  private confirmDeleteSubdomain(subdomain: Subdomain): void {
+  deleteSubdomain(subdomain: Subdomain): void {
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete subdomain "${subdomain.name}.${this.domain}"?`,
+      message: `Are you sure you want to delete the subdomain "${subdomain.name}.${this.domain}"?`,
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        console.log('Subdomain deleted:', subdomain);
+        this.databaseService.subdomainsQueries
+          .deleteSubdomain(this.domain, subdomain.name)
+          .then(() => {
+            this.messagingService.showSuccess(
+              'Deleted',
+              `Subdomain "${subdomain.name}.${this.domain}" has been deleted successfully.`,
+            );
+            // TODO: Trigger refresh the subdomain list, or hide deleted subdomain
+          })
+          .catch((error: Error) => {
+            this.errorHandler.handleError({
+              error,
+              message: 'Failed to delete the subdomain. Please try again.',
+            });
+          });
+      },
+      reject: () => {
+        this.messagingService.showInfo('Cancelled', 'Deletion cancelled' );
       },
     });
   }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import DatabaseService from '@/app/services/database.service';
 import { PrimeNgModule } from '@/app/prime-ng.module';
@@ -7,7 +7,6 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { makeKVList } from './../subdomain-utils';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DomainInfoComponent } from '@/app/components/domain-things/domain-info/domain-info.component';
-import { DomainInfo } from '@/types/DomainInfo';
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs';
 import { DbDomain } from '@/types/Database';
@@ -25,10 +24,11 @@ export default class SubdomainDetailPageComponent implements OnInit {
   subdomainInfo: { key: string; value: string }[] = [];
   subdomain: any = null;
   loading: boolean = true;
-  subdomainWebsiteInfo: DomainInfo | null = null;
+  subdomainWebsiteInfo: DbDomain | null = null;
 
   constructor(
     private http: HttpClient,
+    private router: Router,
     private route: ActivatedRoute,
     private domainUtils: DomainUtils,
     private messageService: MessageService,
@@ -67,7 +67,7 @@ export default class SubdomainDetailPageComponent implements OnInit {
   private async loadDomainInfo(): Promise<void> {
     const domainName = this.subdomainName + '.' + this.domain;
     console.log(domainName);
-    this.http.get<{ domainInfo: DomainInfo}>(`/api/domain-info?domain=${domainName}`).pipe(
+    this.http.get<{ domainInfo: DbDomain}>(`/api/domain-info?domain=${domainName}`).pipe(
         catchError((error) => { throw error })
       ).subscribe({
         next: async (fetchedDomainInfo) => {
@@ -86,23 +86,40 @@ export default class SubdomainDetailPageComponent implements OnInit {
     }
 
 
-  confirmDelete(event: Event): void {
-    this.confirmationService.confirm({
-      message: `Are you sure you want to delete the link "${this.subdomainName}.${this.domain}"?`,
-      header: 'Confirm Deletion',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        // TODO: Implement deletion
-      },
-      reject: () => {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Cancelled',
-          detail: 'Deletion cancelled',
-        });
-      },
-    });
-  }
+    confirmDelete(): void {
+      this.confirmationService.confirm({
+        message: `Are you sure you want to delete the subdomain "${this.subdomainName}.${this.domain}"?`,
+        header: 'Confirm Deletion',
+        icon: 'pi pi-exclamation-triangle',
+        accept: () => {
+          this.databaseService.subdomainsQueries
+            .deleteSubdomain(this.domain, this.subdomainName)
+            .then(() => {
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Deleted',
+                detail: `Subdomain "${this.subdomainName}.${this.domain}" has been deleted successfully.`,
+              });
+              this.router.navigate(['/assets/subdomains', this.domain]);
+            })
+            .catch((error) => {
+              this.errorHandler.handleError({
+                error,
+                showToast: true,
+                message: 'Failed to delete the subdomain. Please try again.',
+              });
+            });
+        },
+        reject: () => {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Cancelled',
+            detail: 'Deletion cancelled',
+          });
+        },
+      });
+    }
+
 }
 
 

@@ -200,4 +200,39 @@ export class SubdomainsQueries {
     }));
   }
 
+  async deleteSubdomain(domain: string, subdomain: string): Promise<void> {
+    try {
+      // Fetch the domain_id for the given domain name
+      const { data: domainData, error: domainError } = await this.supabase
+        .from('domains')
+        .select('id')
+        .eq('domain_name', domain)
+        .single();
+
+      if (domainError) {
+        throw new Error(`Failed to fetch domain ID: ${domainError.message}`);
+      }
+
+      const domainId = domainData?.id;
+
+      if (!domainId) {
+        throw new Error(`Domain ID not found for domain name: ${domain}`);
+      }
+
+      // Perform the delete using the domain_id
+      const { error: deleteError } = await this.supabase
+        .from('sub_domains')
+        .delete()
+        .eq('name', subdomain)
+        .eq('domain_id', domainId);
+
+      if (deleteError) {
+        throw new Error(`Failed to delete subdomain: ${deleteError.message}`);
+      }
+    } catch (error: Error | any) {
+      throw new Error(`Failed to delete subdomain: ${error.message}`);
+    }
+  }
+
+
 }

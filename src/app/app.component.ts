@@ -154,7 +154,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if (hasMFA) {
         const { currentLevel } = await this.supabaseService.getAuthenticatorAssuranceLevel();
         if (currentLevel !== 'aal2') {
-          await this.router.navigate(['/login'], { 
+          await this.router.navigate(['/login'], {
             queryParams: { requireMFA: 'true' }
           });
         }
