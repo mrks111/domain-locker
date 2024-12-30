@@ -67,4 +67,6 @@
 
 <p *ngIf="!loading && !subdomain">Subdomain not found.</p>
 
+<app-not-found *ngIf="!subdomain && !loading" [name]="'Subdomain'" />
+
 <p-confirmDialog />

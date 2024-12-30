@@ -5,7 +5,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@services/database.service';
 import { type DbDomain } from '@typings/Database';
 import { DomainUtils } from '@services/domain-utils.service';
-import { DomainFaviconComponent } from '@components/misc/favicon.component'; 
+import { DomainFaviconComponent } from '@components/misc/favicon.component';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -17,6 +17,7 @@ import { UptimeHistoryComponent } from '@/app/components/monitor/uptime-history/
 import { FeatureService } from '@/app/services/features.service';
 import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
 import { LazyLoadDirective } from '@/app/utils/lazy.directive';
+import { NotFoundComponent } from '@components/misc/domain-not-found.component';
 
 @Component({
   standalone: true,
@@ -30,6 +31,7 @@ import { LazyLoadDirective } from '@/app/utils/lazy.directive';
     UptimeHistoryComponent,
     FeatureNotEnabledComponent,
     LazyLoadDirective,
+    NotFoundComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './[domain].page.html',
@@ -77,7 +79,7 @@ export default class DomainDetailsPage implements OnInit {
     });
   }
 
-  onCalendarVisible(): void { 
+  onCalendarVisible(): void {
     this.shouldMountCalendar = true;
   }
 }

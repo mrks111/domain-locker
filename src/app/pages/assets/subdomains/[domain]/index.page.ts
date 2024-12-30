@@ -5,20 +5,33 @@ import { SubdomainListComponent } from './../subdomain-list.component';
 import DatabaseService from '@/app/services/database.service';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { NotFoundComponent } from '@components/misc/domain-not-found.component';
 
 @Component({
   standalone: true,
   selector: 'app-subdomains-domain',
-  imports: [CommonModule, SubdomainListComponent, PrimeNgModule],
+  imports: [CommonModule, SubdomainListComponent, PrimeNgModule, NotFoundComponent],
   template: `
+    <!-- Heading -->
     <h1>Subdomains for {{ domain }}</h1>
+    <!-- Loading spinner -->
     <p-progressSpinner *ngIf="loading"></p-progressSpinner>
+    <!-- Results -->
     <app-subdomain-list
       *ngIf="!loading && subdomains.length"
       [domain]="domain"
       [subdomains]="subdomains"
     ></app-subdomain-list>
-    <p *ngIf="!loading && !subdomains.length">No subdomains found for this domain.</p>
+    <!-- Not found message -->
+    <app-not-found
+      *ngIf="!loading && !subdomains.length"
+      title="No Subdomains Found"
+      [name]="this.domain"
+      message="either doesn't exist or hasn't yet got any associated subdomains"
+      actionLabel="Edit Domain"
+      actionIcon="pi pi-pencil"
+      actionLink="/domains/{{ domain }}/edit"
+    />
   `,
 })
 export default class SubdomainsDomainPageComponent implements OnInit {

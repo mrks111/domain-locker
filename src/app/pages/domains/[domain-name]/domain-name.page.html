@@ -1,24 +1,6 @@
 
 <!-- Domain not found -->
-<div *ngIf="domainNotFound" class="flex flex-col gap-4 items-center justify-center max-w-[30rem] mx-auto p-card p-4 mt-8">
-  <h1 class="text-3xl">
-    <i class="pi pi-exclamation-triangle text-3xl"></i>
-    Domain Not Found
-  </h1>
-  <p class="m-0">
-    <strong>{{ name }}</strong> hasn't yet been added to your account.
-  </p>
-
-  <a [href]="'/domains/add?domain='+(name)">
-    <p-button icon="pi pi-plus" label="Add it now" class="p-button-primary" />
-  </a>
-  <p class="text-sm opacity-70 italic">
-    Believe this is an error?
-    Check the URL is correct, ensure you are authenticated, and have the correct access rights.
-    <br>
-    For additional help contact the administrator, or see the <a href="/about#support">Help Docs</a>
-  </p>
-</div>
+<app-not-found *ngIf="domainNotFound" [name]="name || 'Domain'" />
 
 <div *ngIf="domain && !domainNotFound; else loading" class="domain-details p-4 flex flex-col gap-1">
   <!-- Domain name, icon and actions header -->

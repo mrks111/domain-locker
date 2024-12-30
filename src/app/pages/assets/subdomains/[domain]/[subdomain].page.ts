@@ -11,11 +11,12 @@ import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs';
 import { DbDomain } from '@/types/Database';
 import { DomainUtils } from '@services/domain-utils.service';
+import { NotFoundComponent } from '@components/misc/domain-not-found.component';
 
 @Component({
   standalone: true,
   selector: 'app-subdomain-detail',
-  imports: [CommonModule, PrimeNgModule, DomainInfoComponent],
+  imports: [CommonModule, PrimeNgModule, DomainInfoComponent, NotFoundComponent],
   templateUrl: './[subdomain].page.html',
 })
 export default class SubdomainDetailPageComponent implements OnInit {
