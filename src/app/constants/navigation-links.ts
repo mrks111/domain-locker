@@ -297,7 +297,7 @@ export const unauthenticatedNavLinks = [
   {
     label: 'Pricing',
     icon: 'pi pi-fw pi-cart-minus',
-    routerLink: '/about/features'
+    routerLink: '/about/pricing'
   },
   {
     label: 'Login',

@@ -8,7 +8,8 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { NotFoundComponent } from '@components/misc/domain-not-found.component';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, map, of, switchMap, tap } from 'rxjs';
+import { autoSubdomainsReadyForSave, filterOutIgnoredSubdomains } from '../subdomain-utils';
 
 @Component({
   standalone: true,
@@ -19,7 +20,7 @@ import { firstValueFrom } from 'rxjs';
     <!-- Heading -->
     <h1>Subdomains for {{ domain }}</h1>
     <!-- Loading spinner -->
-    <p-progressSpinner *ngIf="loading"></p-progressSpinner>
+    <p-progressSpinner *ngIf="loading" class="flex mt-8" />
     <!-- Results -->
     <app-subdomain-list
       *ngIf="!loading && subdomains.length"
@@ -32,9 +33,7 @@ import { firstValueFrom } from 'rxjs';
       title="No Subdomains Found"
       [name]="this.domain"
       message="either doesn't exist or hasn't yet got any associated subdomains"
-      actionLabel="Edit Domain"
-      actionIcon="pi pi-pencil"
-      actionLink="/domains/{{ domain }}/edit"
+      [actionLink]="false"
     >
       <p-button
         *ngIf="validDomain"
@@ -84,36 +83,49 @@ export default class SubdomainsDomainPageComponent implements OnInit {
     });
   }
 
-  async searchForSubdomains() {
-    try {
-      this.loading = true;
-      const response: any[] | undefined = await firstValueFrom(
-        this.http.get<any[]>(`/api/domain-subs?domain=${this.domain}`)
-      );
-
-      // Filter out subdomains with invalid names
-      const validSubdomains = (response || []).filter(sd => sd.name?.trim());
-      if (validSubdomains.length > 0) {
-        await this.databaseService.subdomainsQueries.saveSubdomainsForDomainName(this.domain, validSubdomains);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Subdomains successfully added.',
-        });
-        this.loadSubdomains(); // Reload subdomains
-      } else {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'No Valid Subdomains Found',
-          detail: 'No valid subdomains were discovered for this domain.',
-        });
-      }
-    } catch (error) {
-      this.errorHandler.handleError({ error, message: 'Failed to search for subdomains.' });
-    } finally {
-      this.loading = false;
-    }
+  searchForSubdomains() {
+    this.loading = true;
+    this.http.get<any[]>(`/api/domain-subs?domain=${this.domain}`).pipe(
+      map(response => filterOutIgnoredSubdomains(response)), // Filter invalid subdomains
+      switchMap(validSubdomains => {
+        if (validSubdomains.length > 0) {
+          const subdomainsReadyForSave = autoSubdomainsReadyForSave(validSubdomains);
+          return this.databaseService.subdomainsQueries
+            .saveSubdomainsForDomainName(this.domain, subdomainsReadyForSave)
+            .pipe(
+              tap(() => {
+                this.messageService.add({
+                  severity: 'success',
+                  summary: 'Success',
+                  detail: 'Subdomains successfully added.',
+                });
+                this.loadSubdomains();
+              }),
+              catchError(error => {
+                this.errorHandler.handleError({
+                  error,
+                  message: 'Failed to save subdomains.',
+                });
+                return of(null); // Graceful fallback for error handling
+              })
+            );
+        } else {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'No Valid Subdomains Found',
+            detail: 'No valid subdomains were discovered for this domain.',
+          });
+          return of(null);
+        }
+      })
+    ).subscribe({
+      error: err => this.errorHandler.handleError({ error: err, message: 'Failed to search for subdomains.' }),
+      complete: () => {
+        this.loading = false; // Ensure loading is false regardless of the outcome
+      },
+    });
   }
+  
 
 
   private parseSdInfo(sdInfo: string): any {

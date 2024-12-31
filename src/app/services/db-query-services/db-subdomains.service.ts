@@ -1,5 +1,5 @@
 import { SupabaseClient, User } from '@supabase/supabase-js';
-import { catchError, forkJoin, from, map, Observable, of } from 'rxjs';
+import { catchError, forkJoin, from, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { Subdomain } from '@/types/Database';
 export class SubdomainsQueries {
   constructor(
@@ -8,18 +8,19 @@ export class SubdomainsQueries {
   ) {}
 
   // Combines fetchDomainId and saveSubdomains
-  async saveSubdomainsForDomainName(
+  saveSubdomainsForDomainName(
     domainName: string,
     subdomains: { name: string; sd_info?: string }[]
-  ): Promise<void> {
-    try {
-      const domainId = await this.fetchDomainId(domainName);
-      await this.saveSubdomains(domainId, subdomains);
-    } catch (error) {
-      console.error('Error in saveSubdomainsForDomainName:', error);
-      throw error; // Pass the error to the caller
-    }
+  ): Observable<void> {
+    return from(this.fetchDomainId(domainName)).pipe(
+      switchMap(domainId => from(this.saveSubdomains(domainId, subdomains))),
+      catchError(error => {
+        // Pass the error for the calling component to handle
+        return throwError(() => new Error(`Failed to save subdomains: ${error.message}`));
+      })
+    );
   }
+  
 
   // Reusable function to fetch domain ID based on domain name
   private async fetchDomainId(domain: string): Promise<string> {
@@ -42,16 +43,14 @@ export class SubdomainsQueries {
   }
 
   async saveSubdomains(domainId: string, subdomains: { name: string; sd_info?: string }[]): Promise<void> {
-    if (!subdomains || subdomains.length === 0) return;
-
-    // Log subdomains to help with debugging
-    console.log('Saving subdomains:', subdomains);
+    if (!subdomains || subdomains.length === 0) {
+      throw new Error('Skipping subdomains, none found');
+    };
 
     // Filter out invalid subdomains
     const validSubdomains = subdomains.filter(sd => sd.name?.trim());
     if (validSubdomains.length === 0) {
-      console.warn('No valid subdomains to save');
-      return;
+      throw new Error('Skipping subdomains, no valid subdomains listed');
     }
 
     // Fetch existing subdomains for the domain
@@ -66,6 +65,8 @@ export class SubdomainsQueries {
 
     // Filter out subdomains that already exist
     const subdomainsToInsert = validSubdomains.filter(sd => !existingNames.includes(sd.name));
+
+    console.log('Subdomains to insert:', subdomainsToInsert);
 
     if (subdomainsToInsert.length > 0) {
       const formattedSubdomains = subdomainsToInsert.map(sd => ({

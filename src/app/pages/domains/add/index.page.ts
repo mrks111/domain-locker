@@ -14,6 +14,7 @@ import { notificationTypes } from '@/app/constants/notification-types';
 import type { DomainInfo } from '@typings/DomainInfo';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Registrar } from '@/types/common';
+import { subdomainsReadyForSave } from '@/app/pages/assets/subdomains/subdomain-utils';
 
 @Component({
   selector: 'app-add-domain',
@@ -299,13 +300,6 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
         .replace(/\/.*$/, '');
 }
 
-  private cleanSubdomain(subdomain: string): string {
-    return subdomain
-      .replace(/^https?:\/\//, '')
-      .replace(/^www\./, '')
-      .split('.')[0];
-  }
-
   /**
    * Handles form submission
    */
@@ -314,13 +308,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
       try {
         const formValue = this.domainForm.value;
 
-        const subdomains = formValue.subdomains.map((sd: string) => {
-          const subdomainData = this.subdomainInfo.find((info) => info.subdomain === sd);
-          return {
-            name: this.cleanSubdomain(sd),
-            sd_info: subdomainData ? JSON.stringify(subdomainData) : null, // Include the JSON data
-          };
-        });
+        const subdomains = subdomainsReadyForSave(formValue.subdomains, this.subdomainInfo);
 
         const domainData: SaveDomainData = {
           domain: {

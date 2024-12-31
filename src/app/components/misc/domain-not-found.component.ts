@@ -33,7 +33,7 @@ export class NotFoundComponent {
   @Input() title: string = 'Not Found'; // Main title (e.g., Domain Not Found)
   @Input() name: string = 'Domain Name'; // Entity name (e.g., domain name or subdomain)
   @Input() message: string = 'hasn\'t been added to your account yet'; // Additional context message
-  @Input() actionLink?: string = '/domains/add'; // Action link (e.g., add URL)
+  @Input() actionLink?: string | false = '/domains/add'; // Action link (e.g., add URL)
   @Input() actionLabel: string = 'Add it now'; // Button label
   @Input() actionIcon: string = 'pi pi-plus'; // Button icon
   @Input() helpMessage: string = 'Check the URL, ensure you are authenticated, and have access rights.'; // Help message
