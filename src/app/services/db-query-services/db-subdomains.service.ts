@@ -1,16 +1,58 @@
 import { SupabaseClient, User } from '@supabase/supabase-js';
 import { catchError, forkJoin, from, map, Observable, of } from 'rxjs';
 import { Subdomain } from '@/types/Database';
-
 export class SubdomainsQueries {
   constructor(
     private supabase: SupabaseClient,
     private handleError: (error: any) => Observable<never>,
   ) {}
 
+  // Combines fetchDomainId and saveSubdomains
+  async saveSubdomainsForDomainName(
+    domainName: string,
+    subdomains: { name: string; sd_info?: string }[]
+  ): Promise<void> {
+    try {
+      const domainId = await this.fetchDomainId(domainName);
+      await this.saveSubdomains(domainId, subdomains);
+    } catch (error) {
+      console.error('Error in saveSubdomainsForDomainName:', error);
+      throw error; // Pass the error to the caller
+    }
+  }
+
+  // Reusable function to fetch domain ID based on domain name
+  private async fetchDomainId(domain: string): Promise<string> {
+    const { data, error } = await this.supabase
+      .from('domains')
+      .select('id')
+      .eq('domain_name', domain)
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to fetch domain ID: ${error.message}`);
+    }
+
+    const domainId = data?.id;
+    if (!domainId) {
+      throw new Error(`Domain ID not found for domain name: ${domain}`);
+    }
+
+    return domainId;
+  }
 
   async saveSubdomains(domainId: string, subdomains: { name: string; sd_info?: string }[]): Promise<void> {
     if (!subdomains || subdomains.length === 0) return;
+
+    // Log subdomains to help with debugging
+    console.log('Saving subdomains:', subdomains);
+
+    // Filter out invalid subdomains
+    const validSubdomains = subdomains.filter(sd => sd.name?.trim());
+    if (validSubdomains.length === 0) {
+      console.warn('No valid subdomains to save');
+      return;
+    }
 
     // Fetch existing subdomains for the domain
     const { data: existingSubdomains, error: fetchError } = await this.supabase
@@ -23,17 +65,58 @@ export class SubdomainsQueries {
     const existingNames = (existingSubdomains || []).map((sd: { name: string }) => sd.name);
 
     // Filter out subdomains that already exist
-    const subdomainsToInsert = subdomains.filter((sd) => !existingNames.includes(sd.name));
+    const subdomainsToInsert = validSubdomains.filter(sd => !existingNames.includes(sd.name));
 
     if (subdomainsToInsert.length > 0) {
-      const formattedSubdomains = subdomainsToInsert.map((sd) => ({
+      const formattedSubdomains = subdomainsToInsert.map(sd => ({
         domain_id: domainId,
         name: sd.name,
         sd_info: sd.sd_info || null,
       }));
 
       const { error: subdomainError } = await this.supabase.from('sub_domains').insert(formattedSubdomains);
-      if (subdomainError) this.handleError(subdomainError);
+
+      if (subdomainError) {
+        throw new Error(`Failed to insert subdomains: ${subdomainError.message}`);
+      }
+    } else {
+      console.info('No new subdomains to insert');
+    }
+  }
+
+
+  // async deleteSubdomain(domain: string, subdomain: string): Promise<void> {
+  //   try {
+  //     const domainId = await this.fetchDomainId(domain);
+
+  //     const { error: deleteError } = await this.supabase
+  //       .from('sub_domains')
+  //       .delete()
+  //       .eq('name', subdomain)
+  //       .eq('domain_id', domainId);
+
+  //     if (deleteError) {
+  //       throw new Error(`Failed to delete subdomain: ${deleteError.message}`);
+  //     }
+  //   } catch (error: Error | any) {
+  //     throw new Error(`Failed to delete subdomain: ${error.message}`);
+  //   }
+  // }
+
+  async deleteSubdomainsByDomain(domain: string): Promise<void> {
+    try {
+      const domainId = await this.fetchDomainId(domain);
+
+      const { error: deleteError } = await this.supabase
+        .from('sub_domains')
+        .delete()
+        .eq('domain_id', domainId);
+
+      if (deleteError) {
+        throw new Error(`Failed to delete subdomains for domain ${domain}: ${deleteError.message}`);
+      }
+    } catch (error: Error | any) {
+      throw new Error(`Failed to delete subdomains by domain: ${error.message}`);
     }
   }
 
@@ -74,7 +157,6 @@ export class SubdomainsQueries {
       if (insertError) throw insertError;
     }
 
-    // Remove old subdomains
     if (subdomainsToRemove.length > 0) {
       const { error: deleteError } = await this.supabase
         .from('sub_domains')
@@ -85,7 +167,6 @@ export class SubdomainsQueries {
       if (deleteError) throw deleteError;
     }
 
-    // Update existing subdomains with new `sd_info` (if provided)
     for (const sd of subdomains) {
       const existing = existingSubdomains.find((e) => e.name === sd.name);
       if (existing && sd.sd_info && sd.sd_info !== existing.sd_info) {

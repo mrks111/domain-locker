@@ -18,6 +18,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
       <a *ngIf="actionLink" [href]="actionLink">
         <p-button [icon]="actionIcon" [label]="actionLabel" class="p-button-primary" />
       </a>
+      <ng-content></ng-content> <!-- Slot for additional content -->
       <p class="text-sm opacity-70 italic">
         Believe this is an error? {{ helpMessage }}
         <ng-container *ngIf="helpLink">
