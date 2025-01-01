@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Subdomain } from '@/types/Database';
@@ -17,9 +17,15 @@ import { GlobalMessageService } from '@/app/services/messaging.service';
   selector: 'app-subdomain-list',
   imports: [CommonModule, RouterModule, PrimeNgModule, DomainFaviconComponent ],
   template: `
-    <ul class="list-none p-0 m-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <ul
+      [ngClass]="{
+        'sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3': embeddedView,
+        'md:grid-cols-2 lg:grid-cols-3 gap-4': !embeddedView,
+        'list-none p-0 m-0 grid grid-cols-1': true,
+      }"
+    >
       <li
-        *ngFor="let subdomain of subdomains"
+        *ngFor="let subdomain of subdomainsToShow"
         [ngClass]="{
           'px-4 py-3 rounded shadow relative': true,
           'border-2 border-surface-100': embeddedView,
@@ -46,17 +52,35 @@ import { GlobalMessageService } from '@/app/services/messaging.service';
         </ul>
       </li>
     </ul>
+
+    <p-divider *ngIf="embeddedView" align="center" (click)="toggleShowAll()">
+      @if (!showFullList) {
+        <div class="flex gap-2 items-center px-3 py-2 cursor-pointer hover:text-primary bg-highlight rounded">
+          <i class="pi pi-angle-double-down"></i>
+          <span>Expand List</span>
+          <i class="pi pi-angle-double-down"></i>
+        </div>
+      } @else {
+        <div class="flex gap-2 items-center px-1 py-1 cursor-pointer hover:text-primary text-xs opacity-70 bg-highlight rounded-sm">
+          <i class="pi pi-angle-double-up"></i>
+          <span>Show Less</span>
+          <i class="pi pi-angle-double-up"></i>
+        </div>
+      }
+    </p-divider>
     <p-confirmDialog />
     <p-contextMenu #contextMenu [model]="menuItems"></p-contextMenu>
   `,
   providers: [ConfirmationService],
 })
-export class SubdomainListComponent {
+export class SubdomainListComponent implements OnInit {
   @Input() domain: string = '';
   @Input() subdomains: Subdomain[] = [];
   @Input() embeddedView: boolean = false;
   @ViewChild('contextMenu') menu: ContextMenu | undefined;
+  subdomainsToShow: Subdomain[] = [];
   makeKVList = makeKVList;
+  showFullList: boolean = false;
 
   menuItems: MenuItem[] = [];
   selectedSubdomain: Subdomain | null = null;
@@ -68,12 +92,27 @@ export class SubdomainListComponent {
     private errorHandler: ErrorHandlerService,
     private router: Router,
 ) {}
+  ngOnInit(): void {
+    this.subdomainsToShow = this.subdomains;
+    if (this.embeddedView && !this.showFullList) {
+      this.subdomainsToShow = this.subdomains.slice(0, 8);
+    }
+  }
 
   onRightClick(event: MouseEvent, subdomain: Subdomain) {
     this.selectedSubdomain = subdomain;
     this.menuItems = this.createMenuItems();
     if (this.menu) this.menu.show(event);
     event.preventDefault();
+  }
+
+  toggleShowAll() {
+    this.showFullList = !this.showFullList;
+    if (this.showFullList) {
+      this.subdomainsToShow = this.subdomains;
+    } else {
+      this.subdomainsToShow = this.subdomains.slice(0, 8);
+    }
   }
 
   createMenuItems(): MenuItem[] {

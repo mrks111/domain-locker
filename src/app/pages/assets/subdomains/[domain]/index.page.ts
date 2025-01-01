@@ -15,34 +15,7 @@
     standalone: true,
     selector: 'app-subdomains-domain',
     imports: [CommonModule, SubdomainListComponent, PrimeNgModule, NotFoundComponent],
-    template: `
-      <!-- Heading -->
-      <h1>Subdomains for {{ domain }}</h1>
-      <!-- Loading spinner -->
-      <p-progressSpinner *ngIf="loading" class="flex mt-8" />
-      <!-- Results -->
-      <app-subdomain-list
-        *ngIf="!loading && subdomains.length"
-        [domain]="domain"
-        [subdomains]="subdomains"
-      ></app-subdomain-list>
-      <!-- Not found message -->
-      <app-not-found
-        *ngIf="!loading && !subdomains.length"
-        title="No Subdomains Found"
-        [name]="this.domain"
-        message="either doesn't exist or hasn't yet got any associated subdomains"
-        [actionLink]="false"
-      >
-        <p-button
-          *ngIf="validDomain"
-          label="Search for Subdomains"
-          icon="pi pi-search"
-          class="p-button-secondary mt-4"
-          (click)="searchForSubdomains()"
-        ></p-button>
-      </app-not-found>
-    `,
+    templateUrl: './index.page.html',
   })
   export default class SubdomainsDomainPageComponent implements OnInit {
     domain: string = '';

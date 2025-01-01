@@ -18,8 +18,6 @@ import { SafeDatePipe } from '@/app/utils/safe-date.pipe';
 export class DomainInfoComponent implements OnInit {
   @Input() domain: DbDomain | null = null;
 
-  subdomainsExpanded = false;
-
   constructor(public domainUtils: DomainUtils) {}
 
   ngOnInit() {
@@ -57,11 +55,6 @@ public filterIpAddresses(
 
   return [];
 }
-
-  toggleSubdomainsExpand() {
-    this.subdomainsExpanded = !this.subdomainsExpanded;
-  }
-
 
   public makeStatuses(statuses: string[] | SecurityCategory[]) {
     if (typeof statuses[0] === 'string') {

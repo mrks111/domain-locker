@@ -289,12 +289,7 @@
         <dl-icon icon="subdomains" classNames="w-full h-full" color="var(--surface-200)"></dl-icon>
       </div>
     </ng-template>
-    <div
-      [class.collapsed]="!subdomainsExpanded"
-      [class.expanded]="subdomainsExpanded"
-      class="overflow-hidden transition-all duration-300"
-      [style.maxHeight]="subdomainsExpanded ? 'none' : '360px'"
-    >
+    <div class="transition-all duration-300 max-h-96 overflow-y-scroll mt-2">
       <ul class="list-none p-0 m-0">
         <li *ngFor="let subdomain of domain.sub_domains" class="mb-2 truncate">
           <a
@@ -306,13 +301,6 @@
         </li>
       </ul>
     </div>
-    <button p-button
-      *ngIf="domain.sub_domains.length > 16"
-      (click)="toggleSubdomainsExpand()"
-      class="mt-2 w-full text-primary hover:underline border-0 bg-transparent text-sm"
-    >
-      {{ subdomainsExpanded ? 'Show Less' : 'Show More' }}
-    </button>
   </p-card>
 
   <!-- Notes -->
