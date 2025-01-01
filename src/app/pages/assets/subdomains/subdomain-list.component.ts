@@ -18,11 +18,9 @@ import { GlobalMessageService } from '@/app/services/messaging.service';
   imports: [CommonModule, RouterModule, PrimeNgModule, DomainFaviconComponent ],
   template: `
     <ul
-      [ngClass]="{
-        'sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3': embeddedView,
-        'md:grid-cols-2 lg:grid-cols-3 gap-4': !embeddedView,
-        'list-none p-0 m-0 grid grid-cols-1': true,
-      }"
+      [class]="' list-none p-0 m-0 grid grid-cols-1 '
+        + (embeddedView ? 'xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-3 '
+        : ' md:grid-cols-2 lg:grid-cols-3 gap-4 ')"
     >
       <li
         *ngFor="let subdomain of subdomainsToShow"
@@ -144,7 +142,7 @@ export class SubdomainListComponent implements OnInit {
         separator: true,
       },
       {
-        label: 'View Parent Domain',
+        label: 'View Parent',
         icon: 'pi pi-folder',
         command: () => this.navigateTo(`/domains/${this.domain}`),
       },
@@ -174,11 +172,14 @@ export class SubdomainListComponent implements OnInit {
         this.databaseService.subdomainsQueries
           .deleteSubdomain(this.domain, subdomain.name)
           .then(() => {
+            // Show success message
             this.messagingService.showSuccess(
               'Deleted',
               `Subdomain "${subdomain.name}.${this.domain}" has been deleted successfully.`,
             );
-            // TODO: Trigger refresh the subdomain list, or hide deleted subdomain
+            // Remove the subdomain from the list
+            this.subdomains = this.subdomains.filter((sd) => sd.name !== subdomain.name);
+            this.subdomainsToShow = this.subdomains;
           })
           .catch((error: Error) => {
             this.errorHandler.handleError({

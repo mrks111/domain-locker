@@ -17,7 +17,7 @@ import { CommonModule, NgOptimizedImage } from '@angular/common';
       (load)="onFaviconLoad()"
       (error)="onFaviconError()"
       [alt]="sanitizedDomain + ' favicon'"
-      [class]="styleClass || 'rounded-sm'"
+      [class]="styleClass + 'rounded-sm overflow-hidden block'"
     />
   `,
   styles: [`
@@ -37,7 +37,8 @@ export class DomainFaviconComponent implements OnInit, OnDestroy {
   @Input() size: number = 24;
   @Input() styleClass: string = '';
   @Input() domainIcon: string = '';
-  apiBaseUrl = 'https://favicon.twenty.com/'; // https://favicone.com/
+  apiBaseUrl = 'https://favicon.twenty.com/';
+  // apiBaseUrl = 'https://favicone.com/'; 
 
   sanitizedDomain: string = '';
   faviconLoaded: boolean | undefined;
