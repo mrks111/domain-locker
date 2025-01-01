@@ -1,4 +1,3 @@
-
 /**
  * The subdomain info (from sd_info column) is stored as a stringified array of KV pairs.
  * The entries can technically be anything, but there's a few common keys that we care most about
@@ -8,6 +7,11 @@
  */
 export const makeKVList = (sdInfo: any): { key: string; value: string }[] => {
   if (!sdInfo) return [];
+
+  if (typeof sdInfo === 'string') {
+    try { sdInfo = JSON.parse(sdInfo); } catch (e) { return []; }
+  }
+
   const results = [];
   if (sdInfo['type']) results.push({ key: 'Type', value: `${sdInfo['type']} Record` });
   if (sdInfo['ip']) results.push({ key: 'Value', value: sdInfo['ip'] });
@@ -37,12 +41,13 @@ export const makeKVList = (sdInfo: any): { key: string; value: string }[] => {
  * @param subdomains 
  * @returns 
  */
-export const filterOutIgnoredSubdomains = (subdomains: any[]): any[] => {
+export const filterOutIgnoredSubdomains = (subdomains: any[], parentDomain?: string): any[] => {
   return subdomains.filter(subdomain => {
     const name = subdomain.subdomain;
     if (!name) return false;
     if (name.startsWith('_')) return false;
     if (name === 'www') return false;
+    if (parentDomain && (name === parentDomain)) return false;
     const parts = name.split('.');
     if (parts.length > 1 && parts[0] === parts[1]) return false;
     return true;

@@ -1,51 +1,65 @@
 import { SupabaseClient, User } from '@supabase/supabase-js';
 import { catchError, forkJoin, from, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { Subdomain } from '@/types/Database';
+import { GlobalMessageService } from '../messaging.service';
+
 export class SubdomainsQueries {
   constructor(
     private supabase: SupabaseClient,
     private handleError: (error: any) => Observable<never>,
+    private messageService: GlobalMessageService,
   ) {}
 
   // Combines fetchDomainId and saveSubdomains
   saveSubdomainsForDomainName(
-    domainName: string,
+    domain: string,
     subdomains: { name: string; sd_info?: string }[]
   ): Observable<void> {
-    return from(this.fetchDomainId(domainName)).pipe(
-      switchMap(domainId => from(this.saveSubdomains(domainId, subdomains))),
-      catchError(error => {
-        // Pass the error for the calling component to handle
-        return throwError(() => new Error(`Failed to save subdomains: ${error.message}`));
+    return this.fetchDomainId(domain).pipe(
+      switchMap((domainId) => {
+        return from(this.saveSubdomains(domainId, subdomains));
+      }),
+      catchError((error) => {
+        return this.handleError(error);
+      })
+    );
+  }
+  
+  
+  
+
+  // Reusable function to fetch domain ID based on domain name
+  fetchDomainId(domain: string): Observable<string> {
+    return from(
+      this.supabase
+        .from('domains')
+        .select('id')
+        .eq('domain_name', domain)
+        .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          throw new Error(`Failed to fetch domain ID: ${error.message}`);
+        }
+  
+        const domainId = data?.id;
+        if (!domainId) {
+          throw new Error(`Domain ID not found for domain name: ${domain}`);
+        }
+  
+        return domainId;
+      }),
+      catchError((error) => {
+        return this.handleError(error);
       })
     );
   }
   
 
-  // Reusable function to fetch domain ID based on domain name
-  private async fetchDomainId(domain: string): Promise<string> {
-    const { data, error } = await this.supabase
-      .from('domains')
-      .select('id')
-      .eq('domain_name', domain)
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to fetch domain ID: ${error.message}`);
-    }
-
-    const domainId = data?.id;
-    if (!domainId) {
-      throw new Error(`Domain ID not found for domain name: ${domain}`);
-    }
-
-    return domainId;
-  }
-
   async saveSubdomains(domainId: string, subdomains: { name: string; sd_info?: string }[]): Promise<void> {
     if (!subdomains || subdomains.length === 0) {
       throw new Error('Skipping subdomains, none found');
-    };
+    }
 
     // Filter out invalid subdomains
     const validSubdomains = subdomains.filter(sd => sd.name?.trim());
@@ -53,37 +67,44 @@ export class SubdomainsQueries {
       throw new Error('Skipping subdomains, no valid subdomains listed');
     }
 
-    // Fetch existing subdomains for the domain
-    const { data: existingSubdomains, error: fetchError } = await this.supabase
-      .from('sub_domains')
-      .select('name')
-      .eq('domain_id', domainId);
+    try {
+      const { data, error } = await this.supabase
+        .from('sub_domains')
+        .select('name')
+        .eq('domain_id', domainId);
 
-    if (fetchError) this.handleError(fetchError);
+      if (error) throw error;
 
-    const existingNames = (existingSubdomains || []).map((sd: { name: string }) => sd.name);
+      const existingNames = (data || []).map((sd: { name: string }) => sd.name);
+      const subdomainsToInsert = validSubdomains.filter(sd => !existingNames.includes(sd.name));
 
-    // Filter out subdomains that already exist
-    const subdomainsToInsert = validSubdomains.filter(sd => !existingNames.includes(sd.name));
+      if (subdomainsToInsert.length === 0) {
+        this.messageService.showInfo(
+          'No new subdomains found',
+          'Operation skipped, as we could not find any new subdomains to add',
+        );
+        return;
+      }
 
-    console.log('Subdomains to insert:', subdomainsToInsert);
-
-    if (subdomainsToInsert.length > 0) {
       const formattedSubdomains = subdomainsToInsert.map(sd => ({
         domain_id: domainId,
         name: sd.name,
         sd_info: sd.sd_info || null,
       }));
 
-      const { error: subdomainError } = await this.supabase.from('sub_domains').insert(formattedSubdomains);
+      const { error: subdomainError } = await this.supabase
+        .from('sub_domains')
+        .insert(formattedSubdomains);
 
       if (subdomainError) {
         throw new Error(`Failed to insert subdomains: ${subdomainError.message}`);
       }
-    } else {
-      console.info('No new subdomains to insert');
+    } catch (error) {
+      this.handleError(error);
+      throw error;
     }
   }
+  
 
 
   // async deleteSubdomain(domain: string, subdomain: string): Promise<void> {
@@ -122,8 +143,6 @@ export class SubdomainsQueries {
   }
 
   async updateSubdomains(domainId: string, subdomains: { name: string; sd_info?: string }[]): Promise<void> {
-    console.log('Updating subdomains:', subdomains);
-
     // Get existing subdomains from the database
     const { data: existingData, error } = await this.supabase
       .from('sub_domains')

@@ -20,7 +20,11 @@ import { GlobalMessageService } from '@/app/services/messaging.service';
     <ul class="list-none p-0 m-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <li
         *ngFor="let subdomain of subdomains"
-        class="p-card px-4 py-3 rounded shadow relative"
+        [ngClass]="{
+          'px-4 py-3 rounded shadow relative': true,
+          'border-2 border-surface-100': embeddedView,
+          'p-card': !embeddedView
+        }"
         (contextmenu)="onRightClick($event, subdomain)"
       >
         <a
@@ -50,6 +54,7 @@ import { GlobalMessageService } from '@/app/services/messaging.service';
 export class SubdomainListComponent {
   @Input() domain: string = '';
   @Input() subdomains: Subdomain[] = [];
+  @Input() embeddedView: boolean = false;
   @ViewChild('contextMenu') menu: ContextMenu | undefined;
   makeKVList = makeKVList;
 

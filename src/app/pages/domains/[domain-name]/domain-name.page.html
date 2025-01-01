@@ -84,6 +84,36 @@
   }
   <div appLazyLoad (visible)="onMonitorVisible()"></div>
 
+  <!-- Empty Subdomains -->
+  <p-card styleClass="mt-4">
+    <ng-template pTemplate="header">
+      <h4 class="text-surface-600 text-2xl font-bold m-0 pt-4 pl-4 block z-1 relative">Subdomains</h4>
+      <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+        <dl-icon icon="subdomains" classNames="w-full h-full" color= "var(--surface-200)"></dl-icon>
+      </div>
+    </ng-template>
+    <div *ngIf="!domain.sub_domains || domain.sub_domains.length === 0; else show_subdomains" class="flex flex-col text-center items-center">
+      <p class="my-4 text-2xl text-center italic text-surface-400">
+        <i class="pi pi-info-circle text-2xl mr-2"></i>
+        No subdomains configured yet
+      </p>
+      <p-button
+        label="Manage Subdomains"
+        icon="pi pi-file-import"
+        [routerLink]="'/assets/subdomains/'+domain.domain_name"
+        class="p-button-primary no-underline m-0 flex gap-2 w-fit ml-2 font-medium"
+      />
+    </div>
+    <ng-template #show_subdomains>
+      <app-subdomain-list
+        *ngIf="domain.sub_domains"
+        [domain]="domain.domain_name"
+        [subdomains]="domain.sub_domains"
+        [embeddedView]="true"
+      />
+    </ng-template>
+
+  </p-card>
 
   <p-card styleClass="mt-4">
     <ng-template pTemplate="header">

@@ -4,6 +4,7 @@ import { DatabaseService, DbDomain, IpAddress, SaveDomainData, Registrar, Host }
 import { catchError, from, map, Observable, throwError, retry } from 'rxjs';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { GlobalMessageService } from '@services/messaging.service';
 
 // Database queries grouped by functionality into sub-services
 import { LinkQueries } from '@/app/services/db-query-services/db-links.service';
@@ -47,6 +48,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
   constructor(
     private supabase: SupabaseService,
     private errorHandler: ErrorHandlerService,
+    private globalMessagingService: GlobalMessageService,
   ) {
     super();
     this.linkQueries = new LinkQueries(
@@ -113,6 +115,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
     this.subdomainsQueries = new SubdomainsQueries(
       this.supabase.supabase,
       this.handleError.bind(this),
+      this.globalMessagingService,
     );
   }
 
@@ -224,7 +227,7 @@ export default class SupabaseDatabaseService extends DatabaseService {
       dns_records (record_type, record_value),
       domain_statuses (status_code),
       domain_costings (purchase_price, current_value, renewal_cost, auto_renew),
-      sub_domains (name),
+      sub_domains (name, sd_info),
       domain_links (link_name, link_url, link_description)
     `;
   }

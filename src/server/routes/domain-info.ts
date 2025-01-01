@@ -161,7 +161,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const errors: string[] = [];
-  const dunno = 'Unknown';
+  const dunno = null;
 
   try {
     const whoisData = await getWhoisData(domain);
@@ -223,13 +223,13 @@ export default defineEventHandler(async (event) => {
       },
       ssl: {
         issuer: sslInfo?.issuer?.O || dunno,
-        issuer_country: sslInfo?.issuer?.C || dunno,
-        valid_from: sslInfo?.valid_from || dunno,
-        valid_to: sslInfo?.valid_to || dunno,
-        subject: sslInfo?.subject?.CN || dunno,
-        fingerprint: sslInfo?.fingerprint || dunno,
+        issuer_country: sslInfo?.issuer?.C || '',
+        valid_from: sslInfo?.valid_from || '',
+        valid_to: sslInfo?.valid_to || '',
+        subject: sslInfo?.subject?.CN || '',
+        fingerprint: sslInfo?.fingerprint || '',
         key_size: sslInfo?.bits || 0,
-        signature_algorithm: sslInfo?.asn1Curve || dunno,
+        signature_algorithm: sslInfo?.asn1Curve || '',
       },
       host: hostInfo,
     };

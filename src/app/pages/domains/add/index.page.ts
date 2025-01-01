@@ -342,7 +342,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
         const name = domainData.domain.domain_name;
 
         this.messageService.add({ severity: 'success', summary: 'Success', detail: `Domain ${name} added successfully` });
-        this.router.navigate(['/domains']);
+        this.router.navigate(['/domains', name]);
       } catch (error) {
         this.handleError(error);
       }

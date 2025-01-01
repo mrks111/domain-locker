@@ -21,6 +21,7 @@ import { LazyLoadDirective } from '@/app/utils/lazy.directive';
 import { AdditionalResourcesComponent } from '@/app/components/misc/external-links.component';
 import { DomainInfoComponent } from '@/app/components/domain-things/domain-info/domain-info.component';
 import { NotFoundComponent } from '@components/misc/domain-not-found.component';
+import { SubdomainListComponent } from '@/app/pages/assets/subdomains/subdomain-list.component';
 
 @Component({
   standalone: true,
@@ -38,6 +39,7 @@ import { NotFoundComponent } from '@components/misc/domain-not-found.component';
     AdditionalResourcesComponent,
     DomainInfoComponent,
     NotFoundComponent,
+    SubdomainListComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './domain-name.page.html',

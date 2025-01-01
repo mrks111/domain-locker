@@ -2,7 +2,7 @@
 <div *ngIf="domain" class="masonry sm:masonry-sm md:masonry-md lg:masonry-lg xl:masonry-lg 2xl:masonry-xl">
 
   <!-- Registrar -->
-  <p-card *ngIf="domain.registrar">
+  <p-card *ngIf="domain.registrar && domain.registrar.name">
     <ng-template pTemplate="header">
       <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Registrar</h4>
       <div class="absolute top-4 right-4 h-16 w-16 opacity-70 mr-2">
@@ -84,41 +84,6 @@
     </ul>
   </p-card>
 
-  <!-- Subdomains -->
-  <p-card *ngIf="domain.sub_domains && domain.sub_domains.length" class="mb-6 relative">
-    <ng-template pTemplate="header">
-      <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Subdomains</h4>
-      <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
-        <dl-icon icon="subdomains" classNames="w-full h-full" color="var(--surface-200)"></dl-icon>
-      </div>
-    </ng-template>
-    <div
-      [class.collapsed]="!subdomainsExpanded"
-      [class.expanded]="subdomainsExpanded"
-      class="overflow-hidden transition-all duration-300"
-      [style.maxHeight]="subdomainsExpanded ? 'none' : '360px'"
-    >
-      <ul class="list-none p-0 m-0">
-        <li *ngFor="let subdomain of domain.sub_domains" class="mb-2 truncate">
-          <a
-            [routerLink]="['/', 'assets', 'subdomains', domain.domain_name, subdomain.name]"
-            class="no-underline text-primary hover:underline"
-          >
-            {{ subdomain.name }}.{{ domain.domain_name }}
-          </a>
-        </li>
-      </ul>
-    </div>
-    <button p-button
-      *ngIf="domain.sub_domains.length > 16"
-      (click)="toggleSubdomainsExpand()"
-      class="mt-2 w-full text-primary hover:underline border-0 bg-transparent text-sm"
-    >
-      {{ subdomainsExpanded ? 'Show Less' : 'Show More' }}
-    </button>
-  </p-card>
-
-
   <!-- Valuation -->
   <p-card *ngIf="domain.domain_costings" class="mb-6">
     <ng-template pTemplate="header">
@@ -153,7 +118,7 @@
   </p-card>
 
   <!-- IP Addresses -->
-  <p-card *ngIf="domain.ip_addresses" class="mb-6">
+  <p-card *ngIf="domain.ip_addresses && (domain.ip_addresses.length > 0)" class="mb-6">
     <ng-template pTemplate="header">
       <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">IP Addresses</h4>
       <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
@@ -179,7 +144,7 @@
   </p-card>
 
   <!-- SSL Certificate -->
-  <p-card *ngIf="domain.ssl" class="mb-6">
+  <p-card *ngIf="domain.ssl && domain.ssl.issuer" class="mb-6">
     <ng-template pTemplate="header">
       <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">SSL Certificate</h4>
       <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
@@ -226,7 +191,7 @@
   </p-card>
 
   <!-- WHOIS Information -->
-  <p-card *ngIf="domain.whois" class="mb-6">
+  <p-card *ngIf="domain.whois && (domain.whois.name || domain.whois.organization || domain.whois.city)" class="mb-6">
     <ng-template pTemplate="header">
       <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Whois Records</h4>
       <div class="absolute top-4 right-4 h-16 w-16 opacity-70 mr-2">
@@ -314,6 +279,40 @@
       </p-tabPanel>
     </p-tabView>
     <p *ngIf="domain.dns.dnssec"><strong>DNSSEC:</strong> {{ domain.dns.dnssec }}</p>
+  </p-card>
+
+  <!-- Subdomains -->
+  <p-card *ngIf="domain.sub_domains && domain.sub_domains.length" class="mb-6 relative">
+    <ng-template pTemplate="header">
+      <h4 class="text-surface-600 text-2xl font-bold m-0 block z-1 relative">Subdomains</h4>
+      <div class="absolute top-4 right-4 h-16 w-16 opacity-70">
+        <dl-icon icon="subdomains" classNames="w-full h-full" color="var(--surface-200)"></dl-icon>
+      </div>
+    </ng-template>
+    <div
+      [class.collapsed]="!subdomainsExpanded"
+      [class.expanded]="subdomainsExpanded"
+      class="overflow-hidden transition-all duration-300"
+      [style.maxHeight]="subdomainsExpanded ? 'none' : '360px'"
+    >
+      <ul class="list-none p-0 m-0">
+        <li *ngFor="let subdomain of domain.sub_domains" class="mb-2 truncate">
+          <a
+            [routerLink]="['/', 'assets', 'subdomains', domain.domain_name, subdomain.name]"
+            class="no-underline text-default hover:underline"
+          >
+            {{ subdomain.name }}.{{ domain.domain_name }}
+          </a>
+        </li>
+      </ul>
+    </div>
+    <button p-button
+      *ngIf="domain.sub_domains.length > 16"
+      (click)="toggleSubdomainsExpand()"
+      class="mt-2 w-full text-primary hover:underline border-0 bg-transparent text-sm"
+    >
+      {{ subdomainsExpanded ? 'Show Less' : 'Show More' }}
+    </button>
   </p-card>
 
   <!-- Notes -->

@@ -77,7 +77,7 @@ export interface Dns {
 }
 
 export interface Ssl {
-  issuer: string;
+  issuer: string | null;
   issuer_country: string;
   valid_from: string;
   valid_to: string;
