@@ -257,46 +257,6 @@ export class SubdomainsQueries {
     );
   }
 
-
-  // Helper to group and parse subdomains
-  groupSubdomains(subdomains: any[]): { domain: string; subdomains: Subdomain[] }[] {
-    const grouped = subdomains.reduce((acc, subdomain) => {
-      const domainName = subdomain.domains?.domain_name;
-
-      // Skip subdomains without a domain name
-      if (!domainName) return acc;
-
-      // Safely parse the `sd_info` JSON
-      let parsedSdInfo = null;
-      if (subdomain.sd_info) {
-        try {
-          parsedSdInfo = JSON.parse(subdomain.sd_info);
-        } catch (error) {
-          console.warn(`Failed to parse sd_info for subdomain ${subdomain.name}:`, error);
-        }
-      }
-
-      // Find the group for this domain or create it
-      if (!acc[domainName]) {
-        acc[domainName] = [];
-      }
-
-      // Push the subdomain into the appropriate group
-      acc[domainName].push({
-        ...subdomain,
-        sd_info: parsedSdInfo, // Replace the original `sd_info` with the parsed object
-      });
-
-      return acc;
-    }, {} as Record<string, any[]>);
-
-    // Convert the grouped object into an array
-    return Object.keys(grouped).map((domain) => ({
-      domain,
-      subdomains: grouped[domain],
-    }));
-  }
-
   async deleteSubdomain(domain: string, subdomain: string): Promise<void> {
     try {
       // Fetch the domain_id for the given domain name

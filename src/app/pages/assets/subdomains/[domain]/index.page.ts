@@ -8,7 +8,7 @@
   import { NotFoundComponent } from '@components/misc/domain-not-found.component';
   import { HttpClient } from '@angular/common/http';
   import { GlobalMessageService } from '@services/messaging.service';
-  import { catchError, finalize, from, map, Observable, of, switchMap, tap } from 'rxjs';
+  import { catchError, finalize, map, Observable, of, switchMap, tap } from 'rxjs';
   import { autoSubdomainsReadyForSave, filterOutIgnoredSubdomains } from '../subdomain-utils';
 
   @Component({
