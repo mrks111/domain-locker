@@ -8,7 +8,7 @@
   import { NotFoundComponent } from '@components/misc/domain-not-found.component';
   import { HttpClient } from '@angular/common/http';
   import { GlobalMessageService } from '@services/messaging.service';
-  import { catchError, finalize, from, map, of, switchMap, tap } from 'rxjs';
+  import { catchError, finalize, from, map, Observable, of, switchMap, tap } from 'rxjs';
   import { autoSubdomainsReadyForSave, filterOutIgnoredSubdomains } from '../subdomain-utils';
 
   @Component({
@@ -90,58 +90,58 @@
         },
       });
     }
-
     searchForSubdomains() {
       this.loading = true;
-    
       this.http.get<any[]>(`/api/domain-subs?domain=${this.domain}`).pipe(
+        // 1) filter out ignored subdomains
         map((response) => filterOutIgnoredSubdomains(response, this.domain)),
-        switchMap((validSubdomains) => {
-          if (validSubdomains.length > 0) {
-            this.globalMessageService.showMessage({
-              severity: 'info',
-              summary: 'Subdomains Found',
-              detail: `${validSubdomains.length} subdomains were discovered for this domain.`,
-            });
-            const subdomainsReadyForSave = autoSubdomainsReadyForSave(validSubdomains);
-            return this.databaseService.subdomainsQueries.saveSubdomainsForDomainName(this.domain, subdomainsReadyForSave).pipe(
-              tap({
-                next: () => {
-                  this.afterSuccess();
-                },
-                error: (error) => {
-                  this.errorHandler.handleError({ error, message: 'Failed to save subdomains.' });
-                },
-              }),
-              catchError((error) => {
-                this.errorHandler.handleError({ error, message: 'Failed to save subdomains.' });
-                return of(null);
-              }),
-              finalize(() => {
-                this.loading = false;
-              })
-            );
-          } else {
-            // Handle case where no valid subdomains are found
-            this.globalMessageService.showMessage({
-              severity: 'warn',
-              summary: 'No Valid Subdomains Found',
-              detail: 'No valid subdomains were discovered for this domain.',
-            });
-            return of(null);
-          }
-        }),
+        // 2) pass them to a helper that handles “found vs none,”
+        //    returning either a saving Observable or `of(null)`
+        switchMap((validSubs) => this.handleDiscoveredSubdomains(validSubs)),
+        // 3) handle any error that happened in the pipeline
         catchError((error) => {
           this.errorHandler.handleError({ error, message: 'Failed to save subdomains.' });
           return of(null);
         }),
+        // 4) stop loading no matter what
         finalize(() => {
           this.loading = false;
         })
       ).subscribe();
     }
     
-
+    /** 
+     * A small helper that shows messages and returns an Observable 
+     * that either saves subdomains or just completes immediately. 
+     */
+    private handleDiscoveredSubdomains(validSubdomains: any[]): Observable<unknown> {
+      if (!validSubdomains.length) {
+        // No subdomains → show warning & do nothing
+        this.globalMessageService.showMessage({
+          severity: 'warn',
+          summary: 'No Valid Subdomains Found',
+          detail: 'No valid subdomains were discovered for this domain.',
+        });
+        return of(null);
+      }
+    
+      // We have subdomains → show info, proceed to save them
+      this.globalMessageService.showMessage({
+        severity: 'info',
+        summary: 'Subdomains Found',
+        detail: `${validSubdomains.length} subdomains were discovered for this domain.`,
+      });
+    
+      const subdomainsReadyForSave = autoSubdomainsReadyForSave(validSubdomains);
+      
+      return this.databaseService.subdomainsQueries
+        .saveSubdomainsForDomainName(this.domain, subdomainsReadyForSave)
+        .pipe(
+          tap(() => this.afterSuccess())
+        );
+    }
+    
+    
     private parseSdInfo(sdInfo: string): any {
       try {
         return JSON.parse(sdInfo);

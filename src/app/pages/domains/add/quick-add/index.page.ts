@@ -6,8 +6,9 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@services/database.service';
 import { ErrorHandlerService } from '@services/error-handler.service';
 import { Router } from '@angular/router';
-import { lastValueFrom } from 'rxjs';
+import { catchError, finalize, lastValueFrom, map, Observable, of, switchMap, tap } from 'rxjs';
 import { GlobalMessageService } from '@/app/services/messaging.service';
+import { autoSubdomainsReadyForSave, filterOutIgnoredSubdomains } from '@/app/pages/assets/subdomains/subdomain-utils';
 
 @Component({
   selector: 'app-quick-add-domain',
@@ -58,6 +59,11 @@ export default class QuickAddDomain {
       await this.databaseService.saveDomain(domainData);
 
       this.messagingService.showSuccess('Domain added successfully.', `${domainName} has been added to your collection and is now ready to use.`);
+
+      if (domainName) {
+        this.searchForSubdomains(domainName);
+      }
+      
       if (this.isInModal) {
         this.$afterSave.emit(domainName);
       } else {
@@ -79,14 +85,58 @@ export default class QuickAddDomain {
     return date ? new Date(date) : undefined;
   }
 
+
+  private searchForSubdomains(domainName: string) {
+    this.isLoading = true;
+    this.http.get<any[]>(`/api/domain-subs?domain=${domainName}`).pipe(
+      // 1) filter out ignored subdomains
+      map((response) => filterOutIgnoredSubdomains(response, domainName)),
+      // 2) pass them to a helper that handles “found vs none,”
+      //    returning either a saving Observable or `of(null)`
+      switchMap((validSubs) => this.handleDiscoveredSubdomains(validSubs, domainName)),
+      // 3) handle any error that happened in the pipeline
+      catchError((error) => {
+        this.errorHandler.handleError({ error, message: 'Failed to save subdomains.' });
+        return of(null);
+      }),
+      // 4) stop loading no matter what
+      finalize(() => {
+        this.isLoading = false;
+      })
+    ).subscribe();
+  }
+  
+  /** 
+   * A small helper that shows messages and returns an Observable 
+   * that either saves subdomains or just completes immediately. 
+   */
+  private handleDiscoveredSubdomains(validSubdomains: any[], domainName: string): Observable<unknown> {
+    if (!validSubdomains.length) {
+      return of(null);
+    }  
+    const subdomainsReadyForSave = autoSubdomainsReadyForSave(validSubdomains);
+    
+    return this.databaseService.subdomainsQueries
+      .saveSubdomainsForDomainName(domainName, subdomainsReadyForSave)
+      .pipe(
+        tap(() => {
+          this.messagingService.showMessage({
+            severity: 'info',
+            summary: 'Added Subdomains',
+            detail: `${validSubdomains.length} subdomains were appended to ${domainName}.`,
+          });
+        })
+      );
+  }
+
   private constructDomainData(domainInfo: any): any {
     return {
       domain: {
         domain_name: domainInfo.domainName,
-        registrar: domainInfo.registrar?.name || 'Unknown',
-        expiry_date: this.makeDateOrUndefined(domainInfo.dates?.expiry),
-        registration_date: this.makeDateOrUndefined(domainInfo.dates?.creation),
-        updated_date: this.makeDateOrUndefined(domainInfo.dates?.updated),
+        registrar: domainInfo.registrar?.name,
+        expiry_date: this.makeDateOrUndefined(domainInfo.dates?.expiry_date),
+        registration_date: this.makeDateOrUndefined(domainInfo.dates?.creation_date),
+        updated_date: this.makeDateOrUndefined(domainInfo.dates?.updated_date),
       },
       statuses: domainInfo.status || [],
       registrar: domainInfo.registrar,
@@ -96,13 +146,13 @@ export default class QuickAddDomain {
       ],
       whois: domainInfo.whois || null,
       dns: {
-        dnssec: domainInfo.dns?.dnssec || 'unknown',
+        dnssec: domainInfo.dns?.dnssec,
         nameServers: domainInfo.dns?.nameServers || [],
         mxRecords: domainInfo.dns?.mxRecords || [],
         txtRecords: domainInfo.dns?.txtRecords || [],
       },
       ssl: {
-        issuer: domainInfo.ssl?.issuer || 'Unknown',
+        issuer: domainInfo.ssl?.issuer,
         valid_from: domainInfo.ssl?.valid_from || null,
         valid_to: domainInfo.ssl?.valid_to || null,
         subject: domainInfo.ssl?.subject || 'Unknown',

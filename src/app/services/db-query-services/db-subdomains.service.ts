@@ -57,6 +57,7 @@ export class SubdomainsQueries {
   
 
   async saveSubdomains(domainId: string, subdomains: { name: string; sd_info?: string }[]): Promise<void> {
+    console.log('Saving subdomains:', domainId, subdomains);
     if (!subdomains || subdomains.length === 0) {
       throw new Error('Skipping subdomains, none found');
     }
@@ -79,11 +80,7 @@ export class SubdomainsQueries {
       const subdomainsToInsert = validSubdomains.filter(sd => !existingNames.includes(sd.name));
 
       if (subdomainsToInsert.length === 0) {
-        this.messageService.showInfo(
-          'No new subdomains found',
-          'Operation skipped, as we could not find any new subdomains to add',
-        );
-        return;
+        throw new Error('Skipping subdomains, all already exist');
       }
 
       const formattedSubdomains = subdomainsToInsert.map(sd => ({
@@ -227,16 +224,15 @@ export class SubdomainsQueries {
     return from(
       this.supabase
         .from('sub_domains')
-        .select('name, sd_info, domains(domain_name)')
-        .filter('domains.domain_name', 'eq', domain)
+        .select('id, name, sd_info, domain:domains!inner(domain_name)')
+        .eq('domain.domain_name', domain)
     ).pipe(
       map(({ data, error }) => {
         if (error) throw error;
-        const filteredData = (data || []).filter(item => item.domains !== null);
-        return filteredData;
+        return data || [];
       })
     );
-  }
+  }  
 
   getSubdomainInfo(domain: string, subdomain: string): Observable<any> {
     return from(

@@ -15,7 +15,8 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
     <app-domain-view 
       *ngIf="!loading; else loadingTemplate" 
       [domains]="domains"
-    ></app-domain-view>
+      ($triggerReload)="loadDomains()"
+    />
     <ng-template #loadingTemplate>
       <loading loadingTitle="Loading" loadingDescription="Fetching domains from database" />
     </ng-template>

@@ -128,7 +128,6 @@ export class FieldVisibilityFilterComponent implements OnInit {
   }
 
   afterDomainAdded(newDomain: string) {
-    console.log('Domain added:', newDomain);
     this.quickAddDialogOpen = false;
     this.cdr.detectChanges();
     this.$triggerReload.emit();
