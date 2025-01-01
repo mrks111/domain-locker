@@ -133,7 +133,11 @@ export default class SupabaseDatabaseService extends DatabaseService {
     return this.supabase.getCurrentUser();
   }
 
-  async domainExists(userId: string, domainName: string): Promise<boolean> {
+  async domainExists(inputUserId: string | null, domainName: string): Promise<boolean> {
+    let userId = inputUserId;
+    if (!inputUserId) {
+      userId = await this.supabase.getCurrentUser().then((user) => user?.id) || '';
+    };
     const { data, error } = await this.supabase.supabase
       .from('domains')
       .select('id')

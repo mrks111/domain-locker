@@ -43,8 +43,26 @@ export default class QuickAddDomain {
 
     this.isLoading = true;
     const domainName = this.domainForm.value.domainName?.trim();
+    if (!domainName) {
+      this.messagingService.showError(
+        'Invalid domain name',
+        'Please enter a valid domain name to proceed.'
+      );
+      return;
+    }
 
     try {
+      // 1) Check for duplicates
+      const alreadyExists = await this.databaseService.domainExists(null, domainName);
+      if (alreadyExists) {
+        this.messagingService.showError(
+          'Duplicate domain',
+          `The domain "${domainName}" has already been added to your collection.`
+        );
+        return;
+      }
+
+
       // Fetch domain info
       const domainInfo = (await lastValueFrom(
         this.http.get<any>(`/api/domain-info?domain=${domainName}`)
@@ -58,7 +76,10 @@ export default class QuickAddDomain {
       const domainData = this.constructDomainData(domainInfo);
       await this.databaseService.saveDomain(domainData);
 
-      this.messagingService.showSuccess('Domain added successfully.', `${domainName} has been added to your collection and is now ready to use.`);
+      this.messagingService.showSuccess(
+        'Domain added successfully.',
+        `${domainName} has been added to your collection and is now ready to use.`,
+      );
 
       if (domainName) {
         this.searchForSubdomains(domainName);
@@ -132,7 +153,7 @@ export default class QuickAddDomain {
   private constructDomainData(domainInfo: any): any {
     return {
       domain: {
-        domain_name: domainInfo.domainName,
+        domain_name: domainInfo.domainName.toLowerCase(),
         registrar: domainInfo.registrar?.name,
         expiry_date: this.makeDateOrUndefined(domainInfo.dates?.expiry_date),
         registration_date: this.makeDateOrUndefined(domainInfo.dates?.creation_date),
