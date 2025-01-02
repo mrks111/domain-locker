@@ -10,11 +10,12 @@
   import { GlobalMessageService } from '@services/messaging.service';
   import { catchError, finalize, map, Observable, of, switchMap, tap } from 'rxjs';
   import { autoSubdomainsReadyForSave, filterOutIgnoredSubdomains } from '../subdomain-utils';
+  import { AddSubdomainDialogComponent } from '../add-subdomain.component';
 
   @Component({
     standalone: true,
     selector: 'app-subdomains-domain',
-    imports: [CommonModule, SubdomainListComponent, PrimeNgModule, NotFoundComponent],
+    imports: [CommonModule, SubdomainListComponent, PrimeNgModule, NotFoundComponent, AddSubdomainDialogComponent],
     templateUrl: './index.page.html',
   })
   export default class SubdomainsDomainPageComponent implements OnInit {

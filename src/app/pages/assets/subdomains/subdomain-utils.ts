@@ -31,7 +31,6 @@ export const makeKVList = (sdInfo: any): { key: string; value: string }[] => {
   return results;
 }
 
-
 /**
  * When we get subdomains back from the API, some of them are not that useful.
  * E.g.
