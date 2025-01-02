@@ -2,69 +2,55 @@ export const features = [
   {
     featureTitle: 'Track Assets',
     icon: 'track',
-    iconViewBox: '0 0 576 512',
     featureInfo: [
-      'We auto-fetch assets like SSL, hosts, registrars, IPs, and DNS.',
-      'You can add additional context, like subdomains, costs, tags, notes, and more.',
+      'We auto-fetch assets like SSL, hosts, registrars, IPs, DNS, subdomains.',
+      'You can add additional context, like costs, tags, notes, and more.',
     ],
   },
   {
     featureTitle: 'Domain Data',
     icon: 'data',
-    iconViewBox: '0 0 448 512',
     featureInfo: [
-      'Detailed domain info: WHOIS, server location, updates, etc.',
+      'Dive into a detailed analysis of each of your domains.',
       'Security insights and recommended actions for each domain.',
     ],
   },
-  {
-    featureTitle: 'Valuation',
-    icon: 'value',
-    featureInfo: [
-      'Track purchase price, renewal costs, and current valuation.',
-      'Manage payments and monitor profit/loss trends.',
-    ],
-  },
+
   {
     featureTitle: 'Stats',
     icon: 'chart',
     featureInfo: [
       'Visualize domain data with charts and analytics.',
-      'Maps, change timelines, provider breakdowns, and more.',
+      'Exportable maps, change timelines, provider breakdowns, and more.',
     ],
   },
   {
     featureTitle: 'Notifications',
     icon: 'notification',
-    iconViewBox: '0 0 640 512',
     featureInfo: [
-      'Alerts for expirations or changes to SSL, host, registrar, etc.',
+      'Alerts for expirations and configurable domain change notifications.',
       'Choose your method: email, webhook, push, Telegram, Signal, etc.',
     ],
   },
   {
     featureTitle: 'Data',
     icon: 'export',
-    iconViewBox: '0 0 567 512',
     featureInfo: [
-      'Access via API, Prometheus, iCal, RSS, or embeddable widgets (coming soon).',
+      'Access via API, Prometheus, iCal, RSS, or embeddable widgets (coming soon).', 
       'Export your data anytime for migration or backup.',
     ],
   },
   {
     featureTitle: 'Track Changes',
     icon: 'logs',
-    iconViewBox: '0 0 576 512',
     featureInfo: [
       'View audit logs for all domain changes.',
       'Track updates to security, host, SSL, DNS, WHOIS, and more.',
-      'Monitor website response time and uptime history.',
     ],
   },
   {
     featureTitle: 'Renewal Alerts',
     icon: 'expire',
-    iconViewBox: '0 0 448 512',
     featureInfo: [
       'View timeline of upcoming expirations.',
       'Never miss a renewal deadline, with smart alerts.',
@@ -73,9 +59,8 @@ export const features = [
   {
     featureTitle: 'Monitor',
     icon: 'monitor',
-    iconViewBox: '0 0 576 512',
     featureInfo: [
-      'Monitor web health for domains.',
+      'Monitor website health and performance.',
       'Track uptime, ping times, response codes and availability.',
     ],
   },
@@ -83,8 +68,16 @@ export const features = [
     featureTitle: 'Security Check',
     icon: 'secure',
     featureInfo: [
-      'View and check registrar security features for each domain.',
-      'Ensure domains have the correct security controls.',
+      'Security insights and recommended actions for each domain',
+      'Ensure your websites and domains have the correct security controls.',
+    ],
+  },
+  {
+    featureTitle: 'Valuation',
+    icon: 'value',
+    featureInfo: [
+      'Track purchase price, renewal costs, and current valuation.',
+      'Manage upcoming payments and monitor profit/loss trends.',
     ],
   },
   {
@@ -92,24 +85,32 @@ export const features = [
     icon: 'organize',
     featureInfo: [
       'Categorise domains in your portfolio with tags.',
-      'Keep track of all domain-related links, in one easy dashboard.',
+      'Keep track of links, with all domain-related resources in one place.',
     ],
   },
   {
-    featureTitle: 'Link',
-    icon: 'links',
+    featureTitle: 'Toolbox',
+    icon: 'tools',
     featureInfo: [
-      'Store all related domain links, dashboards and providers in one place.',
-      'Never loose track of a specific URL ever again.',
+      'AI-powered domain ideas, smart availability search, free valuation',
+      'Enterprise-grade web analysis, monitoring and auditing tools',
     ],
   },
+  // {
+  //   featureTitle: 'Link',
+  //   icon: 'links',
+  //   featureInfo: [
+  //     'Detailed map of your web presence, with automatically fetched assets.',
+  //     'Never loose track of a specific URL for any of your domains, ever again.',
+  //   ],
+  // },
   {
     featureTitle: 'Customizable',
     icon: 'customize',
     iconViewBox: '0 0 576 512',
     featureInfo: [
-      'Choose themes, color schemes, dark/light modes, and languages.',
-      'Make the app yours, in your native language.',
+      'Make the app yours, with customizable themes, fonts, layouts, and dark modes',
+      'Multi-language support, with translations available for many languages.',
     ],
   },
   {
