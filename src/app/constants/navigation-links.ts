@@ -170,19 +170,24 @@ export const authenticatedNavLinks = [
         routerLink: '/domains/change-history',
       },
       {
-        label: 'Categories',
-        icon: 'pi pi-fw pi-tags',
-        routerLink: '/assets/tags',
+        label: 'Search',
+        icon: 'pi pi-fw pi-search',
+        routerLink: '/search',
       },
       {
-        label: 'Add Domain',
-        icon: 'pi pi-fw pi-plus',
-        routerLink: '/domains/add'
-      },
-      {
-        label: 'Move Data',
+        label: 'Add or Export',
         icon: 'pi pi-fw pi-truck',
         items: [
+          {
+            label: 'Add Domain',
+            icon: 'pi pi-fw pi-plus',
+            routerLink: '/domains/add'
+          },
+          {
+            label: 'Quick Add',
+            icon: 'pi pi-fw pi-plus-circle',
+            routerLink: '/domains/add/quick-add'
+          },
           {
             label: 'Bulk Import',
             icon: 'pi pi-fw pi-upload',
@@ -192,6 +197,16 @@ export const authenticatedNavLinks = [
             label: 'Bulk Export',
             icon: 'pi pi-download',
             routerLink: '/domains/export',
+          },
+          {
+            label: 'Programmatic Access',
+            icon: 'pi pi pi-code',
+            routerLink: '/settings/developer-options',
+          },
+          {
+            label: 'Data Deletion',
+            icon: 'pi pi pi-trash',
+            routerLink: '/settings/data-deletion',
           },
         ],
       },
