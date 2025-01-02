@@ -58,6 +58,11 @@ export default class RegistrarDomainsPageComponent implements OnInit {
         this.loading = false;
         if (domains.length > 0 && domains[0]?.registrar?.url) {
           this.registrarUrl = domains[0].registrar.url;
+          if (this.registrarUrl === 'Unknown') {
+            this.registrarUrl = '';
+          } else if (!this.registrarUrl.startsWith('http')) {
+            this.registrarUrl = 'https://' + this.registrarUrl;
+          } 
         }
       },
       error: (error) => {
