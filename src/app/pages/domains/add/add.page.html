@@ -2,7 +2,7 @@
 <div class="card add-domain-wrap">
   <h2>Add New Domain</h2>
   <p-steps [model]="[{label: 'Domain Name'}, {label: 'Domain Details'}, {label: 'Notifications'}, {label: 'Confirm'}]" [activeIndex]="activeIndex"></p-steps>
-  
+
   <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage"></p-message>
 
   <form [formGroup]="domainForm" (ngSubmit)="onSubmit()" (keydown.enter)="onEnterKey($event)">
@@ -43,10 +43,10 @@
                 severity="secondary">
             </a>
             </div>
-            <button pButton 
-              type="button" 
-              label="Next" 
-              (click)="onNextStep()" 
+            <button pButton
+              type="button"
+              label="Next"
+              (click)="onNextStep()"
               [disabled]="domainForm.get('domainName')?.invalid"
               [loading]="isLoading"></button>
           </div>
@@ -89,10 +89,10 @@
               <small>Any additional notes you want to add</small>
             </label>
             <div class="input-wrap">
-              <textarea 
+              <textarea
                 id="notes"
                 rows="3"
-                pInputTextarea 
+                pInputTextarea
                 [autoResize]="true"
                 formControlName="notes"
                 class="w-full"
@@ -100,13 +100,13 @@
               <small class="p-error" *ngIf="domainForm.get('notes')?.errors">{{ getNotesErrorMessage() }}</small>
             </div>
           </div>
-          
+
           <div class="field">
             <label for="subdomains">Subdomains</label>
             <div class="input-wrap">
               <p-chips id="subdomains" formControlName="subdomains" separator="," [addOnBlur]="true" class="w-full"></p-chips>
             </div>
-          </div>    
+          </div>
 
           <p-inplace>
             <ng-template pTemplate="display">
@@ -118,8 +118,8 @@
             <ng-template pTemplate="content">
               <div class="p-2 rounded-sm p-0.5 mb-4" style="background: var(--surface-100);">
                 <h3 class="text-lg font-semibold m-0 mb-4">Domain Information</h3>
-                <p-table 
-                  [value]="tableData" 
+                <p-table
+                  [value]="tableData"
                   styleClass="p-datatable-sm p-datatable-gridlines w-full"
                   [tableStyle]="{'table-layout': 'fixed'}"
                   scrollHeight="400px"
@@ -181,7 +181,7 @@
               {{ domainForm.get('domainName')?.value }} is ready to add!
             </p>
           </div>
-          
+
           <p-accordion [multiple]="true" styleClass="w-full">
             <p-accordionTab header="Review Domain Details">
               <div class="grid grid-cols-2 gap-2 md:grid-cols-1 sm:grid-cols-1">
@@ -217,7 +217,7 @@
                 <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-2">Notifications</p>
                 <ul class="list-disc list-inside space-y-1 m-2">
                   <ng-container *ngFor="let option of notificationOptions">
-                    <li *ngIf="domainForm.get('notifications')?.get(option.name)?.value">
+                    <li *ngIf="domainForm.get('notifications')?.get(option.key)?.value">
                       {{ option.label }}
                     </li>
                   </ng-container>

@@ -14,10 +14,8 @@
     <app-not-found-page />
   </div>
 
-  <section class="p-card p-4 my-4 mx-auto min-h-96">
-    <ng-container *ngIf="!docsNotFound && !links && (doc$ | async) as doc">
-      <h1 class="text-3xl">{{ doc.attributes.title }}</h1>
-      <analog-markdown [content]="doc.content"></analog-markdown>
-    </ng-container>    
+  <section *ngIf="!docsNotFound && !links && (doc$ | async) as doc" class="p-card p-4 my-4 mx-auto min-h-96">
+    <h1 class="text-3xl">{{ doc.attributes.title }}</h1>
+    <analog-markdown [content]="doc.content"></analog-markdown>
   </section>
 </div>
