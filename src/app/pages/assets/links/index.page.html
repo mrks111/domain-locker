@@ -3,6 +3,11 @@
   <h1 class="m-0">Links</h1>
 
   <div class="flex gap-2 items-center">
+
+    <div *ngIf="displayBy === 'by-domain'" class="flex flex-col gap-2 items-center">
+      <label for="showAutoLinks" class="text-sm opacity-80">Show Auto Links</label>
+      <p-inputSwitch [(ngModel)]="showAutoLinks" inputId="showAutoLinks" (onChange)="onShowAutoLinksChange($event.checked)" />
+    </div>
     <p-selectButton
       [options]="displayByOptions" 
       [(ngModel)]="displayBy" 
@@ -54,7 +59,7 @@
     
     <!-- User's Links -->
     @if (domain.value && domain.value.length) {
-      <h3 class="uppercase text-surface-200 text-sm mt-4 mb-2">Links</h3>
+      <h3 class="uppercase text-surface-200 text-sm mt-4 mb-2" *ngIf="showAutoLinks">Links</h3>
       <ul class="list-none p-0 m-0 mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3">
         <li *ngFor="let link of (domain.value)" class="w-full flex">
           <app-domain-link

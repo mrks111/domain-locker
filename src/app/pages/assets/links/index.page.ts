@@ -47,8 +47,10 @@ export default class LinksIndexPageComponent implements OnInit {
   
   links!: LinkResponse;
   loading: boolean = true;
+  showAutoLinks: boolean = false;
   fetchedExtraLinks: boolean = false;
   customSections: CustomSections = {};
+  domains: DbDomain[] = [];
 
   displayBy: DisplayBy = 'all-links';
   displayByOptions: { label: string; value: DisplayBy }[] = [
@@ -84,6 +86,13 @@ export default class LinksIndexPageComponent implements OnInit {
   onDisplayByChange(changeTo: SelectButtonChangeEvent) {
     if (changeTo?.value === 'by-domain' && !this.fetchedExtraLinks) {
       this.loadDomainData();
+    }
+  }
+
+  onShowAutoLinksChange(changedTo: boolean) {
+    if (changedTo && !this.fetchedExtraLinks) {
+      this.autoLinksFromDomainData(this.domains)
+      this.fetchedExtraLinks = true;
     }
   }
 
@@ -152,8 +161,7 @@ export default class LinksIndexPageComponent implements OnInit {
 
     this.databaseService.listDomains().subscribe({
       next: (domains) => {
-        this.autoLinksFromDomainData(domains);
-        this.fetchedExtraLinks = true;
+        this.domains = domains;
         this.loading = false; 
       },
       error: (error) => {
@@ -287,7 +295,7 @@ export default class LinksIndexPageComponent implements OnInit {
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.deleteLink(); // Proceed with deletion
+        this.deleteLink();
       },
       reject: () => {
         this.messageService.add({
