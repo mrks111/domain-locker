@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Pipe, PipeTransform } from '@angular/core';
 import { NgStyle } from '@angular/common';
@@ -16,20 +16,20 @@ export class SafeHtmlPipe implements PipeTransform {
 @Component({
   selector: 'dl-icon',
   standalone: true,
-  imports: [NgStyle, SafeHtmlPipe], // Importing the pipe here
+  imports: [NgStyle, SafeHtmlPipe],
   template: `
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      [class]="'h-full w-full' + classNames"
+      [class]="combinedClasses"
       [ngStyle]="mergedStyles"
       [attr.viewBox]="computedViewBox"
       aria-hidden="true"
       role="img"
-      focusable="false">
+      focusable="false"
+    >
       <g [innerHTML]="iconSvg | safeHtml"></g>
     </svg>
   `,
-  styles: []
 })
 export class DlIconComponent implements OnChanges {
 
@@ -41,16 +41,13 @@ export class DlIconComponent implements OnChanges {
 
   mergedStyles: any = {};
 
-  constructor(private sanitizer: DomSanitizer) {}
-
-  // Merge default and input styles whenever inputs change
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
+    // Merge the fill color (defaulting to currentColor) with user-provided styles
     this.mergedStyles = {
-      fill: this.color || 'currentColor', // Default to currentColor
-      ...this.styles // Merge with other inline styles
+      fill: this.color || 'currentColor',
+      ...this.styles,
     };
   }
-
   /**
    * Credit - Font Awesome Pro 6.7.1 by @fontawesome - https://fontawesome.com
    * License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc
@@ -86,7 +83,7 @@ export class DlIconComponent implements OnChanges {
 
     // Features list
     track: {
-      svg: '<path class="fa-secondary" opacity=".4" d="M32 64l0 352c0 17.7 14.3 32 32 32l448 0c17.7 0 32-14.3 32-32l0-352c0-17.7-14.3-32-32-32L64 32C46.3 32 32 46.3 32 64zM384 240A160 160 0 1 1 64 240a160 160 0 1 1 320 0zm-192 0a32 32 0 1 0 64 0 32 32 0 1 0 -64 0zm224-64c0-26.5 21.5-48 48-48s48 21.5 48 48c0 20.9-13.4 38.7-32 45.3L480 336c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-114.7c-18.6-6.6-32-24.4-32-45.3zm32 0a16 16 0 1 0 32 0 16 16 0 1 0 -32 0z"/><path class="fa-primary" d="M64 32C46.3 32 32 46.3 32 64l0 352c0 17.7 14.3 32 32 32l448 0c17.7 0 32-14.3 32-32l0-352c0-17.7-14.3-32-32-32L64 32zM0 64C0 28.7 28.7 0 64 0L512 0c35.3 0 64 28.7 64 64l0 352c0 35.3-28.7 64-64 64l0 16c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-16L96 480l0 16c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-16c-35.3 0-64-28.7-64-64L0 64zM352 240A128 128 0 1 0 96 240a128 128 0 1 0 256 0zM64 240a160 160 0 1 1 320 0A160 160 0 1 1 64 240zm160 32a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm0-96a64 64 0 1 1 0 128 64 64 0 1 1 0-128zm256 0a16 16 0 1 0 -32 0 16 16 0 1 0 32 0zm32 0c0 20.9-13.4 38.7-32 45.3L480 336c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-114.7c-18.6-6.6-32-24.4-32-45.3c0-26.5 21.5-48 48-48s48 21.5 48 48z"/>',,
+      svg: '<path class="fa-secondary" opacity=".4" d="M32 64l0 352c0 17.7 14.3 32 32 32l448 0c17.7 0 32-14.3 32-32l0-352c0-17.7-14.3-32-32-32L64 32C46.3 32 32 46.3 32 64zM384 240A160 160 0 1 1 64 240a160 160 0 1 1 320 0zm-192 0a32 32 0 1 0 64 0 32 32 0 1 0 -64 0zm224-64c0-26.5 21.5-48 48-48s48 21.5 48 48c0 20.9-13.4 38.7-32 45.3L480 336c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-114.7c-18.6-6.6-32-24.4-32-45.3zm32 0a16 16 0 1 0 32 0 16 16 0 1 0 -32 0z"/><path class="fa-primary" d="M64 32C46.3 32 32 46.3 32 64l0 352c0 17.7 14.3 32 32 32l448 0c17.7 0 32-14.3 32-32l0-352c0-17.7-14.3-32-32-32L64 32zM0 64C0 28.7 28.7 0 64 0L512 0c35.3 0 64 28.7 64 64l0 352c0 35.3-28.7 64-64 64l0 16c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-16L96 480l0 16c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-16c-35.3 0-64-28.7-64-64L0 64zM352 240A128 128 0 1 0 96 240a128 128 0 1 0 256 0zM64 240a160 160 0 1 1 320 0A160 160 0 1 1 64 240zm160 32a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm0-96a64 64 0 1 1 0 128 64 64 0 1 1 0-128zm256 0a16 16 0 1 0 -32 0 16 16 0 1 0 32 0zm32 0c0 20.9-13.4 38.7-32 45.3L480 336c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-114.7c-18.6-6.6-32-24.4-32-45.3c0-26.5 21.5-48 48-48s48 21.5 48 48z"/>',
       viewbox: '0 0 576 512',
     },
     data: {
@@ -141,22 +138,42 @@ export class DlIconComponent implements OnChanges {
     },
   };
 
+  
+  /**
+   * Combines default classes with user-provided ones
+   * so the SVG can size itself properly (full height/width).
+   */
+  get combinedClasses(): string {
+    // The leading space ensures we separate from 'h-full w-full'
+    return `h-full w-full ${this.classNames}`.trim();
+  }
+
+  /**
+   * The raw SVG path data (or <path> etc.) for the current icon.
+   */
   get iconSvg(): string {
-    const icon = this.icons[this.icon];
-    if (typeof icon === 'string') {
-      return icon;
-    } else if (typeof icon === 'object' && icon !== null && 'svg' in icon) {
-      return icon.svg;
+    const iconDef = this.icons[this.icon];
+    if (!iconDef) {
+      return '';
+    }
+    if (typeof iconDef === 'string') {
+      return iconDef; // Just a string of <path ...>
+    }
+    if ('svg' in iconDef) {
+      return iconDef.svg;
     }
     return '';
   }
 
-  // Dynamically compute the viewBox
+  /**
+   * The viewBox for the icon. 
+   * If the icon object defines a 'viewbox', use it; otherwise use the default.
+   */
   get computedViewBox(): string {
-    const icon = this.icons[this.icon];
-    if (typeof icon === 'object' && icon !== null && 'viewbox' in icon) {
-      return icon.viewbox; // Use the viewbox from the icon object
+    const iconDef = this.icons[this.icon];
+    if (typeof iconDef === 'object' && iconDef !== null && 'viewbox' in iconDef) {
+      return iconDef.viewbox;
     }
-    return this.viewBox; // Use the default or provided viewBox as fallback
+    return this.viewBox;
   }
 }
