@@ -1,6 +1,11 @@
 
-<div class="flex items-center justify-center h-full flex-col
-  xl:flex-row gap-0 xl:gap-4 xl:items-stretch">
+<div class="flex items-center justify-center h-full flex-col gap-4">
+
+  <!-- New User, welcome -->
+  <div *ngIf="showWelcomeCard && !isAuthenticated" class="max-w-[500px] w-[calc(100%-0.5rem)]">
+    <h2 class="font-semibold text-primary">Welcome!</h2>
+    <p class="m-0">Domain chaos ends here—you're just moments away from total control</p>
+  </div>
 
   <!-- User already authenticated -->
   <p-card *ngIf="isAuthenticated && !requireMFA" class="max-w-[500px] w-[calc(100%-0.5rem)]">
@@ -35,7 +40,7 @@
         You've enabled multi-factor authentication for your account.
         To complete your login, you need to provide the 6-digit code from your authenticator app.
       </p>
-      <div class="field">
+      <div class="mb-4">
         <label for="mfaCode" class="block">2FA Code</label>
         <p-inputOtp formControlName="mfaCode" [integerOnly]="true" [length]="6" />
         <p-message *ngIf="form.get('mfaCode')?.invalid && form.get('mfaCode')?.touched" severity="error"
@@ -60,14 +65,14 @@
                       (onChange)="onModeChange()"></p-selectButton>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-fluid">
-        <div class="field">
+        <div class="mb-4">
           <label for="email" class="block">Email</label>
           <input type="email" pInputText id="email" formControlName="email" />
           <p-message *ngIf="form.get('email')?.invalid && form.get('email')?.touched" severity="error"
                     text="Valid email is required"></p-message>
         </div>
 
-        <div class="field">
+        <div class="mb-4">
           <label for="password" class="block">Password</label>
           <p-password id="password" formControlName="password" [toggleMask]="true"
                       [promptLabel]="isLogin ? 'Enter password' : 'Choose a password'"
@@ -77,7 +82,7 @@
                     text="Password is required and must be at least 6 characters long"></p-message>
         </div>
 
-        <div *ngIf="!isLogin" class="field">
+        <div *ngIf="!isLogin" class="mb-4">
           <label for="confirmPassword" class="block">Confirm Password</label>
           <p-password id="confirmPassword" formControlName="confirmPassword" [toggleMask]="true"
                       [feedback]="false"></p-password>
@@ -85,7 +90,7 @@
                     text="Passwords do not match"></p-message>
         </div>
 
-        <div *ngIf="!isLogin" class="field-checkbox">
+        <div *ngIf="!isLogin" class="mb-4">
           <p-checkbox formControlName="acceptTerms" [binary]="true" label="I agree to the terms and conditions"></p-checkbox>
           <p-message *ngIf="form.get('acceptTerms')?.invalid && form.get('acceptTerms')?.touched" severity="error"
                     text="You must agree to the terms and conditions"></p-message>

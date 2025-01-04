@@ -24,6 +24,7 @@
     <p-button
       *ngIf="!isAuthenticated"
       routerLink="/login"
+      [queryParams]="{ newUser: 'true' }"
       label="Sign Up" 
       size="small"
       icon="pi pi-face-smile" 

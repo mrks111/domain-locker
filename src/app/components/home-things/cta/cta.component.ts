@@ -24,6 +24,7 @@ import { RouterModule } from '@angular/router';
         ></p-button>
         <p-button
           routerLink="/login"
+          [queryParams]="{ newUser: 'true' }"
           label="Get Started" 
           class="min-w-48" 
           icon="pi pi-arrow-circle-right" 

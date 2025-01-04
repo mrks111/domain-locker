@@ -102,7 +102,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
           this.isFullWidth = this.fullWidthRoutes.some(route => currentRoute.includes(route));
 
-          if (this.publicRoutes.has(currentRoute) || currentRoute.startsWith('/about')) {
+          if (this.publicRoutes.has(currentRoute) || currentRoute.startsWith('/login') || currentRoute.startsWith('/about')) {
             this.loading = false;
             return; // No auth needed for public routes
           }
