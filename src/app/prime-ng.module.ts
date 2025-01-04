@@ -7,6 +7,7 @@ import { BlockUIModule } from 'primeng/blockui';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
 import { CalendarModule } from 'primeng/calendar';
+import { CarouselModule } from 'primeng/carousel';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ChipModule } from 'primeng/chip';
@@ -72,6 +73,7 @@ import { TooltipModule } from 'primeng/tooltip';
     BreadcrumbModule,
     ButtonModule,
     CalendarModule,
+    CarouselModule,
     CardModule,
     CheckboxModule,
     ChipModule,
