@@ -6,6 +6,7 @@ export const features = [
       'We auto-fetch assets like SSL, hosts, registrars, IPs, DNS, subdomains.',
       'You can add additional context, like costs, tags, notes, and more.',
     ],
+    screenshot: 'https://placehold.co/600x300/1f2937/fff',
   },
   {
     featureTitle: 'Domain Data',
@@ -139,6 +140,8 @@ export const features = [
     ],
   },
 ];
+
+// Additional features: Search, 
 
 
 // Alternatives: domainLocker, domainMod, domainWatchman, domainPunch
