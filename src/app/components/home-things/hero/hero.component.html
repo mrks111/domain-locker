@@ -1,0 +1,42 @@
+
+<div class="flex gap-2 items-center justify-between h-full flex-wrap sm:flex-nowrap h-full w-full">
+
+  <div class="w-full sm:w-1/2 flex flex-col gap-2 pl-2 py-2">
+    <p class="m-0 text-primary opacity-70 font-semibold text-lg">Domain Locker:</p>
+    <h2 class="m-0 text-3xl font-semibold text-primary">
+      The Central Hub for all your Domain Names
+    </h2>
+    <h3 class="m-0 text-xl font-normal italic opacity-80">
+      Smart, simple and secure domain management
+    </h3>
+
+    <ul class="m-0 my-3 list-inside pl-0 list-none">
+      <li *ngFor="let feature of features">
+        <i class="mr-2 pi {{feature.icon}}"></i>
+        {{ feature.text }}
+      </li>
+    </ul>
+
+    <div class="flex gap-4">
+      <p-button 
+        label="View on GitHub" 
+        severity="secondary" 
+        icon="pi pi-github" 
+        class="min-w-48"  
+        styleClass="w-full" 
+      />
+      <p-button
+        routerLink="/login"
+        label="Get Started" 
+        class="min-w-48" 
+        icon="pi pi-arrow-circle-right" 
+        styleClass="w-full" 
+      />
+    </div>
+    
+  </div>
+
+  <div class="w-full sm:w-1/2 flex flex-col gap-2 pl-2 py-2">    
+    <img src="https://placehold.co/500x300/1f2937/a78bfa?text=Placeholder Image" class="rounded p-card" />
+  </div>
+</div>

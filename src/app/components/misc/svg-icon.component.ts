@@ -20,7 +20,7 @@ export class SafeHtmlPipe implements PipeTransform {
   template: `
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      [class]="combinedClasses"
+      [class]="'h-full w-full' + this.classNames"
       [ngStyle]="mergedStyles"
       [attr.viewBox]="computedViewBox"
       aria-hidden="true"
@@ -137,16 +137,6 @@ export class DlIconComponent implements OnChanges {
       viewbox: '0 0 384 512',
     },
   };
-
-  
-  /**
-   * Combines default classes with user-provided ones
-   * so the SVG can size itself properly (full height/width).
-   */
-  get combinedClasses(): string {
-    // The leading space ensures we separate from 'h-full w-full'
-    return `h-full w-full ${this.classNames}`.trim();
-  }
 
   /**
    * The raw SVG path data (or <path> etc.) for the current icon.

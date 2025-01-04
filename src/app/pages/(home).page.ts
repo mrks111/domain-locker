@@ -23,6 +23,7 @@ import { FeatureCarouselComponent } from '@components/home-things/feature-carous
 import { FeaturesGridComponent } from '@components/home-things/feature-grid/feature-grid.component';
 import { PricingCardsComponent } from '@/app/components/home-things/pricing-cards/pricing-cards.component';
 import { CtaComponent } from '@components/home-things/cta/cta.component';
+import { HeroComponent } from '@components/home-things/hero/hero.component';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
@@ -49,6 +50,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
     FeaturesGridComponent,
     PricingCardsComponent,
     CtaComponent,
+    HeroComponent,
   ],
   templateUrl: './home.page.html',
   styles: [`
@@ -102,12 +104,4 @@ export default class HomePageComponent implements OnInit {
   toggleInsights() {
     this.showInsights = !this.showInsights;
   }
-
-  features = [
-    { icon: 'pi-chart-line', text: 'Keep track of all your domains in a simple dashboard' },
-    { icon: 'pi-lock', text: 'Check security and privacy configurations for each domain' },
-    { icon: 'pi-send', text: 'Get notified of upcoming domain expirations or config updates' },
-    { icon: 'pi-wave-pulse', text: 'Monitor changes in name servers, DNS, WhoIs and more' },
-    { icon: 'pi-sparkles', text: 'Easy data import and export, no vendor lock-in' },
-  ];
 }
