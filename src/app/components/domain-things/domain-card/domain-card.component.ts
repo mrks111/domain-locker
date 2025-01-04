@@ -1,7 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
-// import { Clipboard } from '@angular/cdk/clipboard';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { DbDomain } from '@/types/Database';
@@ -13,6 +12,7 @@ import { type FieldOption } from '@/app/components/domain-things/domain-filters/
 import DatabaseService from '@services/database.service';
 import { GlobalMessageService } from '@services/messaging.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 @Component({
   standalone: true,
@@ -44,10 +44,11 @@ export class DomainCardComponent implements OnInit {
   constructor(
     public domainUtils: DomainUtils,
     private router: Router,
-    // private clipboard: Clipboard,
     private confirmationService: ConfirmationService,
     private databaseService: DatabaseService,
-    private globalMessageService: GlobalMessageService
+    private globalMessageService: GlobalMessageService,
+    private elRef: ElementRef,
+    private errorHandler: ErrorHandlerService
   ) {}
 
   isVisible(field: string): boolean {
@@ -124,16 +125,54 @@ export class DomainCardComponent implements OnInit {
 
   copyDomainUrl() {
     const url = `https://${this.domain.domain_name}`;
-    // this.clipboard.copy(url);
-    this.globalMessageService.showMessage({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Domain URL copied to clipboard'
-    });
+    const clipboardCopyFailed = (e: Error | unknown) => {
+      this.errorHandler.handleError(
+        { error: e, message: 'Failed to copy URL to clipboard', showToast: true },
+      );
+    }
+    try {
+      navigator.clipboard.writeText(url).then(
+        () => {
+          this.globalMessageService.showMessage({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Domain URL copied to clipboard'
+          });
+        },
+        (err) => {
+          clipboardCopyFailed(err);
+        }
+      );
+    } catch (err) {
+      clipboardCopyFailed(err);
+    }
   }
 
   visitDomainUrl() {
     const url = `https://${this.domain.domain_name}`;
     window.open(url, '_blank');
   }
+
+  // Checks if a given click target is a link or inside a link.
+  private clickedOnLink(element: HTMLElement): boolean {
+    let node: HTMLElement | null = element;
+    while (node && node !== this.elRef.nativeElement) {
+      if (node.tagName === 'A' || node.tagName === 'BUTTON') {
+        return true;
+      }
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+    /**
+   * Click handler for the entire card.
+   * If the user clicked on or inside a link, do nothing.
+   * Otherwise, navigate to /domains/[domain-name].
+   */
+    onCardClick(event: MouseEvent) {
+      if (!this.clickedOnLink(event.target as HTMLElement)) {
+        this.viewDomain();
+      }
+    }
 }
