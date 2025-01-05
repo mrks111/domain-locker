@@ -101,6 +101,10 @@ export default class HomePageComponent implements OnInit {
     });
   }
 
+  newDomainAdded(event: any) {
+    console.log('New domain added:', event);
+  }
+
   toggleInsights() {
     this.showInsights = !this.showInsights;
   }

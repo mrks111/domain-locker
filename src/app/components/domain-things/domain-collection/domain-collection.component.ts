@@ -124,9 +124,9 @@ export class DomainCollectionComponent implements OnInit {
     this.isGridLayout = isGrid;
   }
 
-  reloadDomains() {
-    console.log('Reloading domains from domain-collection.component');
-    this.$triggerReload.emit();
+  reloadDomains(event: any) {
+    console.log('Reloading domains from domain-collection.component', event);
+    this.$triggerReload.emit(event);
   }
 
   initializeFuse() {

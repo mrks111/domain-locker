@@ -6,6 +6,7 @@ import { DbDomain } from '@/types/Database';
 import { DomainCollectionComponent } from '@components/domain-things/domain-collection/domain-collection.component';
 import { LoadingComponent } from '@components/misc/loading.component';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import ts from 'typescript';
 
 @Component({
   standalone: true,
@@ -15,7 +16,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
     <app-domain-view 
       *ngIf="!loading; else loadingTemplate" 
       [domains]="domains"
-      ($triggerReload)="loadDomains()"
+      ($triggerReload)="newDomainAdded()"
     />
     <ng-template #loadingTemplate>
       <loading loadingTitle="Loading" loadingDescription="Fetching domains from database" />
@@ -32,6 +33,10 @@ export default class DomainAllPageComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadDomains();
+  }
+
+  newDomainAdded() {
     this.loadDomains();
   }
 

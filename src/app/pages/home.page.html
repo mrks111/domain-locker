@@ -110,7 +110,7 @@
       }
     </p-divider>
     <h2 class="my-4 block">{{ 'HOME.SUBHEADINGS.DOMAINS' | translate }}</h2>
-    <app-domain-view  *ngIf="!loading" [domains]="domains" [showFooter]="false" ($triggerReload)="loadDomains()"  />
+    <app-domain-view  *ngIf="!loading" [domains]="domains" [showFooter]="false" ($triggerReload)="newDomainAdded($event)"  />
     <p-divider />
     <h2 class="my-4 block">{{ 'HOME.SUBHEADINGS.CATEGORIES' | translate }}</h2>
     <app-tag-grid />
