@@ -99,17 +99,17 @@
             <ul class="list-none p-0">
               <li *ngFor="let domain of savedDomains">
                 <i class="pi pi-check-circle text-green-400 mr-2"></i>
-                {{ domain }}
+                <a [routerLink]="'/domains/'+domain" class="text-default hover:text-primary">{{ domain }}</a>
               </li>
             </ul>
           </div>
 
           <div *ngIf="failedDomains.length > 0">
-            <h4>Failed to Save Domains</h4>
+            <h4>Partial Failures</h4>
             <ul class="list-none p-0">
               <li *ngFor="let domain of failedDomains">
                 <i class="pi pi-times-circle text-red-400 mr-2"></i>
-                {{ domain }}
+                <a [routerLink]="'/domains/'+domain" class="text-default no-underline hover:text-primary">{{ domain }}</a>
               </li>
             </ul>
           </div>
