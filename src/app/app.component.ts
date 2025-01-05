@@ -85,12 +85,12 @@ export class AppComponent implements OnInit, OnDestroy {
     private supabaseService: SupabaseService,
     private messageService: MessageService,
     private globalMessageService: GlobalMessageService,
-    private errorHandlerService: ErrorHandlerService,
+    private errorHandler: ErrorHandlerService,
     public _themeService: ThemeService,
     public _hitCountingService: HitCountingService,
     private _translationService: TranslationService,
     @Inject(PLATFORM_ID) private platformId: Object,
-  ) {}
+  ) {}  
 
   ngOnInit() {
     // Check auth state
@@ -99,6 +99,12 @@ export class AppComponent implements OnInit, OnDestroy {
         if (event instanceof NavigationEnd) {
           const currentRoute = event.urlAfterRedirects || event.url;
           this.pagePath = currentRoute;
+
+          if (currentRoute.startsWith('/about')) {
+            this.isBigFooter = true;
+          } else {
+            this.isBigFooter = false;
+          }
 
           this.isFullWidth = this.fullWidthRoutes.some(route => currentRoute.includes(route));
 
@@ -114,7 +120,7 @@ export class AppComponent implements OnInit, OnDestroy {
           }).catch(async (error) => {
             this.loading = false;
             this.cdr.detectChanges();
-            this.errorHandlerService.handleError({
+            this.errorHandler.handleError({
               error,
               message: 'Unable to validate auth state',
               showToast: true,
@@ -161,6 +167,12 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       return Promise.resolve();
     } catch (error) {
+      this.errorHandler.handleError({
+        error,
+        message: 'Unable to verify auth status, please log in again',
+        showToast: true,
+        location: 'app.component',
+      });
       throw error;
     }
   }
@@ -168,7 +180,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private redirectToLogin() {
     this.router.navigate(['/login']).then(() => {
       this.loading = false;
-      this.isBigFooter = true;
     });
   }
 }

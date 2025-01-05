@@ -16,7 +16,9 @@
           class="mr-3"
           styleClass="min-w-40"
           icon="{{ cta.icon }}"
-          (click)="cta.click()"
+          [routerLink]="cta.link"
+          [queryParams]="cta.queryParams || {}"
+          (click)="cta.click && cta.click()"
           [outlined]="!cta.isPrimary"
         />
       </div>

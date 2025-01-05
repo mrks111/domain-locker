@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { query } from '@angular/animations';
 
 @Component({
   standalone: true,
@@ -43,7 +44,8 @@ export class FooterComponent {
         ctas: [
           {
             label: translations['FOOTER.CTAS.SIGN_UP'],
-            click: () => this.router.navigate(['/signup']),
+            link: '/login',
+            queryParams: { newUser: 'true' },
             icon: 'pi pi-sparkles',
             isPrimary: true,
           },
