@@ -23,7 +23,7 @@ export const aboutPages = [
       },
       { title: 'Features', description: '', link: '/about/features', icon: '' },
       { title: 'Pricing', description: '', link: '/about/pricing', icon: '' },
-      { title: 'Alternatives', description: '', link: '/about/alternatives', icon: '' },
+      { title: 'Comparison', description: '', link: '/about/alternatives', icon: '' },
     ],
   },
   {
@@ -57,6 +57,7 @@ export const aboutPages = [
       { title: 'What is a domain name', description: '', link: '', icon: '' },
       { title: 'Registering and managing domains', description: '', link: '', icon: '' },
       { title: 'Using a custom domain for your app', description: '', link: '', icon: '' },
+      
     ],
   },
   {

@@ -48,9 +48,9 @@
     <welcome />
   } @else {
     <h2 class="my-4 block">{{ 'HOME.SUBHEADINGS.DASHBOARD' | translate }}</h2>
-    <div class="p-card p-4">
+    <div class="p-card p-4" pAnimateOnScroll enterClass="fadeIn" leaveClass="fadeOut">
       <h4 class="mt-0 mb-4">Upcoming Expirations</h4>
-      <app-domain-expiration-bar></app-domain-expiration-bar>
+      <app-domain-expiration-bar />
     </div>
     @if (showInsights) {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative my-4 mx-0.5">
@@ -110,12 +110,18 @@
       }
     </p-divider>
     <h2 class="my-4 block">{{ 'HOME.SUBHEADINGS.DOMAINS' | translate }}</h2>
-    <app-domain-view  *ngIf="!loading" [domains]="domains" [showFooter]="false" ($triggerReload)="newDomainAdded($event)"  />
+    <app-domain-view
+      *ngIf="!loading"
+      [domains]="domains"
+      [showFooter]="false"
+      ($triggerReload)="newDomainAdded($event)"
+      pAnimateOnScroll enterClass="fadeIn" leaveClass="fadeOut"
+    />
     <p-divider />
     <h2 class="my-4 block">{{ 'HOME.SUBHEADINGS.CATEGORIES' | translate }}</h2>
-    <app-tag-grid />
+    <app-tag-grid pAnimateOnScroll enterClass="fadeIn" leaveClass="fadeOut" />
     <p-divider />
-    <app-asset-list class="block m-2"></app-asset-list>
+    <app-asset-list class="block m-2" pAnimateOnScroll enterClass="fadeIn" leaveClass="fadeOut" />
     <p class="mx-0 mt-4 mb-2 float-right text-xs text-surface-300">
       <a class="text-primary opacity-70" routerLink="/assets">View All Assets</a><br>
     </p>
