@@ -20,7 +20,6 @@ export interface NotificationType {
 // dates_expiry
 // dates_updated
 
-
 export const notificationTypes:NotificationType[] = [
   {
     key: 'expiry_domain',

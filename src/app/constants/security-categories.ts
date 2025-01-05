@@ -46,14 +46,14 @@ export const getByEppCode = (eppCode: string): SecurityCategory | undefined => {
   return securityCategories.find(cat => cat.eppCode === eppCode);
 }
 
-export const makeEppArrayFromLabels = (labels: string[]): SecurityCategory[] | undefined => {
+export const makeEppArrayFromLabels = (labels: string[]): SecurityCategory[] => {
   if (!labels) return [];
   return labels
     .map(label => securityCategories.find(cat => cat.eppCode === label))
-    .filter(cat => cat !== undefined)
+    .filter((cat): cat is SecurityCategory => cat !== undefined)
     .sort((a, b) => {
       const severityOrder = { good: 1, info: 2, bad: 3 };
-      return severityOrder[a!.severity] - severityOrder[b!.severity];
+      return severityOrder[a.severity] - severityOrder[b.severity];
     });
 };
 
