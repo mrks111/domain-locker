@@ -17,6 +17,7 @@ import { OverlayPanel } from 'primeng/overlaypanel';
 import DatabaseService from '@/app/services/database.service';
 import { BillingService, UserType } from '@/app/services/billing.service';
 import { EnvironmentType, EnvService } from '@/app/services/environment.service';
+import { LogoComponent} from '@components/home-things/logo/logo.component';
 
 @Component({
   selector: 'app-navbar',
@@ -31,6 +32,7 @@ import { EnvironmentType, EnvService } from '@/app/services/environment.service'
     OverlayModule,
     UiSettingsComponent,
     NotificationsListComponent,
+    LogoComponent,
   ],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss'],

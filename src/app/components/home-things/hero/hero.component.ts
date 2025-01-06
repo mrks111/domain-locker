@@ -11,13 +11,6 @@ import { RouterModule } from '@angular/router';
   styles: []
 })
 export class HeroComponent {
-  
-  // Track all your domains across registrars from one simple dashboard
-  // Detailed metrics and live data visualizations for each domain
-  // Get alerted of upcoming domain expirations or configuration updates
-  // Performance, security and configuration monitoring for each domain
-
-
   features = [
     { icon: 'pi-lock', text: 'Track all your domains across registrars from one simple dashboard' },
     { icon: 'pi-sparkles', text: 'Detailed metrics and live data visualizations for each domain' },

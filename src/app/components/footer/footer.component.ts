@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { query } from '@angular/animations';
+import { LogoComponent} from '@components/home-things/logo/logo.component';
 
 @Component({
   standalone: true,
   selector: 'app-footer',
-  imports: [ CommonModule, PrimeNgModule ],
+  imports: [ CommonModule, PrimeNgModule, LogoComponent ],
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss'],
   styles: []

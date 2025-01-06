@@ -179,7 +179,7 @@ export const providerInfo: Record<Providers, ProviderInfo> = {
   domainMod: {
     name: 'Domain Mod',
     url: 'https://domainmod.org',
-    icon: 'https://github.com/walkxcode/dashboard-icons/blob/main/png/domainmod.png?raw=true',
+    icon: 'https://github.com/homarr-labs/dashboard-icons/blob/a19b2ba31117a832e496777e863943802ff7fdc9/png/domainmod.png?raw=true',
     summary: '',
   },
   domainWatchman: {
