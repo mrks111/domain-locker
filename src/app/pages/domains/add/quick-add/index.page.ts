@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { catchError, finalize, lastValueFrom, map, Observable, of, switchMap, tap } from 'rxjs';
 import { GlobalMessageService } from '@/app/services/messaging.service';
 import { autoSubdomainsReadyForSave, filterOutIgnoredSubdomains } from '@/app/pages/assets/subdomains/subdomain-utils';
+import { SaveDomainData } from '@/types/Database';
 
 @Component({
   selector: 'app-quick-add-domain',
@@ -28,6 +29,10 @@ export default class QuickAddDomain {
       Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/)
     ]],
   });
+
+  defaultNotifications = [
+    { type: 'expiry_domain', isEnabled: true }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -102,8 +107,8 @@ export default class QuickAddDomain {
     }
   }
 
-  private makeDateOrUndefined(date: string | undefined): Date | undefined {
-    return date ? new Date(date) : undefined;
+  private makeDateOrUndefined(date: string | undefined): Date {
+    return date ? new Date(date) : new Date();
   }
 
 
@@ -150,7 +155,7 @@ export default class QuickAddDomain {
       );
   }
 
-  private constructDomainData(domainInfo: any): any {
+  private constructDomainData(domainInfo: any): SaveDomainData {
     return {
       domain: {
         domain_name: domainInfo.domainName.toLowerCase(),
@@ -158,6 +163,7 @@ export default class QuickAddDomain {
         expiry_date: this.makeDateOrUndefined(domainInfo.dates?.expiry_date),
         registration_date: this.makeDateOrUndefined(domainInfo.dates?.creation_date),
         updated_date: this.makeDateOrUndefined(domainInfo.dates?.updated_date),
+        notes: '',
       },
       statuses: domainInfo.status || [],
       registrar: domainInfo.registrar,
@@ -179,6 +185,8 @@ export default class QuickAddDomain {
         subject: domainInfo.ssl?.subject || 'Unknown',
         key_size: domainInfo.ssl?.key_size || 0,
         signature_algorithm: domainInfo.ssl?.signature_algorithm || 'Unknown',
+        issuer_country: domainInfo.ssl?.issuer_country || 'Unknown',
+        fingerprint: domainInfo.ssl?.fingerprint || 'Unknown',
       },
       host: {
         country: domainInfo.host?.country || 'Unknown',
@@ -186,7 +194,14 @@ export default class QuickAddDomain {
         region: domainInfo.host?.region || 'Unknown',
         isp: domainInfo.host?.isp || 'Unknown',
         org: domainInfo.host?.org || 'Unknown',
+        query: domainInfo.host?.query || 'Unknown',
+        lat: domainInfo.host?.lat || 0,
+        lon: domainInfo.host?.lon || 0,
+        timezone: domainInfo.host?.timezone || 'Unknown',
+        asNumber: domainInfo.host?.as || 'Unknown',
       },
+      subdomains: [],
+      notifications: this.defaultNotifications,
       tags: [],
     };
   }

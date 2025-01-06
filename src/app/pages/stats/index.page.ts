@@ -1,13 +1,11 @@
-import { RouterOutlet } from '@angular/router';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { PrimeNgModule } from '../../prime-ng.module';
 import { CommonModule } from '@angular/common';
-import { MenuItem } from 'primeng/api';
-import { statsLinks } from '@/app/constants/navigation-links';
+import { ExtendedMenuItem, statsLinks } from '@/app/constants/navigation-links';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterOutlet, PrimeNgModule],
+  imports: [CommonModule, PrimeNgModule],
   selector: 'stats-index-page',
   // templateUrl: './index.page.html',
   template: `
@@ -40,7 +38,7 @@ import { statsLinks } from '@/app/constants/navigation-links';
   `,
 })
 export default class StatsIndexPage  {
-  items: MenuItem[] | undefined = statsLinks;
+  items: ExtendedMenuItem[] = statsLinks as ExtendedMenuItem[];
   constructor() {}
 }
 

@@ -1,15 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
-import { DlIconComponent } from '@components/misc/svg-icon.component';
-import { features } from '../data/feature-comparison';
+import { FeaturesGridComponent } from '@components/home-things/feature-grid/feature-grid.component';
+import { CtaComponent } from '@components/home-things/cta/cta.component';
 
 @Component({
   selector: 'app-features',
   standalone: true,
-  imports: [CommonModule, PrimeNgModule, DlIconComponent],
+  imports: [CommonModule, PrimeNgModule, FeaturesGridComponent, CtaComponent],
   templateUrl: './index.page.html',
 })
-export default class FeaturesPage {
-  public features = features;
-}
+export default class FeaturesPage {}

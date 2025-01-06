@@ -210,6 +210,12 @@ export const domainManagementPlatforms: WebTool[] =  [
     icon: 'https://domant.me/wp-content/uploads/2024/03/domant-favicon-150x150.png',
     description: 'Notifications and domain tracking (Not yet GA at time of writing)',
   },
+  {
+    title: 'Momento',
+    link: 'https://getmomento.io/',
+    icon: 'https://d2f3g3eizvjo68.cloudfront.net/favicon.png',
+    description: 'Monitors for domain expiration and SSL certificate expiration',
+  },
 ];
 
 export const domainOsintTools: WebTool[] = [

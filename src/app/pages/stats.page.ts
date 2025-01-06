@@ -3,7 +3,7 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
-import { statsLinks } from '@/app/constants/navigation-links';
+import { ExtendedMenuItem, statsLinks } from '@/app/constants/navigation-links';
 import { FeatureService } from '@/app/services/features.service';
 import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
 
@@ -15,7 +15,7 @@ import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled
   styles: ['::ng-deep .content-container { max-width: 1600px; }']
 })
 export default class StatsIndexPage implements OnInit, OnDestroy {
-  items: MenuItem[] | undefined;
+  items: ExtendedMenuItem[] | undefined;
   hideSideBar = false;
   @ViewChild('sidebarNav', { static: false }) sidebarNav!: ElementRef;
   hideTextLabels = false;
@@ -29,7 +29,7 @@ export default class StatsIndexPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.items = statsLinks;
+    this.items = statsLinks as ExtendedMenuItem[];
 
     // Toggle sidebar based on the URL route
     this.hideSideBar = this.router.url === '/stats';

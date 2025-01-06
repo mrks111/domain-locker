@@ -2,7 +2,6 @@
 import { DbDomain } from '@/types/Database';
 import { Injectable } from '@angular/core';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
-import { DomainInfo } from '@/types/DomainInfo';
 
 @Injectable({
   providedIn: 'root'
@@ -39,78 +38,6 @@ export class DomainUtils {
       statuses: makeEppArrayFromLabels(data.domain_statuses?.map((status: any) => status.status_code) || []),
     };
   }
-
-
-  convertToDbDomain(domainInfo: DomainInfo): DbDomain {
-    return {
-      id: '', // Assign an appropriate value if needed
-      user_id: '', // Assign an appropriate value if needed
-      domain_name: domainInfo.domainName,
-      expiry_date: new Date(domainInfo.dates.expiry),
-      registration_date: domainInfo.dates.creation ? new Date(domainInfo.dates.creation) : undefined,
-      updated_date: domainInfo.dates.updated ? new Date(domainInfo.dates.updated) : undefined,
-      notes: '', // Placeholder for notes
-      ip_addresses: [
-        ...(domainInfo.ipAddresses.ipv4.map((ip) => ({ ip_address: ip, is_ipv6: false }))),
-        ...(domainInfo.ipAddresses.ipv6.map((ip) => ({ ip_address: ip, is_ipv6: true }))),
-      ],
-      ssl: domainInfo.ssl ? {
-        issuer: domainInfo.ssl.issuer,
-        issuer_country: domainInfo.ssl.issuer_country,
-        valid_from: domainInfo.ssl.valid_from,
-        valid_to: domainInfo.ssl.valid_to,
-        subject: domainInfo.ssl.subject,
-        fingerprint: domainInfo.ssl.fingerprint,
-        key_size: domainInfo.ssl.key_size,
-        signature_algorithm: domainInfo.ssl.signature_algorithm,
-      } : undefined,
-      whois: domainInfo.whois ? {
-        name: domainInfo.whois.name,
-        organization: domainInfo.whois.organization,
-        street: domainInfo.whois.street,
-        city: domainInfo.whois.city,
-        country: domainInfo.whois.country,
-        state: domainInfo.whois.state,
-        postal_code: domainInfo.whois.postal_code,
-      } : undefined,
-      tags: [], // Placeholder for tags
-      host: domainInfo.host ? {
-        query: domainInfo.host.query,
-        country: domainInfo.host.country,
-        region: domainInfo.host.region,
-        city: domainInfo.host.city,
-        lat: domainInfo.host.lat,
-        lon: domainInfo.host.lon,
-        timezone: domainInfo.host.timezone,
-        isp: domainInfo.host.isp,
-        org: domainInfo.host.org,
-        asNumber: domainInfo.host.asNumber,
-        domain_count: domainInfo.host.domain_count,
-        ip: domainInfo.host.ip,
-      } : undefined,
-      registrar: domainInfo.registrar ? {
-        name: domainInfo.registrar.name,
-        id: domainInfo.registrar.id,
-        url: domainInfo.registrar.url,
-        registryDomainId: domainInfo.registrar.registryDomainId,
-      } : undefined,
-      dns: {
-        dnssec: domainInfo.dns.dnssec,
-        nameServers: domainInfo.dns.nameServers,
-        mxRecords: domainInfo.dns.mxRecords,
-        txtRecords: domainInfo.dns.txtRecords,
-      },
-      statuses: makeEppArrayFromLabels(domainInfo.status) || [],
-      domain_costings: undefined, // Placeholder for domain costings
-      notification_preferences: undefined, // Placeholder for notification preferences
-      sub_domains: domainInfo.subdomains || [],
-      domain_links: domainInfo.links || [],
-      created_at: new Date().toISOString(), // Default to current timestamp
-      updated_at: new Date().toISOString(), // Default to current timestamp
-    };
-  }
-
-
 
   /* For a given expiry date, return the number of days remaining */
   getDaysRemaining(expiryDate: Date): number {

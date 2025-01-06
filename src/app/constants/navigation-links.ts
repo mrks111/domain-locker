@@ -170,19 +170,24 @@ export const authenticatedNavLinks = [
         routerLink: '/domains/change-history',
       },
       {
-        label: 'Categories',
-        icon: 'pi pi-fw pi-tags',
-        routerLink: '/assets/tags',
+        label: 'Search',
+        icon: 'pi pi-fw pi-search',
+        routerLink: '/search',
       },
       {
-        label: 'Add Domain',
-        icon: 'pi pi-fw pi-plus',
-        routerLink: '/domains/add'
-      },
-      {
-        label: 'Move Data',
+        label: 'Add or Export',
         icon: 'pi pi-fw pi-truck',
         items: [
+          {
+            label: 'Add Domain',
+            icon: 'pi pi-fw pi-plus',
+            routerLink: '/domains/add'
+          },
+          {
+            label: 'Quick Add',
+            icon: 'pi pi-fw pi-plus-circle',
+            routerLink: '/domains/add/quick-add'
+          },
           {
             label: 'Bulk Import',
             icon: 'pi pi-fw pi-upload',
@@ -192,6 +197,16 @@ export const authenticatedNavLinks = [
             label: 'Bulk Export',
             icon: 'pi pi-download',
             routerLink: '/domains/export',
+          },
+          {
+            label: 'Programmatic Access',
+            icon: 'pi pi pi-code',
+            routerLink: '/settings/developer-options',
+          },
+          {
+            label: 'Data Deletion',
+            icon: 'pi pi pi-trash',
+            routerLink: '/settings/data-deletion',
           },
         ],
       },
@@ -259,8 +274,8 @@ export const authenticatedNavLinks = [
 
 export const unauthenticatedNavLinks = [
   {
-    label: 'About',
-    icon: 'pi pi-fw pi-info-circle',
+    label: 'Docs',
+    icon: 'pi pi-fw pi-book',
     routerLink: '/about',
     items: [
       {
@@ -296,8 +311,13 @@ export const unauthenticatedNavLinks = [
   },
   {
     label: 'Pricing',
-    icon: 'pi pi-fw pi-cart-minus',
+    icon: 'pi pi-fw pi-money-bill',
     routerLink: '/about/pricing'
+  },
+  {
+    label: 'GitHub',
+    icon: 'pi pi-fw pi-github',
+    url: 'https://github.com/lissy93/domain-locker'
   },
   {
     label: 'Login',

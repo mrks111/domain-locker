@@ -19,22 +19,12 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
   ],
   templateUrl: './login.page.html',
   styles: [`
-    :host ::ng-deep .p-card {
-      margin: auto;
-      margin-top: 2rem;
-    }
     :host ::ng-deep .p-selectbutton {
       display: flex;
       margin-bottom: 1rem;
     }
     :host ::ng-deep .p-selectbutton .p-button {
       flex: 1;
-    }
-    .field {
-      margin-bottom: 1rem;
-    }
-    .field-checkbox {
-      margin-bottom: 1rem;
     }
   `]
 })
@@ -44,6 +34,7 @@ export default class LoginPageComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   showLoader = false;
+  showWelcomeCard = false;
   isAuthenticated: boolean = false;
   showResendEmail = false;
   disabled = false;
@@ -89,6 +80,12 @@ export default class LoginPageComponent implements OnInit {
 
     // Initial check for auth status
     this.checkAuthStatus();
+
+    const isNewSignup = this.route.snapshot.queryParamMap.get('newUser');
+    if (isNewSignup !== null) {
+      this.isLogin = false;
+      this.showWelcomeCard = true;
+    }
 
     this.route.queryParams.subscribe(async params => {
       if (params['requireMFA'] === 'true') {

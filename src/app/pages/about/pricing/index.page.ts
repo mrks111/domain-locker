@@ -1,47 +1,17 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
-import { trigger, transition, style, animate } from '@angular/animations';
-import { pricingFeatures, selfHostedFeatures, enterpriseFeatures, billingFaq } from '@/app/constants/pricing-features';
+import { billingFaq } from '@/app/constants/pricing-features';
+
+import { PricingCardsComponent } from '@/app/components/home-things/pricing-cards/pricing-cards.component';
+import { CtaComponent } from '@components/home-things/cta/cta.component';
 
 @Component({
   standalone: true,
   selector: 'app-pricing-page',
   templateUrl: './index.page.html',
-  // styleUrls: ['./index.page.css'],
-  imports: [CommonModule, PrimeNgModule],
-  animations: [
-    trigger('slideDown', [
-      transition(':enter', [
-        style({ height: 0, opacity: 0 }),
-        animate('300ms ease-out', style({ height: '*', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('300ms ease-in', style({ height: 0, opacity: 0 })),
-      ]),
-    ]),
-  ],
+  imports: [CommonModule, PrimeNgModule, PricingCardsComponent, CtaComponent],
 })
 export default class PricingPage {
-  pricingPlans = pricingFeatures;
-  selfHostedFeatures = selfHostedFeatures;
-  enterpriseFeatures = enterpriseFeatures;
   billingFaq = billingFaq;
-
-  showEnterprise = false;
-  showCharity = false;
-  
-  isAnnual = true;
-  billingCycleOptions = [
-    { label: 'Annual', value: true, icon: 'pi pi-calendar-plus' },
-    { label: 'Monthly', value: false, icon: 'pi pi-calendar-minus' }
-  ];
-
-  toggleBilling() {
-    this.isAnnual = !this.isAnnual;
-  }
-
-  getPrice(plan: any) {
-    return this.isAnnual ? plan.priceAnnual : plan.priceMonth;
-  }
 }

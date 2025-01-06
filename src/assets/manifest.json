@@ -10,21 +10,21 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/assets/icons/icon-192x192.png",
+      "src": "/icons/android-chrome-192x192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/assets/icons/icon-512x512.png",
+      "src": "/icons/android-chrome-512x512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "/assets/icons/icon-512x512-maskable.png",
+      "src": "/icons/android-chrome-maskable-192x192.png",
       "type": "image/png",
-      "sizes": "512x512",
+      "sizes": "192x192",
       "purpose": "maskable"
     }
   ],
@@ -37,12 +37,12 @@
   ],
   "screenshots": [
     {
-      "src": "/assets/screenshots/screenshot1.png",
+      "src": "/screenshots/screenshot1.png",
       "type": "image/png",
       "sizes": "1080x1920"
     },
     {
-      "src": "/assets/screenshots/screenshot2.png",
+      "src": "/screenshots/screenshot2.png",
       "type": "image/png",
       "sizes": "1080x1920"
     }

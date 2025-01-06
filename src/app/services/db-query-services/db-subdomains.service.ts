@@ -291,5 +291,43 @@ export class SubdomainsQueries {
     }
   }
 
+  // Insert a new subdomain record for the given domainName
+  saveSubdomainForDomain(domainName: string, subdomain: string): Observable<void> {
+    // 1) First, fetch domain ID by domainName
+    return from(
+      this.supabase
+        .from('domains')
+        .select('id')
+        .eq('domain_name', domainName)
+        .single()
+    ).pipe(
+      switchMap(({ data, error }) => {
+        if (error) {
+          return this.handleError(error);
+        }
+        if (!data?.id) {
+          return throwError(() => new Error(`Domain not found: ${domainName}`));
+        }
 
+        const domainId = data.id;
+
+        // 2) Insert new subdomain record
+        return from(
+          this.supabase
+            .from('sub_domains')
+            .insert({
+              domain_id: domainId,
+              name: subdomain,
+            })
+        ).pipe(
+          switchMap(({ error: insertErr }) => {
+            if (insertErr) {
+              return this.handleError(insertErr);
+            }
+            return from(Promise.resolve()); // or of(void 0)
+          })
+        );
+      })
+    );
+  }
 }

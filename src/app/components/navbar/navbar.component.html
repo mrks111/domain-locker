@@ -20,6 +20,17 @@
   </a>
   <div class="hidden sm:flex sm:items-center">
     <p-menubar [model]="items" [styleClass]="'bg-transparent border-none p-0'"></p-menubar>
+
+    <p-button
+      *ngIf="!isAuthenticated"
+      routerLink="/login"
+      [queryParams]="{ newUser: 'true' }"
+      label="Sign Up" 
+      size="small"
+      icon="pi pi-face-smile" 
+      class="ml-1"
+    />
+
     <button
       pButton
       icon="pi pi-palette"
@@ -75,6 +86,8 @@
     </p-overlay>
   </div>
 </div>
+
+<!-- Sidebar for mobile -->
 <p-sidebar [(visible)]="sidebarVisible" position="left" styleClass="p-sidebar-sm p-0" class="p-0">
   <ng-template pTemplate="header">
     <div class="w-full flex flex-col justify-between">

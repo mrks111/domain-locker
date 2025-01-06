@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
-import { aboutPages } from './data/about-page-list';
+import { aboutPages } from '@/app/pages/about/data/about-page-list';
 
 @Component({
   standalone: true,
@@ -12,4 +12,3 @@ import { aboutPages } from './data/about-page-list';
 export default class AboutPageComponent {
   sections = aboutPages;
 }
-
