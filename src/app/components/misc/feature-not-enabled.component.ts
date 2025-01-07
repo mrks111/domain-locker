@@ -20,10 +20,11 @@ import { BillingService } from '@/app/services/billing.service';
             @if (environment === 'managed') {
               on the {{ (userPlan$ | async) || 'current' }} plan
             } @else {
-              in {{ environment }} environments
+              in {{ mapEnvironmentToString(environment) }} environments
             }
           </span>
           <p-button
+            *ngIf="environment === 'managed'"
             severity="warning"
             label="Upgrade"
             icon="pi pi-arrow-circle-right"
@@ -56,6 +57,19 @@ export class FeatureNotEnabledComponent {
     this.billingService.fetchUserPlan();
     this.featureName = featureDescriptions[this.feature]?.label;
     this.featureDescription = featureDescriptions[this.feature]?.description;
+  }
+
+  mapEnvironmentToString(env: EnvironmentType): string {
+    switch (env) {
+      case 'dev':
+        return 'development';
+      case 'selfHosted':
+        return 'self-hosted';
+      case 'demo':
+        return 'live demo';
+      default:
+        return env;
+    }
   }
 }
 

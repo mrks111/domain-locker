@@ -10,7 +10,7 @@ import { ErrorHandlerService } from '@/app/services//error-handler.service';
 export type BillingPlans = 'free' | 'hobby' | 'pro' | 'enterprise';
 type SpecialPlans = 'sponsor' | 'complimentary' | 'tester' | 'demo' | 'super';
 export type UserType = BillingPlans | SpecialPlans;
-type EnvironmentType = 'dev' | 'managed' | 'self-hosted' | 'demo';
+type EnvironmentType = 'dev' | 'managed' | 'selfHosted' | 'demo';
 
 @Injectable({
   providedIn: 'root',
@@ -33,7 +33,7 @@ export class BillingService {
   async fetchUserPlan(): Promise<void> {
     const envType = this.environmentType;
 
-    if (envType === 'self-hosted') {
+    if (envType === 'selfHosted') {
       this.userPlan$.next('super');
       return;
     } else if (envType === 'dev') {

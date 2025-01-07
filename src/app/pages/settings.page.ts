@@ -7,10 +7,12 @@ import { settingsLinks } from '@/app/constants/navigation-links';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { ProfilePictureComponent } from '@/app/components/misc/profile-picture.component';
 import { AccountIssuesComponent } from '@/app/components/settings/account-issues/account-issues.component';
+import { FeatureService } from '../services/features.service';
+import { FeatureNotEnabledComponent } from '@/app/components/misc/feature-not-enabled.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterOutlet, PrimeNgModule, ProfilePictureComponent, AccountIssuesComponent],
+  imports: [CommonModule, RouterOutlet, PrimeNgModule, ProfilePictureComponent, AccountIssuesComponent, FeatureNotEnabledComponent],
   templateUrl: './settings/index.page.html',
 })
 export default class SettingsIndexPage implements OnInit {
@@ -19,8 +21,11 @@ export default class SettingsIndexPage implements OnInit {
   @ViewChild('sidebarNav', { static: false }) sidebarNav!: ElementRef;
   hideTextLabels = false;
 
+  settingsEnabled$ = this.featureService.isFeatureEnabled('accountSettings');
+
   constructor(
     private router: Router,
+    private featureService: FeatureService,
     public supabaseService: SupabaseService,
   ) {}
 

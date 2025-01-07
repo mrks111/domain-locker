@@ -46,7 +46,7 @@ export class FeatureService {
           features[feature] = config.managed[userPlan] ?? config.default;
         }
       } else if (config[this.environment] !== undefined) {
-        // If there's an environment-specific value (e.g., self-hosted, demo)
+        // If there's an environment-specific value (e.g., selfHosted, demo)
         features[feature] = config[this.environment];
       } else {
         // Default value

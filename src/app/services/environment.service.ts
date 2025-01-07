@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { environment } from '@/app/environments/environment';
 
-export type EnvironmentType = 'dev' | 'managed' | 'self-hosted' | 'demo';
+export type EnvironmentType = 'dev' | 'managed' | 'selfHosted' | 'demo';
 
 type EnvVar =
 'SUPABASE_URL'          // Supabase URL
 | 'SUPABASE_ANON_KEY'   // Supabase public key
-| 'DL_ENV_TYPE'         // EnvironmentType (dev, managed, self-hosted, demo)
+| 'DL_ENV_TYPE'         // EnvironmentType (dev, managed, selfHosted, demo)
 | 'DL_SUPABASE_PROJECT' // Supabase project ID
 | 'DL_DEBUG'            // Enable debug mode, to show debug messages
 | 'DL_GLITCHTIP_DSN'    // GlitchTip DSN, for error tracking
@@ -59,11 +59,11 @@ export class EnvService {
    * Determines the environment type.
    */
   getEnvironmentType(): EnvironmentType {
-    const env = this.getEnvVar('DL_ENV_TYPE', 'self-hosted');
-    if (['dev', 'managed', 'self-hosted', 'demo'].includes(env)) {
+    const env = this.getEnvVar('DL_ENV_TYPE', 'selfHosted');
+    if (['dev', 'managed', 'selfHosted', 'demo'].includes(env)) {
       return env as EnvironmentType;
     }
-    return 'self-hosted';
+    return 'selfHosted';
   }
 
   /**

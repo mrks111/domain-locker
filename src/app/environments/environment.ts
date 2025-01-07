@@ -24,7 +24,7 @@ export const environment = {
   // BASE_URL: 'http://localhost:5173',
   // SUPABASE_URL: '',        // Supabase URL
   // SUPABASE_ANON_KEY: '',   // Supabase public key
-  // ENV_TYPE: '',            // EnvironmentType (dev, managed, self-hosted, demo)
+  // ENV_TYPE: '',            // EnvironmentType (dev, managed, selfHosted, demo)
   // SUPABASE_PROJECT: '',    // Supabase project ID
   // DEBUG: '',               // Enable debug mode, to show debug messages
   // GLITCHTIP_DSN: '',       // GlitchTip DSN, for error tracking

@@ -109,7 +109,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
         return 'red';
       case 'super':
         return 'indigo';
-      case 'self-hosted':
+      case 'selfHosted':
         return 'teal';
       case 'demo':
         return 'orange';
