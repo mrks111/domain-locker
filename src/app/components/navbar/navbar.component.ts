@@ -18,6 +18,7 @@ import DatabaseService from '@/app/services/database.service';
 import { BillingService, UserType } from '@/app/services/billing.service';
 import { EnvironmentType, EnvService } from '@/app/services/environment.service';
 import { LogoComponent} from '@components/home-things/logo/logo.component';
+import { FeatureService } from '@/app/services/features.service';
 
 @Component({
   selector: 'app-navbar',
@@ -49,6 +50,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   userPlan: EnvironmentType | UserType | null = null;
   planColor: string = 'primary';
 
+  settingsEnabled$ = this.featureService.isFeatureEnabled('accountSettings');
   private subscriptions: Subscription = new Subscription();
   private platformId = inject(PLATFORM_ID);
 
@@ -58,6 +60,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     private billingService: BillingService,
     private environmentService: EnvService,
     private cdr: ChangeDetectorRef,
+    private featureService: FeatureService,
   ) {}
 
   ngOnInit() {
