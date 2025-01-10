@@ -48,7 +48,8 @@
       optionLabel="flag"
       optionValue="code"
       (onChange)="onLanguageChange($event.value)"
-      class="language-select {{ standAlone ? 'gappy-select' : '' }}"
+      class="flex language-select {{ standAlone ? 'gappy-select' : '' }}"
+      styleClass="justify-center"
     >
       <ng-template let-option pTemplate="item">
         <span
@@ -73,18 +74,34 @@
       </ng-template>
     </p-dropdown>
   </div>
-  
-  <!-- User Settings Section -->
-  <!-- <div class="logged-in-options-wrap ui-settings-section {{ standAlone ? 'p-card' : '' }}" *ngIf="isAuthenticated">
-    <a routerLink="/settings" class="p-button text-sm no-underline">
-      <i class="pi pi-user mr-2"></i>User Settings
+
+  <!-- Accessibility Links (only visible in dialog) -->
+  <div *ngIf="!standAlone" class="ui-settings-section">
+    <h3 class="text-sm font-semibold mb-2">
+      <i class="pi pi-eye-slash mr-2"></i>Accessibility
+    </h3>
+    <a routerLink="/settings/display-options"
+      class="p-button px-2 py-1 text-center flex justify-center w-fit mx-auto no-underline p-button-outlined p-button-secondary">
+      Accessibility Settings
     </a>
-    <button pButton
-      type="button"
-      label="Logout"
-      icon="pi pi-sign-out"
-      class="p-button-text text-sm"
-      (click)="signOut()"></button>
-  </div> -->
+  </div>
+
+  <!-- Accessibility Settings (only visible in settings page) -->
+  <div *ngIf="standAlone" class="mb-4 ui-settings-section {{ standAlone ? 'p-card' : '' }}">
+    <h3 class="text-sm font-semibold mb-2">
+      <i class="pi pi-eye-slash mr-2"></i>Accessibility
+    </h3>
+    <div
+      *ngFor="let item of accessibilityFields"
+      class="flex justify-between items-center"
+    >
+      <label [for]="item.key" class="opacity-90">{{ item.label }}</label>
+      <p-inputSwitch
+        [(ngModel)]="accessibility[item.key]"
+        [inputId]="item.key"
+        (onChange)="updateAccessibilityOptions(item.key)"
+      />
+    </div>
+  </div>
 </div>
 
