@@ -15,7 +15,9 @@
   </div>
 </p-divider>
 
-@if (showAccountInfo) {
+<p-progressSpinner *ngIf="isAccountInfoLoading" class="flex mx-auto my-4" />
+
+@if (showAccountInfo && !isAccountInfoLoading) {
 
 <div class="w-full">
   <h3>Current Plan</h3>

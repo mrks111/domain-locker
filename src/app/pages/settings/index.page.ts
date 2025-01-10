@@ -7,7 +7,7 @@ import { ThemeService } from '@/app/services/theme.service';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { TranslationService } from '@/app/services/translation.service';
 import DatabaseService from '@/app/services/database.service';
-import { Observable, from } from 'rxjs';
+import { Observable, of, from } from 'rxjs';
 import { User } from '@supabase/supabase-js';
 
 @Component({
@@ -16,13 +16,16 @@ import { User } from '@supabase/supabase-js';
   templateUrl: './settings.page.html',
   imports: [CommonModule, PrimeNgModule, AccountIssuesComponent],
 })
-export default class SettingsPage implements OnInit {
-  currentPlan$: Observable<string | null>;
-  user$: Observable<User | null>;
+export default class SettingsPage {
+  currentPlan$?: Observable<string | null>;
+  user$?: Observable<User | null>;
+
   displayOptions: { theme: string, darkMode: boolean, font: string, scale: string } | null = null;
-  language: string = 'English'
+  language: string = 'English';
   notifications: null | any = null;
+
   showAccountInfo = false;
+  isAccountInfoLoading = false;
 
   constructor(
     private billingService: BillingService,
@@ -30,25 +33,36 @@ export default class SettingsPage implements OnInit {
     private supabaseService: SupabaseService,
     private translationService: TranslationService,
     private databaseService: DatabaseService,
-  ) {
-    this.currentPlan$ = this.billingService.getUserPlan();
-    this.user$ = from(this.supabaseService.getCurrentUser());
-    this.displayOptions = this.themeService.getUserPreferences();
-    this.language = this.translationService.getLanguageToUse();
-  }
-
-  ngOnInit(): void {
-    this.billingService.fetchUserPlan();
-    this.getNotificationPreferences();
-  }
-
-  private makeDate(date: string | undefined): string {
-    return date ? `(Updated on ${new Date(date).toLocaleDateString()})` : '';
-
-  }
+  ) {}
 
   public toggleAccountInfo(): void {
     this.showAccountInfo = !this.showAccountInfo;
+
+    // If we just opened the section, and we haven't loaded data yet -> fetch now
+    if (this.showAccountInfo) {
+      this.loadAccountInfo();
+    }
+  }
+
+  private loadAccountInfo(): void {
+    this.isAccountInfoLoading = true;
+
+    // For Observables:
+    // 1) Make sure we call the services
+    this.billingService.fetchUserPlan(); // triggers plan retrieval
+    this.currentPlan$ = this.billingService.getUserPlan();
+
+    this.user$ = from(this.supabaseService.getCurrentUser());
+
+    // Synchronous calls
+    this.displayOptions = this.themeService.getUserPreferences();
+    this.language = this.translationService.getLanguageToUse();
+
+    // Async call for notifications
+    this.getNotificationPreferences()
+      .finally(() => {
+        this.isAccountInfoLoading = false;
+      });
   }
 
   private async getNotificationPreferences() {
@@ -81,4 +95,7 @@ export default class SettingsPage implements OnInit {
     return 'Not configured';
   }
 
+  private makeDate(date: string | undefined): string {
+    return date ? `(Updated on ${new Date(date).toLocaleDateString()})` : '';
+  }
 }
