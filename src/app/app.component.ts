@@ -24,6 +24,7 @@ import { SupabaseService } from '@/app/services/supabase.service';
 import { HitCountingService } from '@/app/services/hit-counting.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { TranslationService } from './services/translation.service';
+import { AccessibilityService, accessibilityOptionsInfo } from '@/app/services/accessibility-options.service';
 
 @Component({
   selector: 'app-root',
@@ -48,13 +49,14 @@ import { TranslationService } from './services/translation.service';
       <loading *ngIf="loading" />
       <!-- Create router outlet -->
       <breadcrumbs *ngIf="!loading && pagePath" [pagePath]="pagePath" />
+      <!-- Router outlet for main content -->
       <router-outlet *ngIf="!loading" />
       <!-- Global components -->
       <p-scrollTop />
       <p-toast />
     </div>
     <!-- Footer -->
-     <app-footer [big]="isBigFooter" />
+    <app-footer [big]="isBigFooter" />
   `,
   styles: [`
     :host {
@@ -89,6 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
     public _themeService: ThemeService,
     public _hitCountingService: HitCountingService,
     private _translationService: TranslationService,
+    private accessibilityService: AccessibilityService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}  
 
@@ -138,6 +141,11 @@ export class AppComponent implements OnInit, OnDestroy {
         this.messageService.clear();
       }
     });
+
+    // Apply accessibility classes based on user preference
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => this.accessibilityService.applyAccessibilityClasses(), 0);
+    }
   }
 
   ngOnDestroy() {
