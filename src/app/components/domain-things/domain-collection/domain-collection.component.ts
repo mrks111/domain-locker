@@ -125,7 +125,6 @@ export class DomainCollectionComponent implements OnInit {
   }
 
   reloadDomains(event: any) {
-    console.log('Reloading domains from domain-collection.component', event);
     this.$triggerReload.emit(event);
   }
 

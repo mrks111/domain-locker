@@ -27,6 +27,7 @@ import { HeroComponent } from '@components/home-things/hero/hero.component';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { EnvService } from '@/app/services/environment.service';
 
 @Component({
   standalone: true,
@@ -70,11 +71,21 @@ export default class HomePageComponent implements OnInit {
     private databaseService: DatabaseService,
     private messageService: MessageService,
     public supabaseService: SupabaseService,
+    private environmentService: EnvService,
     private errorHandlerService: ErrorHandlerService,
   ) {}
 
   ngOnInit() {
+    this.setAuthState();
     this.loadDomains();
+  }
+
+  setAuthState() {
+    if (!this.environmentService.isSupabaseEnabled()) {
+      this.isAuthenticated = true;
+      console.log('Supabase is disabled, skipping auth check');
+      return;
+    }
     this.subscriptions.add(
       this.supabaseService.authState$.subscribe(isAuthenticated => {
         this.isAuthenticated = isAuthenticated;

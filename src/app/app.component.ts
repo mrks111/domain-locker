@@ -24,7 +24,8 @@ import { SupabaseService } from '@/app/services/supabase.service';
 import { HitCountingService } from '@/app/services/hit-counting.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { TranslationService } from './services/translation.service';
-import { AccessibilityService, accessibilityOptionsInfo } from '@/app/services/accessibility-options.service';
+import { AccessibilityService } from '@/app/services/accessibility-options.service';
+import { EnvService } from '@/app/services/environment.service';
 
 @Component({
   selector: 'app-root',
@@ -92,6 +93,7 @@ export class AppComponent implements OnInit, OnDestroy {
     public _hitCountingService: HitCountingService,
     private _translationService: TranslationService,
     private accessibilityService: AccessibilityService,
+    private environmentService: EnvService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}  
 
@@ -155,6 +157,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private async checkAuthentication(): Promise<void> {
+
+    if (!this.environmentService.isSupabaseEnabled()) {
+      return;
+    }
+
     try {
       // Check if authenticated
       const isAuthenticated = await this.supabaseService.isAuthenticated();

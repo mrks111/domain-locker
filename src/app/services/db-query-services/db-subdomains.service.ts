@@ -57,7 +57,6 @@ export class SubdomainsQueries {
   
 
   async saveSubdomains(domainId: string, subdomains: { name: string; sd_info?: string }[]): Promise<void> {
-    console.log('Saving subdomains:', domainId, subdomains);
     if (!subdomains || subdomains.length === 0) {
       throw new Error('Skipping subdomains, none found');
     }

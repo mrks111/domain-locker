@@ -20,7 +20,7 @@ interface Asset {
     <h2 class="my-4 block">Assets</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 relative">
       <ng-container *ngFor="let asset of assets">
-        <a pAnimateOnScroll class="asset-card-link" [routerLink]="asset.link">
+        <a pAnimateOnScroll enterClass="fadeIn" leaveClass="fadeOut" class="asset-card-link" [routerLink]="asset.link">
           <div class="p-card asset-card">
             <h4>{{ asset.title }}</h4>
             <p class="text-surface-400 my-0" *ngIf="asset.count !== undefined">

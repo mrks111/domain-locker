@@ -13,11 +13,12 @@
     <a [routerLink]="'/assets/registrars/'+domain.registrar.name" class="text-default no-underline hover:underline">
       {{ domain.registrar.name }}
     </a>
-    <p *ngIf="domain.registrar?.url">
+    <p *ngIf="domain.registrar?.url && domain.registrar?.url?.includes('.')"  class="flex items-center">
       <app-domain-favicon [domain]="domain.registrar.url" [size]="24" class="mr-1"></app-domain-favicon>
-      <a [href]="domain.registrar.url" target="_blank" rel="noopener noreferrer">
-        {{ (domain.registrar.url || '')
-          .replace('https://', '').replace('http://', '').replace('www.', '') }}
+      <a [href]="domain.registrar.url" target="_blank" rel="noopener noreferrer">{{
+        (domain.registrar.url || '')
+          .replace('https://', '').replace('http://', '').replace('www.', '')
+        }}
       </a>
     </p>
   </p-card>

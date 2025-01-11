@@ -50,6 +50,9 @@ export class EnvService {
    * @returns
    */
   isSupabaseEnabled(): boolean {
+    if (this.getEnvironmentType() === 'selfHosted') {
+      return false;
+    }
     const supabaseUrl = this.getEnvVar('SUPABASE_URL');
     const supabaseKey = this.getEnvVar('SUPABASE_ANON_KEY');
     return Boolean(supabaseUrl && supabaseKey);

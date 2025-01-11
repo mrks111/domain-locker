@@ -43,6 +43,7 @@ export const makeKVList = (sdInfo: any): { key: string; value: string }[] => {
  * @returns 
  */
 export const filterOutIgnoredSubdomains = (subdomains: any[], parentDomain?: string): any[] => {
+  if (!subdomains || !subdomains.length) return [];
   return subdomains.filter(subdomain => {
     const name = subdomain.subdomain;
     if (!name) return false;

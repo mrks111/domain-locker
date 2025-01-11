@@ -44,7 +44,6 @@ export default class DocsComponent implements OnInit {
   
   async ngOnInit(): Promise<void> {
     this.doc$.subscribe(doc => {
-      console.log(doc); 
       if (!doc?.slug) {
         this.docsNotFound = true;
       }

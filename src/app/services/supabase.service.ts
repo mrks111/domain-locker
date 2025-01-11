@@ -1,4 +1,4 @@
-// src/app/services/supabase.service.ts
+// @/app/services/supabase.service.ts
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { createClient, Factor, Session, SupabaseClient, User } from '@supabase/supabase-js';
@@ -26,6 +26,12 @@ export class SupabaseService {
   ) {
     
     try {
+
+      if (this.envService.getEnvironmentType() === 'selfHosted') {
+        console.warn('Supabase is disabled in selfHosted mode.');
+        return;
+      }
+
       const supabaseUrl = this.envService.getSupabaseUrl();
       const supabaseAnonKey = this.envService.getSupabasePublicKey();
       this.supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -57,7 +63,17 @@ export class SupabaseService {
     }
   }
 
+  isSupabaseEnabled(): boolean {
+    return this.envService.isSupabaseEnabled();
+  }  
+
   async isAuthenticated(): Promise<boolean> {
+
+    // Self-hosted environments do not use Supabase for authentication
+    if (!this.isSupabaseEnabled()) {
+      return true;
+    }
+
     // Check if user has an active session
     const { data: { session } } = await this.supabase.auth.getSession();
     if (!session) return false;
@@ -79,6 +95,9 @@ export class SupabaseService {
   }
 
   async getSessionData() {
+    if (!this.isSupabaseEnabled()) {
+      return {};
+    }
     return (await this.supabase.auth.getSession()).data || {};
   }
 

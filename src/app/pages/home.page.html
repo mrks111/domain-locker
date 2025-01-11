@@ -55,9 +55,9 @@
   @if (loading) {
     <loading loadingTitle="Loading" loadingDescription="Fetching your domains, and calculating stats" />
   }
-  @if (domains.length === 0) {
+  @if (!loading && domains.length === 0) {
     <welcome />
-  } @else {
+  } @else if (!loading) {
     <h2 class="my-4 block">{{ 'HOME.SUBHEADINGS.DASHBOARD' | translate }}</h2>
     <div class="p-card p-4" pAnimateOnScroll enterClass="fadeIn" leaveClass="fadeOut">
       <h4 class="mt-0 mb-4">Upcoming Expirations</h4>

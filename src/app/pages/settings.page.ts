@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
@@ -6,13 +6,12 @@ import { MenuItem } from 'primeng/api';
 import { settingsLinks } from '@/app/constants/navigation-links';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { ProfilePictureComponent } from '@/app/components/misc/profile-picture.component';
-import { AccountIssuesComponent } from '@/app/components/settings/account-issues/account-issues.component';
 import { FeatureService } from '../services/features.service';
 import { FeatureNotEnabledComponent } from '@/app/components/misc/feature-not-enabled.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterOutlet, PrimeNgModule, ProfilePictureComponent, AccountIssuesComponent, FeatureNotEnabledComponent],
+  imports: [CommonModule, RouterOutlet, PrimeNgModule, ProfilePictureComponent, FeatureNotEnabledComponent],
   templateUrl: './settings/index.page.html',
 })
 export default class SettingsIndexPage implements OnInit {
