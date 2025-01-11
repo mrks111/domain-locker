@@ -2,7 +2,7 @@ import {
   ApplicationConfig, importProvidersFrom,
   APP_INITIALIZER, PLATFORM_ID } from '@angular/core';
 // Importing providers
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideFileRouter } from '@analogjs/router';
 import { provideContent, withMarkdownRenderer } from '@analogjs/content';
@@ -26,6 +26,8 @@ import {
   CustomMissingTranslationHandler,
 } from '@/app/utils/translation-loader.factory';
 
+import { AuthInterceptor } from '@/app/utils/auth.interceptor';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     // Core Providers
@@ -37,6 +39,12 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ anchorScrolling: 'enabled' }),
       withEnabledBlockingInitialNavigation()
     ),
+    // HTTP Interceptors
+    provideHttpClient(
+      withFetch(),
+      withInterceptorsFromDi()
+    ),
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     
     // PrimeNG Services
     ConfirmationService,
