@@ -1,22 +1,26 @@
 #!/bin/bash
 
-# Exit immediately if any command fails
+# Exit immediately if a command fails
 set -e
 
 # Configuration variables: Use environment variables if set, otherwise use defaults
 DB_NAME="${DOMAIN_LOCKER_DB_NAME:-domain_locker}"
 DB_USER="${DOMAIN_LOCKER_DB_USER:-postgres}"
-DB_PASSWORD="${DOMAIN_LOCKER_DB_PASSWORD:-securepassword}"
+DB_PASSWORD="${DOMAIN_LOCKER_DB_PASSWORD:-dinosaur}"
 DB_HOST="${DOMAIN_LOCKER_DB_HOST:-localhost}"
 DB_PORT="${DOMAIN_LOCKER_DB_PORT:-5432}"
-SCHEMA_FILE="${SCHEMA_FILE:-schema.sql}"
+SCHEMA_FILE="${SCHEMA_FILE:-./schema.sql}"
+
+# Export PGPASSWORD for non-interactive password authentication
+export PGPASSWORD="$DB_PASSWORD"
 
 echo "Setting up PostgreSQL database..."
 
-# Step 1: Check for PostgreSQL connection
+# Step 1: Check connection to PostgreSQL
 echo "Checking PostgreSQL connection to $DB_HOST:$DB_PORT..."
-if ! pg_isready -h "$DB_HOST" -p "$DB_PORT" > /dev/null; then
-    echo "Error: Cannot connect to PostgreSQL at $DB_HOST:$DB_PORT. Ensure the server is running."
+pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER"
+if [ $? -ne 0 ]; then
+    echo "Error: Unable to connect to PostgreSQL at $DB_HOST:$DB_PORT"
     exit 1
 fi
 
@@ -29,14 +33,15 @@ psql -h "$DB_HOST" -p "$DB_PORT" -U postgres -c "DO \$\$ BEGIN
 END
 \$\$;"
 
-# Step 3: Create the database (if it doesn't already exist)
-echo "Creating database..."
-psql -h "$DB_HOST" -p "$DB_PORT" -U postgres -c "DO \$\$ BEGIN
-    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME') THEN
-        CREATE DATABASE $DB_NAME OWNER $DB_USER;
-    END IF;
-END
-\$\$;"
+# Step 3: Check if the database exists; create it if it doesn't
+echo "Checking if database $DB_NAME exists..."
+DB_EXISTS=$(psql -h "$DB_HOST" -p "$DB_PORT" -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'")
+if [[ "$DB_EXISTS" != "1" ]]; then
+    echo "Creating database $DB_NAME..."
+    psql -h "$DB_HOST" -p "$DB_PORT" -U postgres -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+else
+    echo "Database $DB_NAME already exists. Skipping creation."
+fi
 
 # Step 4: Grant privileges to the user
 echo "Granting privileges to the user..."
@@ -50,6 +55,9 @@ else
     echo "Schema file not found at $SCHEMA_FILE. Skipping schema application."
 fi
 
+# Unset PGPASSWORD after the script completes
+unset PGPASSWORD
+
 echo "Database setup complete!"
 echo "-----------------------------------------"
 echo "Database Name: $DB_NAME"
@@ -57,8 +65,3 @@ echo "User: $DB_USER"
 echo "Host: $DB_HOST"
 echo "Port: $DB_PORT"
 echo "-----------------------------------------"
-
-
-# If running PostgreSQL locally, ensure that password authentication (md5)
-# is enabled in pg_hba.conf, and set a password for the postgres user.
-# Restart the PostgreSQL service after making changes.

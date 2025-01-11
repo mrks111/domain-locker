@@ -17,12 +17,12 @@ SET row_security = off;
 -- Create the 'public' schema if it doesn't exist
 CREATE SCHEMA IF NOT EXISTS "public";
 ALTER SCHEMA "public" OWNER TO "postgres";
+SET search_path TO public;
 
 -- =========================
 -- Extensions Setup
 -- =========================
 
--- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -30,10 +30,18 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Replace User ID Dependencies
 -- =========================
 
+CREATE TABLE IF NOT EXISTS "users" (
+    id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69'::uuid NOT NULL,
+    email text,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT users_pkey PRIMARY KEY (id)
+);
+
 -- Default user_id for self-hosted environments
--- User authentication is removed; all data is linked to a static user ID '001'
+-- User authentication is removed; all data is linked to a static user ID 'a0000000-aaaa-42a0-a0a0-00a000000a69'
 DO $$ BEGIN
-  PERFORM '001';
+  PERFORM 'a0000000-aaaa-42a0-a0a0-00a000000a69';
 EXCEPTION WHEN OTHERS THEN
   -- Create default user ID if necessary logic goes here
 END $$;
@@ -42,13 +50,34 @@ END $$;
 -- Functions
 -- =========================
 
--- Function: delete_domain
-CREATE OR REPLACE FUNCTION "public"."delete_domain"("domain_id" "uuid") RETURNS "void"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $_$BEGIN
-  -- Delete related records
-  DELETE FROM notifications WHERE notifications.domain_id = $1;
-  DELETE FROM ip_addresses WHERE ip_addresses.domain_id = $....
+CREATE OR REPLACE FUNCTION public.delete_domain(domain_id uuid) RETURNS void
+LANGUAGE plpgsql AS $$
+BEGIN
+    -- Delete associated records from tables with direct foreign key references to the domain
+    DELETE FROM notifications WHERE domain_id = $1;
+    DELETE FROM domain_tags WHERE domain_id = $1;
+    DELETE FROM ip_addresses WHERE domain_id = $1;
+    DELETE FROM ssl_certificates WHERE domain_id = $1;
+    DELETE FROM whois_info WHERE domain_id = $1;
+    DELETE FROM dns_records WHERE domain_id = $1;
+    DELETE FROM domain_costings WHERE domain_id = $1;
+    DELETE FROM domain_statuses WHERE domain_id = $1;
+    DELETE FROM uptime WHERE domain_id = $1;
+    DELETE FROM sub_domains WHERE domain_id = $1;
+    DELETE FROM domain_updates WHERE domain_id = $1;
+    DELETE FROM notification_preferences WHERE domain_id = $1;
+    DELETE FROM domain_links WHERE domain_id = $1;
+
+    -- Delete the domain itself
+    DELETE FROM domains WHERE id = $1;
+
+    -- Clean orphaned records from related tables
+    DELETE FROM tags WHERE id NOT IN (SELECT DISTINCT tag_id FROM domain_tags);
+    DELETE FROM registrars WHERE id NOT IN (SELECT DISTINCT registrar_id FROM domains);
+    DELETE FROM hosts WHERE id NOT IN (SELECT DISTINCT host_id FROM ip_addresses);
+END;
+$$;
+
 
 
 SET statement_timeout = 0;
@@ -94,7 +123,7 @@ CREATE OR REPLACE FUNCTION "public"."set_static_user_id"() RETURNS trigger
     LANGUAGE plpgsql
 AS $$
 BEGIN
-  NEW.user_id := '001';
+  NEW.user_id := 'a0000000-aaaa-42a0-a0a0-00a000000a69';
   RETURN NEW;
 END;
 $$;
@@ -102,7 +131,7 @@ $$;
 -- Table definitions
 CREATE TABLE IF NOT EXISTS "public"."domains" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid DEFAULT '001' NOT NULL,
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
     domain_name text NOT NULL,
     expiry_date date,
     notes text,
@@ -119,7 +148,7 @@ CREATE TABLE IF NOT EXISTS "public"."registrars" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name text NOT NULL,
     url text,
-    user_id uuid DEFAULT '001',
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69',
     CONSTRAINT registrars_pkey PRIMARY KEY (id),
     CONSTRAINT registrars_user_id_name_key UNIQUE (user_id, name)
 );
@@ -130,7 +159,7 @@ CREATE TABLE IF NOT EXISTS "public"."tags" (
     color text,
     description text,
     icon text,
-    user_id uuid DEFAULT '001',
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69',
     CONSTRAINT tags_pkey PRIMARY KEY (id)
 );
 
@@ -149,7 +178,7 @@ CREATE INDEX IF NOT EXISTS idx_tags_user_id ON "public"."tags" (user_id);
 -- Notifications system
 CREATE TABLE IF NOT EXISTS "public"."notifications" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid DEFAULT '001' NOT NULL,
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
     domain_id uuid NOT NULL,
     change_type text NOT NULL,
     message text,
@@ -278,7 +307,7 @@ CREATE TABLE IF NOT EXISTS "public"."hosts" (
     city text,
     region text,
     country text,
-    user_id uuid DEFAULT '001',
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69',
     CONSTRAINT hosts_pkey PRIMARY KEY (id),
     CONSTRAINT hosts_user_id_ip_key UNIQUE (user_id, ip)
 );
@@ -286,17 +315,28 @@ CREATE TABLE IF NOT EXISTS "public"."hosts" (
 CREATE INDEX IF NOT EXISTS idx_hosts_user_id ON "public"."hosts" (user_id);
 
 -- Trigger for setting static user_id on hosts
-CREATE TRIGGER set_user_id_on_hosts
-BEFORE INSERT ON "public"."hosts"
-FOR EACH ROW
-EXECUTE FUNCTION "public"."set_static_user_id"();
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_trigger
+        WHERE tgname = 'set_user_id_on_hosts'
+    ) THEN
+        CREATE TRIGGER set_user_id_on_hosts
+        BEFORE INSERT ON "public"."hosts"
+        FOR EACH ROW
+        EXECUTE FUNCTION "public"."set_static_user_id"();
+    END IF;
+END
+$$;
+
 
 
 -- Domain updates tracking table
 CREATE TABLE IF NOT EXISTS "public"."domain_updates" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     domain_id uuid NOT NULL,
-    user_id uuid DEFAULT '001' NOT NULL,
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
     change text NOT NULL,
     change_type text NOT NULL,
     old_value text,
@@ -370,7 +410,7 @@ CREATE INDEX IF NOT EXISTS idx_domain_links_domain_id ON "public"."domain_links"
 -- Billing information table
 CREATE TABLE IF NOT EXISTS "public"."billing" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid DEFAULT '001' NOT NULL,
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
     current_plan text NOT NULL,
     next_payment_due timestamp with time zone,
     billing_method text,
@@ -384,17 +424,32 @@ CREATE INDEX IF NOT EXISTS idx_billing_user_id ON "public"."billing" (user_id);
 
 -- Users information table (to replace `auth.users` functionality in self-hosted environments)
 CREATE TABLE IF NOT EXISTS "public"."users" (
-    id uuid DEFAULT '001' NOT NULL,
+    id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
     email text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 
--- Dummy user creation
-INSERT INTO "public"."users" (id, email) 
-VALUES ('001', 'selfhosted@example.com')
-ON CONFLICT (id) DO NOTHING;
+-- Ensure default user exists
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.users
+        WHERE id = 'a0000000-aaaa-42a0-a0a0-00a000000a69'
+    ) THEN
+        INSERT INTO public.users (id, email, created_at, updated_at)
+        VALUES (
+            'a0000000-aaaa-42a0-a0a0-00a000000a69',
+            'domain.locker@local',
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+        );
+    END IF;
+END
+$$;
+
 
 -- Final adjustments and default grants
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA "public" TO "postgres";
