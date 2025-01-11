@@ -4,6 +4,7 @@
  * TODO: If there is a way to do this by looking at dns zone transfer records, that would be optimal.
  */
 import { defineEventHandler, getQuery } from 'h3';
+import { verifyAuth } from './../middleware/auth';
 
 type Subdomain = {
   subdomain: string;
@@ -150,6 +151,13 @@ function removeDuplicates(subdomains: Subdomain[]): Subdomain[] {
 
 
 export default defineEventHandler(async (event) => {
+
+  const authResult = await verifyAuth(event);
+
+  if (!authResult.success) {
+    return { statusCode: 401, body: { error: authResult.error } };
+  }
+
   const query = getQuery(event);
   const domain = query['domain'] as string;
 
