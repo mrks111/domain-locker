@@ -6,7 +6,7 @@ import { PeerCertificate } from 'tls';
 import type { DomainInfo } from '../../types/DomainInfo';
 import type { HostData } from '../../types/DomainInfo';
 import { Contact, Host } from 'src/types/common';
-import { verifyAuth } from './../middleware/auth';
+import { verifyAuth } from '../utils/auth';
 
 // Helper function to handle potential failures in asynchronous operations
 const safeExecute = async <T>(fn: () => Promise<T>, errorMsg: string, errors: string[]): Promise<T | undefined> => {

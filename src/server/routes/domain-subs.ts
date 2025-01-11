@@ -4,7 +4,7 @@
  * TODO: If there is a way to do this by looking at dns zone transfer records, that would be optimal.
  */
 import { defineEventHandler, getQuery } from 'h3';
-import { verifyAuth } from './../middleware/auth';
+import { verifyAuth } from '../utils/auth';
 
 type Subdomain = {
   subdomain: string;
