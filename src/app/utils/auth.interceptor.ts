@@ -18,7 +18,7 @@ export class AuthInterceptor implements HttpInterceptor {
     // Apply auth only in 'managed' environment
     if (environment === 'managed' && request.url.startsWith('/api/')) {
       return from(this.supabaseService.getSessionData()).pipe(
-        switchMap((sessionData) => {
+        switchMap((sessionData: { session?: { access_token?: string } }) => {
           const token = sessionData?.session?.access_token;
 
           if (token) {

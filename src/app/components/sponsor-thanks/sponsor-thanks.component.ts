@@ -37,7 +37,7 @@ export class SponsorMessageComponent implements OnInit {
       const sessionData = await this.supabase.getSessionData();
 
       // Extract GitHub username
-      const identities = sessionData?.session?.user?.identities || [];
+      const identities = (sessionData as any)?.session?.user?.identities || [];
       const githubIdentity = identities.find(
         (identity: any) => identity.provider === 'github'
       );

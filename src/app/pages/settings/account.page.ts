@@ -128,7 +128,7 @@ export default class UserSettingsComponent implements OnInit {
 
   /* Returns true if user has email + password (aka not social login) */
   async checkIfUserHasPassword(): Promise<boolean> {
-    const sessionData = await this.supabaseService.getSessionData();
+    const sessionData = await this.supabaseService.getSessionData() as any;
     const identities = sessionData?.session?.user?.identities || [];
   
     // If the user has an email identity, they definitely have a password

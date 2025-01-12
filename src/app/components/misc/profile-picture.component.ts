@@ -65,7 +65,7 @@ export class ProfilePictureComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     try {
       const sessionData = await this.supabaseService.getSessionData();
-      const user: UserThingys = sessionData?.session?.user || {};
+      const user: UserThingys = (sessionData as any)?.session?.user || {};
       const { user_metadata, email, identities } = user;
 
       if (user_metadata?.avatar_url) {
