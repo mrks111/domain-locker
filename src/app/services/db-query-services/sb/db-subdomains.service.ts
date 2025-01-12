@@ -1,7 +1,7 @@
 import { SupabaseClient, User } from '@supabase/supabase-js';
 import { catchError, forkJoin, from, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { Subdomain } from '@/types/Database';
-import { GlobalMessageService } from '../messaging.service';
+import { GlobalMessageService } from '../../messaging.service';
 
 export class SubdomainsQueries {
   constructor(
