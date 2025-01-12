@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from '@/app/services/supabase.service';
-import { DatabaseService, DbDomain, IpAddress, SaveDomainData, Registrar, Host } from '@/types/Database';
+import { DatabaseService, DbDomain, IpAddress, SaveDomainData, DomainExpiration } from '@/types/Database';
 import { catchError, from, map, Observable, throwError, retry } from 'rxjs';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
@@ -20,11 +20,6 @@ import { SslQueries } from '@/app/services/db-query-services/sb/db-ssl.service';
 import { WhoisQueries } from '@/app/services/db-query-services/sb/db-whois.service';
 import { StatusQueries } from '@/app/services/db-query-services/sb/db-statuses.service';
 import { SubdomainsQueries } from '@/app/services/db-query-services/sb/db-subdomains.service';
-
-export interface DomainExpiration {
-  domain: string;
-  expiration: Date;
-}
 
 @Injectable({
   providedIn: 'root',

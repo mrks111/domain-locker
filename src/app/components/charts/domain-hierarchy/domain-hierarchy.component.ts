@@ -28,7 +28,7 @@ export class TldOrganizationChartComponent implements OnInit {
   }
 
   private prepareChartData() {
-    this.db.listDomains().subscribe(
+    this.db.instance.listDomains().subscribe(
       (domains) => {
         const tldMap = new Map<string, TreeNode>();
 

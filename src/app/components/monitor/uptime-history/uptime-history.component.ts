@@ -38,7 +38,7 @@ export class UptimeHistoryComponent implements OnInit {
   }
 
   fetchUptimeHistory(): void {
-    this.databaseService
+    this.databaseService.instance
       .getDomainUptime(this.userId, this.domainId, 'year')
       .then((data: any) => {
         if (data.data) {
