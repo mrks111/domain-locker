@@ -12,6 +12,11 @@ type EnvVar =
 | 'DL_GLITCHTIP_DSN'    // GlitchTip DSN, for error tracking
 | 'DL_PLAUSIBLE_URL'    // URL to Plausible instance, for hit counting
 | 'DL_PLAUSIBLE_SITE'   // Plausible site ID /  URL, for hit counting
+| 'DL_PG_HOST'          // Postgres host
+| 'DL_PG_PORT'          // Postgres port
+| 'DL_PG_NAME'          // Postgres DB name
+| 'DL_PG_USER'          // Postgres user
+| 'DL_PG_PASSWORD'      // Postgres password
 ;
 
 @Injectable({
@@ -89,6 +94,17 @@ export class EnvService {
 
   getGlitchTipDsn(): string {
     return this.getEnvVar('DL_GLITCHTIP_DSN');
+  }
+
+  /* Returns config object for Postgres */
+  getPostgresConfig(): { host: string, port: number, user: string, password: string, database: string } {
+    return {
+      host: this.getEnvVar('DL_PG_HOST', 'localhost'),
+      port: Number(this.getEnvVar('DL_PG_PORT', '5432')),
+      user: this.getEnvVar('DL_PG_USER', 'postgres'),
+      password: this.getEnvVar('DL_PG_PASSWORD', 'dinosaur'),
+      database: this.getEnvVar('DL_PG_NAME', 'domain_locker'),
+    };
   }
 
   getPlausibleConfig(): { site: string, url: string, isConfigured: boolean } {

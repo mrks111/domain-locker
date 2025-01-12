@@ -29,7 +29,7 @@ export interface DomainExpiration {
 @Injectable({
   providedIn: 'root',
 })
-export default class SupabaseDatabaseService extends DatabaseService {
+export default class MainDatabaseService extends DatabaseService {
 
   public linkQueries: LinkQueries;
   public tagQueries: TagQueries;
