@@ -38,7 +38,7 @@ export class ChangeHistoryChartComponent implements OnInit {
 
   private loadChartData() {
     this.loading = true;
-    this.databaseService.historyQueries.getChangeHistory(this.domainName, this.days).subscribe({
+    this.databaseService.instance.historyQueries.getChangeHistory(this.domainName, this.days).subscribe({
       next: (data) => {
         const chartData = this.prepareChartData(data);
         this.createChart(chartData);

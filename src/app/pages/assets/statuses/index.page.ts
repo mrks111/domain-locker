@@ -31,7 +31,7 @@ export default class StatusesIndexPageComponent implements OnInit {
 
   loadStatuses() {
     this.loading = true;
-    this.databaseService.getStatusesWithDomainCounts().subscribe({
+    this.databaseService.instance.getStatusesWithDomainCounts().subscribe({
       next: (statusesWithCounts) => {
         this.statuses = statusesWithCounts.sort((a, b) => b.domainCount - a.domainCount);
         this.detailedStatuses = this.statuses.map(status => {

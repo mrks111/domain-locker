@@ -66,7 +66,7 @@ export default class SettingsPage {
   }
 
   private async getNotificationPreferences() {
-    const preferences = await this.databaseService.notificationQueries.getNotificationChannels();
+    const preferences = await this.databaseService.instance.notificationQueries.getNotificationChannels();
     if (!preferences) return;
     this.notifications = {
       email: preferences?.email?.enabled || false,

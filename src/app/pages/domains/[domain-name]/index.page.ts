@@ -70,7 +70,7 @@ export default class DomainDetailsPage implements OnInit {
       switchMap(params => {
         const domainName = params['domain-name'];
         this.name = domainName;
-        return this.databaseService.getDomain(domainName).pipe(
+        return this.databaseService.instance.getDomain(domainName).pipe(
           catchError(error => {
             this.domainNotFound = true;
             this.errorHandler.handleError({
@@ -115,7 +115,7 @@ export default class DomainDetailsPage implements OnInit {
 
   deleteDomain() {
     if (!this.domain) return;
-    this.databaseService.deleteDomain(this.domain.id).subscribe({
+    this.databaseService.instance.deleteDomain(this.domain.id).subscribe({
       next: () => {
         this.globalMessageService.showMessage({
           severity: 'success',

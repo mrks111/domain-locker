@@ -59,7 +59,7 @@ export default class EditDomainComponent implements OnInit {
   }
 
   loadDomain(domainName: string) {
-    this.databaseService.getDomain(domainName).subscribe({
+    this.databaseService.instance.getDomain(domainName).subscribe({
       next: (domain) => {
         this.domain = domain;
         this.populateForm();
@@ -164,7 +164,7 @@ export default class EditDomainComponent implements OnInit {
       };
 
       // Call the database service to update the domain
-      this.databaseService.updateDomain(this.domain!.id, updatedDomain).subscribe({
+      this.databaseService.instance.updateDomain(this.domain!.id, updatedDomain).subscribe({
         next: () => {
           this.globalMessageService.showMessage({ severity: 'success', summary: 'Success', detail: 'Domain updated successfully' });
           this.isLoading = false;

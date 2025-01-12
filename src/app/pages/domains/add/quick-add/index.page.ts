@@ -58,7 +58,7 @@ export default class QuickAddDomain {
 
     try {
       // 1) Check for duplicates
-      const alreadyExists = await this.databaseService.domainExists(null, domainName);
+      const alreadyExists = await this.databaseService.instance.domainExists(null, domainName);
       if (alreadyExists) {
         this.messagingService.showError(
           'Duplicate domain',
@@ -79,7 +79,7 @@ export default class QuickAddDomain {
 
       // Construct and save domain data
       const domainData = this.constructDomainData(domainInfo);
-      await this.databaseService.saveDomain(domainData);
+      await this.databaseService.instance.saveDomain(domainData);
 
       this.messagingService.showSuccess(
         'Domain added successfully.',
@@ -142,7 +142,7 @@ export default class QuickAddDomain {
     }  
     const subdomainsReadyForSave = autoSubdomainsReadyForSave(validSubdomains);
     
-    return this.databaseService.subdomainsQueries
+    return this.databaseService.instance.subdomainsQueries
       .saveSubdomainsForDomainName(domainName, subdomainsReadyForSave)
       .pipe(
         tap(() => {

@@ -46,7 +46,7 @@ export default class TagDomainsPageComponent implements OnInit {
 
   loadTag() {
     this.loading = true;
-    this.databaseService.tagQueries.getTag(this.tagName).subscribe({
+    this.databaseService.instance.tagQueries.getTag(this.tagName).subscribe({
       next: (tag) => {
         this.tag = tag;
         if (tag.icon && !tag.icon.includes('/')) {
@@ -67,7 +67,7 @@ export default class TagDomainsPageComponent implements OnInit {
 
   loadDomains() {
     this.loading = true;
-    this.databaseService.getDomainsByTag(this.tagName).subscribe({
+    this.databaseService.instance.getDomainsByTag(this.tagName).subscribe({
       next: (domains) => {
         this.domains = domains;
         this.loading = false;
@@ -104,7 +104,7 @@ export default class TagDomainsPageComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
       rejectButtonStyleClass: 'p-button-secondary p-button-sm',
       accept: () => {
-        this.databaseService.tagQueries.deleteTag(this.tag.id).subscribe({
+        this.databaseService.instance.tagQueries.deleteTag(this.tag.id).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',

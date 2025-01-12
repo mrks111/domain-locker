@@ -48,7 +48,7 @@ export class DomainGanttChartComponent implements OnInit, AfterViewInit {
   }
 
   private loadDomains() {
-    this.databaseService.listDomains().subscribe({
+    this.databaseService.instance.listDomains().subscribe({
       next: (domains) => {
         this.domains = domains.map((domain, index) => ({
           id: index,

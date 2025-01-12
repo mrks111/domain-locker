@@ -364,7 +364,7 @@ private extractSubdomainName(fullSubdomain: string, parentDomain: string): strin
     const notificationSettings = this.bulkAddForm.get('notifications')?.value || {};
 
     // 1) get existing domain names so we know which to update
-    this.databaseService.listDomainNames().pipe(
+    this.databaseService.instance.listDomainNames().pipe(
       concatMap((existingDomains: string[]) => {
         // 2) sequentially process each domain in the form
         return from(this.domains.controls).pipe(
@@ -424,8 +424,8 @@ private extractSubdomainName(fullSubdomain: string, parentDomain: string): strin
             console.log('Subdomains to Save: ', [ ...(this.domainsSubMap[domainName] || []), ...(subdomains.map((sd) => ({ name: sd })))])
 
             const operation = existingDomains.includes(domainName)
-              ? this.databaseService.updateDomain(domainName, domainData)
-              : this.databaseService.saveDomain(domainData);
+              ? this.databaseService.instance.updateDomain(domainName, domainData)
+              : this.databaseService.instance.saveDomain(domainData);
 
             return operation.pipe(
               map(() => ({ domain: domainName, success: true })),

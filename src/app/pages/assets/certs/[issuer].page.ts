@@ -43,7 +43,7 @@ export default class SslIssuerDomainsPageComponent implements OnInit {
 
   loadDomains() {
     this.loading = true;
-    this.databaseService.sslQueries.getDomainsBySslIssuer(this.issuer).subscribe({
+    this.databaseService.instance.sslQueries.getDomainsBySslIssuer(this.issuer).subscribe({
       next: (domains) => {
         this.domains = domains;
         this.loading = false;

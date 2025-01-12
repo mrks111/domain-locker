@@ -50,7 +50,7 @@ export default class SubdomainDetailPageComponent implements OnInit {
 
   loadSubdomain() {
     this.loading = true;
-    this.databaseService.subdomainsQueries
+    this.databaseService.instance.subdomainsQueries
       .getSubdomainInfo(this.domain, this.subdomainName)
       .subscribe({
         next: (subdomain) => {
@@ -93,7 +93,7 @@ export default class SubdomainDetailPageComponent implements OnInit {
         header: 'Confirm Deletion',
         icon: 'pi pi-exclamation-triangle',
         accept: () => {
-          this.databaseService.subdomainsQueries
+          this.databaseService.instance.subdomainsQueries
             .deleteSubdomain(this.domain, this.subdomainName)
             .then(() => {
               this.messageService.add({

@@ -43,7 +43,7 @@ export class TagEditorComponent {
   }
 
   private createTag() {
-    this.databaseService.tagQueries.createTag(this.tag).subscribe({
+    this.databaseService.instance.tagQueries.createTag(this.tag).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
@@ -72,7 +72,7 @@ export class TagEditorComponent {
   }
 
   private updateTag() {
-    this.databaseService.tagQueries.updateTag(this.tag).subscribe({
+    this.databaseService.instance.tagQueries.updateTag(this.tag).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',

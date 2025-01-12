@@ -42,7 +42,7 @@ export default class DomainAllPageComponent implements OnInit {
 
   loadDomains() {
     this.loading = true;
-    this.databaseService.listDomains().subscribe({
+    this.databaseService.instance.listDomains().subscribe({
       next: (domains) => {
         this.domains = domains;
         this.loading = false;

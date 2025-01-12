@@ -118,7 +118,7 @@ export default class LinksIndexPageComponent implements OnInit {
     if (!this.selectedLink) return;
     const linkIds = this.selectedLink.id || this.selectedLink.link_ids;
     if (!linkIds) return;
-    this.databaseService.linkQueries.deleteLinks(linkIds).subscribe({
+    this.databaseService.instance.linkQueries.deleteLinks(linkIds).subscribe({
       next: () => {
         this.loadLinks(); // Refresh the list after deletion
         this.messageService.add({
@@ -140,7 +140,7 @@ export default class LinksIndexPageComponent implements OnInit {
 
   loadLinks() {
     this.loading = true;
-    this.databaseService.linkQueries.getAllLinks().subscribe({
+    this.databaseService.instance.linkQueries.getAllLinks().subscribe({
       next: (links) => {
         this.links = links;
       },
@@ -159,7 +159,7 @@ export default class LinksIndexPageComponent implements OnInit {
   async loadDomainData() {
     this.loading = true;
 
-    this.databaseService.listDomains().subscribe({
+    this.databaseService.instance.listDomains().subscribe({
       next: (domains) => {
         this.domains = domains;
         this.loading = false; 
@@ -308,7 +308,7 @@ export default class LinksIndexPageComponent implements OnInit {
   }
 
   private updateLink(linkId: string, linkData: ModifiedLink): void {
-    this.databaseService.linkQueries.updateLinkInDomains(linkData).subscribe({
+    this.databaseService.instance.linkQueries.updateLinkInDomains(linkData).subscribe({
       next: () => {
         this.loadLinks(); // Reload the links to reflect the updates
         this.messageService.add({
@@ -330,7 +330,7 @@ export default class LinksIndexPageComponent implements OnInit {
 
 
   private addLink(linkData: ModifiedLink): void {
-    this.databaseService.linkQueries.addLinkToDomains(linkData).subscribe({
+    this.databaseService.instance.linkQueries.addLinkToDomains(linkData).subscribe({
       next: () => {
         this.loadLinks(); // Reload the links to reflect the addition
         this.messageService.add({

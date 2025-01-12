@@ -65,7 +65,7 @@ export default class StatusDomainsPageComponent implements OnInit {
 
   loadDomains() {
     this.loading = true;
-    this.databaseService.getDomainsByStatus(this.statusCode).subscribe({
+    this.databaseService.instance.getDomainsByStatus(this.statusCode).subscribe({
       next: (domains) => {
         this.domains = domains;
         this.loading = false;

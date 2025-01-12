@@ -45,7 +45,7 @@ export class DomainExpirationBarComponent implements OnInit {
   constructor(private databaseService: DatabaseService) {}
 
   ngOnInit() {
-    this.databaseService.getDomainExpirations().subscribe(
+    this.databaseService.instance.getDomainExpirations().subscribe(
       domains => {
         this.calculateExpirations(domains);
         this.prepareTimelineEvents(domains);

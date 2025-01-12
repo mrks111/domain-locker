@@ -49,7 +49,7 @@ export default class HostsIndexPageComponent implements OnInit {
 
   loadHosts() {
     this.loading = true;
-    this.databaseService.hostsQueries.getHostsWithDomainCounts().subscribe({
+    this.databaseService.instance.hostsQueries.getHostsWithDomainCounts().subscribe({
       next: (hostsWithCounts) => {
         // Group hosts by ISP
         const groupedHosts = hostsWithCounts.reduce((acc, host) => {
@@ -89,7 +89,7 @@ export default class HostsIndexPageComponent implements OnInit {
   }
 
   loadDomainCounts() {
-    this.databaseService.hostsQueries.getDomainCountsByHost().subscribe({
+    this.databaseService.instance.hostsQueries.getDomainCountsByHost().subscribe({
       next: (counts) => {
         this.hosts = this.hosts.map(host => ({
           ...host,

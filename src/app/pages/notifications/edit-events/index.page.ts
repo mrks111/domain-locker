@@ -38,8 +38,8 @@ export default class BulkNotificationPreferencesPage implements OnInit {
 
   private loadDomainsAndPreferences() {
     forkJoin({
-      domains: this.databaseService.listDomains(),
-      preferences: this.databaseService.notificationQueries.getNotificationPreferences()
+      domains: this.databaseService.instance.listDomains(),
+      preferences: this.databaseService.instance.notificationQueries.getNotificationPreferences()
     }).subscribe({
       next: ({ domains, preferences }) => {
         this.domains = domains;
@@ -79,7 +79,7 @@ export default class BulkNotificationPreferencesPage implements OnInit {
       });
 
       // Update preferences in the database
-      await this.databaseService.notificationQueries.updateBulkNotificationPreferences(preferences)
+      await this.databaseService.instance.notificationQueries.updateBulkNotificationPreferences(preferences)
         .subscribe({
           next: () => {
             this.globalMessageService.showMessage({

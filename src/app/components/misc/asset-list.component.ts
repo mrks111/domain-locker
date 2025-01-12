@@ -91,7 +91,7 @@ export default class AssetListComponent implements OnInit {
 
   private fetchAssetCounts() {
     this.assets.forEach(asset => {
-      this.databaseService.getAssetCount(asset.title.toLowerCase()).subscribe({
+      this.databaseService.instance.getAssetCount(asset.title.toLowerCase()).subscribe({
         next: count => {
           this.ngZone.run(() => {
             asset.count = count;

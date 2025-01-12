@@ -38,7 +38,7 @@ export class YearCalendarComponent implements OnInit {
   }
 
   loadYearData(): void {
-    this.databaseService.valuationQueries.getDomainCostings().subscribe(
+    this.databaseService.instance.valuationQueries.getDomainCostings().subscribe(
       (domains) => {
         const filteredDomains = domains
           .filter(domain => new Date(domain.expiry_date).getFullYear() === this.selectedYear)

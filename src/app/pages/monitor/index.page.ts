@@ -90,7 +90,7 @@ export default class MonitorPage {
 
   loadDomains(): void {
     this.loading = true;
-    this.databaseService.listDomains().subscribe({
+    this.databaseService.instance.listDomains().subscribe({
       next: (domains) => {
         this.domains = domains;
         this.loadDomainSummaries();
@@ -110,7 +110,7 @@ export default class MonitorPage {
 
   loadDomainSummaries(): void {
     this.domains.forEach((domain) => {
-      this.databaseService.getDomainUptime(domain.user_id, domain.id, 'day').then((data: any) => {
+      this.databaseService.instance.getDomainUptime(domain.user_id, domain.id, 'day').then((data: any) => {
         if (data.data) {
           const uptimeData: UptimeData[] = data.data;
   

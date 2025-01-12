@@ -32,7 +32,7 @@ export default class TagsIndexPageComponent implements OnInit {
 
   loadTags() {
     this.loading = true;
-    this.databaseService.tagQueries.getTags().subscribe({
+    this.databaseService.instance.tagQueries.getTags().subscribe({
       next: (tags) => {
         this.tags = tags.map(tag => ({ ...tag, domainCount: 0 }));
         this.loadDomainCounts();
@@ -50,7 +50,7 @@ export default class TagsIndexPageComponent implements OnInit {
   }
 
   loadDomainCounts() {
-    this.databaseService.tagQueries.getDomainCountsByTag().subscribe({
+    this.databaseService.instance.tagQueries.getDomainCountsByTag().subscribe({
       next: (counts) => {
         this.tags = this.tags.map(tag => ({
           ...tag,
@@ -91,7 +91,7 @@ export default class TagsIndexPageComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
       rejectButtonStyleClass: 'p-button-secondary p-button-sm',
       accept: () => {
-        this.databaseService.tagQueries.deleteTag(tag.id).subscribe({
+        this.databaseService.instance.tagQueries.deleteTag(tag.id).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',

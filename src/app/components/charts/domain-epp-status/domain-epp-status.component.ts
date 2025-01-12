@@ -67,7 +67,7 @@ export class EppStatusChartComponent implements OnInit {
       'serverDeleteProhibited'
     ];
   
-    this.databaseService.getDomainsByEppCodes(statuses).subscribe({
+    this.databaseService.instance.getDomainsByEppCodes(statuses).subscribe({
       next: (domainsByStatus) => {
         // Collect all domain IDs across statuses into a single Set (to deduplicate them)
         const uniqueDomains = new Map<string, string>(); // Map to track domainId -> domainName

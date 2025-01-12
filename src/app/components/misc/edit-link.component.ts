@@ -46,7 +46,7 @@ export class LinkDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.domainOptions$ = this.databaseService.listDomainNames();
+    this.domainOptions$ = this.databaseService.instance.listDomainNames();
   }
 
   onSave(): void {

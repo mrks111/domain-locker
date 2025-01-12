@@ -101,7 +101,7 @@ export class DomainCardComponent implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       rejectButtonStyleClass:"p-button-text", 
       accept: () => {
-        this.databaseService.deleteDomain(this.domain.id).subscribe({
+        this.databaseService.instance.deleteDomain(this.domain.id).subscribe({
           next: () => {
             this.globalMessageService.showMessage({
               severity: 'success',

@@ -48,7 +48,7 @@
 
     loadSubdomains() {
       this.loading = true;
-      this.databaseService.subdomainsQueries.getSubdomainsByDomain(this.domain).subscribe({
+      this.databaseService.instance.subdomainsQueries.getSubdomainsByDomain(this.domain).subscribe({
         next: (subdomains) => {
           this.subdomains = subdomains.map((sd) => ({
             ...sd,
@@ -108,7 +108,7 @@
     
       const subdomainsReadyForSave = autoSubdomainsReadyForSave(validSubdomains);
       
-      return this.databaseService.subdomainsQueries
+      return this.databaseService.instance.subdomainsQueries
         .saveSubdomainsForDomainName(this.domain, subdomainsReadyForSave)
         .pipe(
           tap(() => this.afterSuccess())

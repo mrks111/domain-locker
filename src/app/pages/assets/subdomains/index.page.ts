@@ -37,7 +37,7 @@ export default class SubdomainsIndexPageComponent implements OnInit {
 
   loadParentDomains() {
     this.loading = true;
-    this.databaseService.listDomainNames().subscribe({
+    this.databaseService.instance.listDomainNames().subscribe({
       next: (domains) => {
         this.domains = domains.map((domainName) => ({
           name: domainName,
@@ -60,7 +60,7 @@ export default class SubdomainsIndexPageComponent implements OnInit {
     }
   
     domain.loadingSubs = true;
-    this.databaseService.subdomainsQueries.getSubdomainsByDomain(domain.name)
+    this.databaseService.instance.subdomainsQueries.getSubdomainsByDomain(domain.name)
       .subscribe({
         next: (subs) => {
           domain.subdomains = subs;
@@ -77,7 +77,7 @@ export default class SubdomainsIndexPageComponent implements OnInit {
 
   loadSubdomains() {
     this.loading = true;
-    this.databaseService.subdomainsQueries.getAllSubdomains().subscribe({
+    this.databaseService.instance.subdomainsQueries.getAllSubdomains().subscribe({
       next: (subdomains) => {
         this.subdomains = groupSubdomains(subdomains);
         this.loading = false;

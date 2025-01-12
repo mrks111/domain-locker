@@ -44,7 +44,7 @@ export default class IpAddressesPageComponent implements OnInit {
   loadIpAddresses() {
     this.loadingIpv4 = this.loadingIpv6 = true;
 
-    this.databaseService.ipQueries.getIpAddresses(false).subscribe({
+    this.databaseService.instance.ipQueries.getIpAddresses(false).subscribe({
       next: (addresses) => {
         this.ipv4Addresses = addresses;
         this.ipv4Domains = this.groupByDomain(addresses);
@@ -53,7 +53,7 @@ export default class IpAddressesPageComponent implements OnInit {
       error: () => this.handleError('IPv4'),
     });
 
-    this.databaseService.ipQueries.getIpAddresses(true).subscribe({
+    this.databaseService.instance.ipQueries.getIpAddresses(true).subscribe({
       next: (addresses) => {
         this.ipv6Addresses = addresses;
         this.ipv6Domains = this.groupByDomain(addresses);

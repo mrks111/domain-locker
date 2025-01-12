@@ -169,7 +169,7 @@ export class SubdomainListComponent implements OnInit {
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.databaseService.subdomainsQueries
+        this.databaseService.instance.subdomainsQueries
           .deleteSubdomain(this.domain, subdomain.name)
           .then(() => {
             // Show success message

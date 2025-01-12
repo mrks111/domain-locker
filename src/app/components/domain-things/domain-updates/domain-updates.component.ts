@@ -50,7 +50,7 @@ export class DomainUpdatesComponent implements OnInit {
     const from = page * limit;
     const to = from + limit - 1;
     
-    this.databaseService.historyQueries
+    this.databaseService.instance.historyQueries
       .getDomainUpdates(this.domainName, from, to, this.selectedCategory, this.selectedChangeType, this.filterDomain)
       .subscribe({
         next: (updates) => {
@@ -66,7 +66,7 @@ export class DomainUpdatesComponent implements OnInit {
   
 
   private fetchTotalCount() {
-    this.databaseService.historyQueries.getTotalUpdateCount(this.domainName).subscribe({
+    this.databaseService.instance.historyQueries.getTotalUpdateCount(this.domainName).subscribe({
       next: (total) => {
         this.totalRecords = total;
       },

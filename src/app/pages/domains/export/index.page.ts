@@ -44,7 +44,7 @@ export default class ExportPageComponent implements OnInit { exportForm: FormGro
     const { domains, fields, format } = this.exportForm.value;
 
     // Fetch data based on user selections
-    this.databaseService.fetchAllForExport(domains, fields).subscribe({
+    this.databaseService.instance.fetchAllForExport(domains, fields).subscribe({
       next: (data) => {
         this.downloadFile(data, format);
         this.messageService.add({

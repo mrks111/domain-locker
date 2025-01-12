@@ -125,7 +125,7 @@ export class AddSubdomainDialogComponent {
     }
 
     // Call a new service method that inserts subdomain for domain
-    this.databaseService.subdomainsQueries.saveSubdomainForDomain(this.domain, cleanedSubdomain)
+    this.databaseService.instance.subdomainsQueries.saveSubdomainForDomain(this.domain, cleanedSubdomain)
       .subscribe({
         next: () => {
           this.globalMessagingService.showSuccess(

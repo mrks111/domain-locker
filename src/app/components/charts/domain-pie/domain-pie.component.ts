@@ -169,7 +169,7 @@ export class DomainPieChartsComponent implements OnInit, AfterViewInit {
   }
 
   getRegistrarData(): Observable<{name: string, count: number}[]> {
-    return this.databaseService.registrarQueries.getDomainCountsByRegistrar().pipe(
+    return this.databaseService.instance.registrarQueries.getDomainCountsByRegistrar().pipe(
       map(counts => Object.entries(counts).map(([name, count]) => ({ name, count }))),
       catchError(error => {
         console.error('Error fetching registrar data:', error);
@@ -179,7 +179,7 @@ export class DomainPieChartsComponent implements OnInit, AfterViewInit {
   }
 
   getSslIssuerData(): Observable<{name: string, count: number}[]> {
-    return this.databaseService.sslQueries.getSslIssuersWithDomainCounts().pipe(
+    return this.databaseService.instance.sslQueries.getSslIssuersWithDomainCounts().pipe(
       map(data => data.map(item => ({ name: item.issuer, count: item.domain_count }))),
       catchError(error => {
         console.error('Error fetching SSL issuer data:', error);
@@ -189,7 +189,7 @@ export class DomainPieChartsComponent implements OnInit, AfterViewInit {
   }
 
   getHostData(): Observable<{name: string, count: number}[]> {
-    return this.databaseService.hostsQueries.getHostsWithDomainCounts().pipe(
+    return this.databaseService.instance.hostsQueries.getHostsWithDomainCounts().pipe(
       map(data => data.map(item => ({ name: item.isp, count: item.domain_count }))),
       catchError(error => {
         console.error('Error fetching host data:', error);

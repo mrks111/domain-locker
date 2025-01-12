@@ -79,7 +79,7 @@ export class DomainSparklineComponent implements OnInit {
   }
 
   fetchUptimeData(): void {
-    this.databaseService.getDomainUptime(this.userId, this.domainId, this.timeframe).then((data: any) => {
+    this.databaseService.instance.getDomainUptime(this.userId, this.domainId, this.timeframe).then((data: any) => {
       if (data.data) {
         this.uptimeData = data.data;
         this.processUptimeData();

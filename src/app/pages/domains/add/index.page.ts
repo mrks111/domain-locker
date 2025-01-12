@@ -124,7 +124,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
 
 
   private fetchExistingDomains(): void {
-    this.databaseService.listDomainNames().pipe(
+    this.databaseService.instance.listDomainNames().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (domains) => {
@@ -338,7 +338,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
           domainData.domain.registrar = formValue.registrar;
         }
 
-        await this.databaseService.saveDomain(domainData);
+        await this.databaseService.instance.saveDomain(domainData);
         const name = domainData.domain.domain_name;
 
         this.messageService.add({ severity: 'success', summary: 'Success', detail: `Domain ${name} added successfully` });
