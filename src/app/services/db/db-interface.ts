@@ -1,8 +1,9 @@
 import { DbDomain, IpAddress, SaveDomainData, Registrar, Host } from '@/types/Database';
 import { Observable } from 'rxjs';
+import { BaseDatabaseService } from '@/app/services/db/db-base.service';
 
 
-export interface DatabaseService {
+export interface DatabaseService extends BaseDatabaseService {
   create(table: string, data: any): Observable<any>;
   createBatch(table: string, data: any[]): Observable<void>;
   readAll(table: string): Observable<any[]>;
