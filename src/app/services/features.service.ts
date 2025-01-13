@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
+import { BehaviorSubject, combineLatest, firstValueFrom, map, Observable } from 'rxjs';
 import { BillingService } from '@/app/services/billing.service';
 import { EnvService, type EnvironmentType } from '@/app/services/environment.service';
 import { features, type FeatureConfig, type FeatureDefinitions } from '@/app/constants/feature-options';
@@ -78,6 +78,14 @@ export class FeatureService {
         return value;
       })
     );
+  }
+
+
+  /**
+   * Check if a specific feature is enabled (boolean features) and return as a promise.
+   */
+  public isFeatureEnabledPromise(feature: keyof FeatureDefinitions): Promise<boolean> {
+    return firstValueFrom(this.isFeatureEnabled(feature));
   }
   
 }

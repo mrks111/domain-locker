@@ -5,13 +5,14 @@ import DatabaseService from '@/app/services/database.service';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { makeKVList } from './../subdomain-utils';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { DomainInfoComponent } from '@/app/components/domain-things/domain-info/domain-info.component';
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs';
 import { DbDomain } from '@/types/Database';
-import { DomainUtils } from '@services/domain-utils.service';
 import { NotFoundComponent } from '@components/misc/domain-not-found.component';
+import { FeatureService } from '@/app/services/features.service';
+import { GlobalMessageService } from '@/app/services/messaging.service';
 
 @Component({
   standalone: true,
@@ -31,11 +32,11 @@ export default class SubdomainDetailPageComponent implements OnInit {
     private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
-    private domainUtils: DomainUtils,
-    private messageService: MessageService,
+    private messageService: GlobalMessageService,
     private databaseService: DatabaseService,
     private errorHandler: ErrorHandlerService,
     private confirmationService: ConfirmationService,
+    private featureService: FeatureService,
   ) {}
 
   ngOnInit() {
@@ -87,39 +88,38 @@ export default class SubdomainDetailPageComponent implements OnInit {
     }
 
 
-    confirmDelete(): void {
-      this.confirmationService.confirm({
-        message: `Are you sure you want to delete the subdomain "${this.subdomainName}.${this.domain}"?`,
-        header: 'Confirm Deletion',
-        icon: 'pi pi-exclamation-triangle',
-        accept: () => {
-          this.databaseService.instance.subdomainsQueries
-            .deleteSubdomain(this.domain, this.subdomainName)
-            .then(() => {
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Deleted',
-                detail: `Subdomain "${this.subdomainName}.${this.domain}" has been deleted successfully.`,
-              });
-              this.router.navigate(['/assets/subdomains', this.domain]);
-            })
-            .catch((error) => {
-              this.errorHandler.handleError({
-                error,
-                showToast: true,
-                message: 'Failed to delete the subdomain. Please try again.',
-              });
+  async confirmDelete() {
+    if (!(await this.featureService.isFeatureEnabledPromise('writePermissions'))) {
+      this.messageService.showWarn(
+        'Write Permissions Disabled',
+        'It\'s not possible to add subdomains on the demo instance.',
+      );
+      return;
+    }  
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete the subdomain "${this.subdomainName}.${this.domain}"?`,
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.databaseService.instance.subdomainsQueries
+          .deleteSubdomain(this.domain, this.subdomainName)
+          .then(() => {
+            this.messageService.showSuccess('Deleted', `Subdomain "${this.subdomainName}.${this.domain}" has been deleted successfully.`);
+            this.router.navigate(['/assets/subdomains', this.domain]);
+          })
+          .catch((error) => {
+            this.errorHandler.handleError({
+              error,
+              showToast: true,
+              message: 'Failed to delete the subdomain. Please try again.',
             });
-        },
-        reject: () => {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Cancelled',
-            detail: 'Deletion cancelled',
           });
-        },
-      });
-    }
+      },
+      reject: () => {
+        this.messageService.showInfo('Cancelled', 'Deletion cancelled');
+      },
+    });
+  }
 
 }
 

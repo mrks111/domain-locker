@@ -1,19 +1,17 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DialogModule } from 'primeng/dialog'; // p-dialog
-import { ButtonModule } from 'primeng/button'; // p-button
-import { InputTextModule } from 'primeng/inputtext'; // p-inputText
+import { PrimeNgModule } from '@/app/prime-ng.module';
 
 import DatabaseService from '@/app/services/database.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { GlobalMessageService } from '@/app/services/messaging.service';
-import { Observable, from, throwError } from 'rxjs';
+import { FeatureService } from '@/app/services/features.service';
 
 @Component({
   standalone: true,
   selector: 'app-add-subdomain-dialog',
-  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule, PrimeNgModule],
   template: `
     <p-dialog
       header="Add Subdomain"
@@ -65,7 +63,8 @@ export class AddSubdomainDialogComponent {
   constructor(
     private databaseService: DatabaseService,
     private errorHandler: ErrorHandlerService,
-    private globalMessagingService: GlobalMessageService
+    private globalMessagingService: GlobalMessageService,
+    private featureService: FeatureService,
   ) {}
 
   /** Programmatically show the dialog */
@@ -87,40 +86,46 @@ export class AddSubdomainDialogComponent {
   private sanitizeSubdomain(input: string): string {
     if (!input) return '';
 
-    // 1) Remove protocol: e.g. "http://", "https://"
-    //    We can do a simple replace for these known protocols:
+    // Remove protocol: e.g. "http://", "https://"
     let sanitized = input.replace(/^https?:\/\//i, '');
 
-    // 2) If there is a slash, remove everything from the slash onward
+    // If there is a slash, remove everything from the slash onward
     const slashIndex = sanitized.indexOf('/');
     if (slashIndex !== -1) {
       sanitized = sanitized.substring(0, slashIndex);
     }
 
-    // 3) If there's a dot, only keep text before the first dot
+    // If there's a dot, only keep text before the first dot
     const dotIndex = sanitized.indexOf('.');
     if (dotIndex !== -1) {
       sanitized = sanitized.substring(0, dotIndex);
     }
 
-    // 4) Remove all invalid characters for subdomain:
-    //    Keep only letters, digits, and hyphens
+    // Remove all invalid characters for subdomain:
     sanitized = sanitized.replace(/[^a-zA-Z0-9-]/g, '');
 
-    // 5) Convert to lowercase (optional but common for subdomains)
+    // Convert to lowercase (optional but common for subdomains)
     sanitized = sanitized.toLowerCase();
 
     return sanitized;
   }
 
-  saveSubdomain() {
+  async saveSubdomain() {
     const cleanedSubdomain = this.sanitizeSubdomain(this.subdomainInput);
-
     if (!cleanedSubdomain) {
       this.globalMessagingService.showError(
         'Invalid subdomain',
         'Please enter a valid subdomain name.'
       );
+      return;
+    }
+
+    if (!(await this.featureService.isFeatureEnabledPromise('writePermissions'))) {
+      this.globalMessagingService.showWarn(
+        'Write Permissions Disabled',
+        'It\'s not possible to add subdomains on the demo instance.',
+      );
+      this.display = false;
       return;
     }
 

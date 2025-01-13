@@ -11,6 +11,7 @@ import { MenuItem } from 'primeng/api';
 import { ContextMenu } from 'primeng/contextmenu';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { GlobalMessageService } from '@/app/services/messaging.service';
+import { FeatureService } from '@/app/services/features.service';
 
 @Component({
   standalone: true,
@@ -88,6 +89,7 @@ export class SubdomainListComponent implements OnInit {
     private messagingService: GlobalMessageService,
     private databaseService: DatabaseService,
     private errorHandler: ErrorHandlerService,
+    private featureService: FeatureService,
     private router: Router,
 ) {}
   ngOnInit(): void {
@@ -163,7 +165,14 @@ export class SubdomainListComponent implements OnInit {
     console.log('Editing subdomain:', subdomain);
   }
 
-  deleteSubdomain(subdomain: Subdomain): void {
+  async deleteSubdomain(subdomain: Subdomain): Promise<void> {
+    if (!(await this.featureService.isFeatureEnabledPromise('writePermissions'))) {
+      this.messagingService.showWarn(
+        'Write Permissions Disabled',
+        'It\'s not possible to delete subdomains on the demo instance.',
+      );
+      return;
+    }
     this.confirmationService.confirm({
       message: `Are you sure you want to delete the subdomain "${subdomain.name}.${this.domain}"?`,
       header: 'Confirm Deletion',
