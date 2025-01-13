@@ -31,7 +31,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- =========================
 
 CREATE TABLE IF NOT EXISTS "users" (
-    id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69'::uuid NOT NULL,
+    id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69'::uuid,
     email text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
@@ -131,7 +131,7 @@ $$;
 -- Table definitions
 CREATE TABLE IF NOT EXISTS "public"."domains" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69',
     domain_name text NOT NULL,
     expiry_date date,
     notes text,
@@ -178,7 +178,7 @@ CREATE INDEX IF NOT EXISTS idx_tags_user_id ON "public"."tags" (user_id);
 -- Notifications system
 CREATE TABLE IF NOT EXISTS "public"."notifications" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69',
     domain_id uuid NOT NULL,
     change_type text NOT NULL,
     message text,
@@ -336,7 +336,7 @@ $$;
 CREATE TABLE IF NOT EXISTS "public"."domain_updates" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     domain_id uuid NOT NULL,
-    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69',
     change text NOT NULL,
     change_type text NOT NULL,
     old_value text,
@@ -410,7 +410,7 @@ CREATE INDEX IF NOT EXISTS idx_domain_links_domain_id ON "public"."domain_links"
 -- Billing information table
 CREATE TABLE IF NOT EXISTS "public"."billing" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
+    user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69',
     current_plan text NOT NULL,
     next_payment_due timestamp with time zone,
     billing_method text,
@@ -424,12 +424,29 @@ CREATE INDEX IF NOT EXISTS idx_billing_user_id ON "public"."billing" (user_id);
 
 -- Users information table (to replace `auth.users` functionality in self-hosted environments)
 CREATE TABLE IF NOT EXISTS "public"."users" (
-    id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69' NOT NULL,
+    id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69',
     email text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pkey PRIMARY KEY (id)
 );
+
+-- Domain Hosts table
+CREATE TABLE IF NOT EXISTS "public"."domain_hosts" (
+    domain_id uuid NOT NULL,
+    host_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT domain_hosts_pkey PRIMARY KEY (domain_id, host_id),
+    CONSTRAINT domain_hosts_domain_id_fkey FOREIGN KEY (domain_id) REFERENCES "public"."domains" (id) ON DELETE CASCADE,
+    CONSTRAINT domain_hosts_host_id_fkey FOREIGN KEY (host_id) REFERENCES "public"."hosts" (id) ON DELETE CASCADE
+);
+
+-- Index for domain_id in domain_hosts
+CREATE INDEX IF NOT EXISTS idx_domain_hosts_domain_id ON "public"."domain_hosts" (domain_id);
+
+-- Index for host_id in domain_hosts
+CREATE INDEX IF NOT EXISTS idx_domain_hosts_host_id ON "public"."domain_hosts" (host_id);
 
 -- Ensure default user exists
 DO $$

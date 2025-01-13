@@ -4,7 +4,8 @@ import { environment } from '@/app/environments/environment';
 export type EnvironmentType = 'dev' | 'managed' | 'selfHosted' | 'demo';
 
 type EnvVar =
-'SUPABASE_URL'          // Supabase URL
+'DL_BASE_URL'
+| 'SUPABASE_URL'        // Supabase URL
 | 'SUPABASE_ANON_KEY'   // Supabase public key
 | 'DL_ENV_TYPE'         // EnvironmentType (dev, managed, selfHosted, demo)
 | 'DL_SUPABASE_PROJECT' // Supabase project ID
@@ -105,6 +106,13 @@ export class EnvService {
       password: this.getEnvVar('DL_PG_PASSWORD', 'dinosaur'),
       database: this.getEnvVar('DL_PG_NAME', 'domain_locker'),
     };
+  }
+
+  getPostgresApiUrl(): string {
+    const endpoint = '/api/pg-executer/';
+    const baseUrl = this.getEnvVar('DL_BASE_URL', 'localhost:5173');
+    const protocol = 'http://';
+    return `${protocol}${baseUrl}${endpoint}`;
   }
 
   getPlausibleConfig(): { site: string, url: string, isConfigured: boolean } {

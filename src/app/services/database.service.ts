@@ -5,18 +5,20 @@ import PgDatabaseService from '@/app/services/db-query-services/pg-database.serv
 import { SupabaseService } from '@/app/services/supabase.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { GlobalMessageService } from '@/app/services/messaging.service';
+import { PgApiUtilService } from '@/app/utils/pg-api.util';
 
 @Injectable({
   providedIn: 'root',
 })
 export default class DatabaseService {
-  private service: SbDatabaseService;
+  private service: SbDatabaseService | PgDatabaseService;
 
   constructor(
     envService: EnvService,
     supabaseService: SupabaseService,
     errorHandler: ErrorHandlerService,
-    globalMessagingService: GlobalMessageService
+    globalMessagingService: GlobalMessageService,
+    pgApiUtil: PgApiUtilService,
   ) {
     if (envService.isSupabaseEnabled()) {
       this.service = new SbDatabaseService(
@@ -25,7 +27,7 @@ export default class DatabaseService {
         globalMessagingService
       );
     } else {
-      this.service = new PgDatabaseService();
+      this.service = new PgDatabaseService(pgApiUtil);
     }
   }
 
