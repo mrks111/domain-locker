@@ -11,4 +11,8 @@ import { aboutPages } from '@/app/pages/about/data/about-page-list';
 })
 export default class AboutPageComponent {
   sections = aboutPages;
+
+  makeId(title: string): string {
+    return title.toLowerCase().replace(/ /g, '-');
+  }
 }
