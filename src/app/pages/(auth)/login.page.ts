@@ -8,6 +8,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { Subscription } from 'rxjs';
 import { GlobalMessageService } from '@/app/services/messaging.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
+import { FeatureService } from '@/app/services/features.service';
 
 @Component({
   standalone: true,
@@ -49,6 +50,8 @@ export default class LoginPageComponent implements OnInit {
   partialSession: any;
 
   private subscriptions: Subscription = new Subscription();
+
+  disabledSocialLogin$ = this.featureService.isFeatureEnabled('disableSocialLogin');
   
   constructor(
     private fb: FormBuilder,
@@ -58,6 +61,7 @@ export default class LoginPageComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private messagingService: GlobalMessageService,
     private errorHandlerService: ErrorHandlerService,
+    private featureService: FeatureService,
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -85,6 +89,7 @@ export default class LoginPageComponent implements OnInit {
     if (isNewSignup !== null) {
       this.isLogin = false;
       this.showWelcomeCard = true;
+      this.checkIfSignupDisabled();
     }
 
     this.route.queryParams.subscribe(async params => {
@@ -116,7 +121,7 @@ export default class LoginPageComponent implements OnInit {
   }
 
   /* Update form visibility, and clear messages on mode change */
-  onModeChange() {
+  async onModeChange() {
     // Reset error/success messages
     this.resetMessages();
 
@@ -131,11 +136,22 @@ export default class LoginPageComponent implements OnInit {
       this.form.get('confirmPassword')?.clearValidators();
       this.form.get('acceptTerms')?.clearValidators();
     } else {
+      this.checkIfSignupDisabled();
       this.form.get('confirmPassword')?.setValidators([Validators.required, this.passwordMatchValidator.bind(this)]);
       this.form.get('acceptTerms')?.setValidators([Validators.requiredTrue]);
     }
     this.form.get('confirmPassword')?.updateValueAndValidity();
     this.form.get('acceptTerms')?.updateValueAndValidity();
+  }
+
+  async checkIfSignupDisabled() {
+    if ((await this.featureService.isFeatureEnabledPromise('disableSignUp'))) {
+      this.messagingService.showWarn(
+        'Sign Up Disabled',
+        'It\'s not possible to create new accounts on the demo instance.',
+      );
+      this.isLogin = true;
+    }
   }
 
   passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {

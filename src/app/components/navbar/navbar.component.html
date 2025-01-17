@@ -16,7 +16,7 @@
     <p-menubar [model]="items" [styleClass]="'bg-transparent border-none p-0'"></p-menubar>
 
     <p-button
-      *ngIf="!isAuthenticated"
+      *ngIf="!isAuthenticated && !(disabledSignUp$ | async)"
       routerLink="/login"
       [queryParams]="{ newUser: 'true' }"
       label="Sign Up" 

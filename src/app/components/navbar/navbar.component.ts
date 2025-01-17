@@ -1,5 +1,4 @@
-// src/app/components/navbar/navbar.component.ts
-import { Component, OnInit, ChangeDetectorRef, PLATFORM_ID, inject, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, AfterViewInit } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -51,8 +50,8 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   planColor: string = 'primary';
 
   settingsEnabled$ = this.featureService.isFeatureEnabled('accountSettings');
+  disabledSignUp$ = this.featureService.isFeatureEnabled('disableSignUp');
   private subscriptions: Subscription = new Subscription();
-  private platformId = inject(PLATFORM_ID);
 
   constructor(
     public supabaseService: SupabaseService,
@@ -64,10 +63,11 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
-    // Initial check for auth status
+    // Check auth status and fetch user plan
     this.checkAuthStatus();
     this.billingService.fetchUserPlan();
 
+    // Subscribe to auth state changes, and also init menu items
     this.subscriptions.add(
       this.supabaseService.authState$.subscribe(isAuthenticated => {
         this.isAuthenticated = isAuthenticated;
@@ -82,20 +82,23 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     this.loadUserPlanEnvironment();
   }
 
+  // Get the user's billing plan or the environment type
   loadUserPlanEnvironment() {
     const environmentType = this.environmentService.getEnvironmentType();
-    if (environmentType === 'managed') {
-      this.billingService.getUserPlan().subscribe(plan => {
-        this.userPlan = plan;
-        this.planColor = this.getColorForPlan(this.userPlan);
-        this.cdr.detectChanges();
-      });
-    } else {
-      this.userPlan = environmentType;
+    const updatePlan = (plan: EnvironmentType | UserType | null) => {
+      this.userPlan = plan;
+      this.planColor = this.getColorForPlan(plan);
       this.cdr.detectChanges();
+    };
+
+    if (environmentType === 'managed') {
+      this.billingService.getUserPlan().subscribe(updatePlan);
+    } else {
+      updatePlan(environmentType);
     }
   }
 
+  // Pick a color for the env/user plan badge
   getColorForPlan(plan: EnvironmentType | UserType | null): string {
     switch (plan) {
       case 'free':
@@ -115,7 +118,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
       case 'selfHosted':
         return 'teal';
       case 'demo':
-        return 'orange';
+        return 'yellow';
       case 'dev':
         return 'purple';
       default:
@@ -123,6 +126,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Fetch number of unread notifications for the notification badge
   loadUnreadNotificationCount() {
     this.databaseService.instance.notificationQueries.getUnreadNotificationCount().subscribe(
       (count) => this.unreadNotificationsCount = count,
@@ -134,6 +138,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     this.supabaseService.setAuthState(isAuthenticated);
   }
 
+  // Set the navbar links, depending if user is logged in or not
   async initializeMenuItems() {
     if (this.isAuthenticated) {
       // User is logged in, show authenticated nav links
@@ -154,26 +159,31 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Open/close the sidebar (used on smaller screen)
   toggleSidebar() {
     this.sidebarVisible = !this.sidebarVisible;
   }
 
+  // Close sidebar (when user clicks something)
   closeSidebar() {
     this.sidebarVisible = false;
     this.cdr.detectChanges();
   }
 
+  // Open or close the notifications overlay
   toggleNotifications(event: Event) {
     this.notificationsVisible = true;
     this.notificationsOverlay.toggle(event);
     this.unreadNotificationsCount = 0;
   }
 
+  // Open or close the settings overlay
   toggleSettings(event: Event) {
     this.settingsVisible = !this.settingsVisible;
     event.preventDefault();
   }
 
+  // Sign out the user and redirect. Goodbye!
   async signOut() {
     await this.supabaseService.signOut();
     window.location.href = '/login';
