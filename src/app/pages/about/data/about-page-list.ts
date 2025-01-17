@@ -2,7 +2,8 @@
 export interface AboutLink {
   title: string;
   description: string;
-  link: string;
+  link?: string;
+  href?: string;
   icon: string;
 }
 
@@ -11,7 +12,7 @@ export interface AboutPage {
   links: AboutLink[];
 }
 
-export const aboutPages = [
+export const aboutPages: AboutPage[] = [
   {
     title: 'Intro',
     links: [
@@ -63,7 +64,7 @@ export const aboutPages = [
   {
     title: 'Legal',
     links: [
-      { title: 'Privacy Policy', description: '', link: '', icon: '' },
+      { title: 'Privacy Policy', description: '', link: '/about/legal/privacy-policy', icon: '' },
       { title: 'Terms of Service', description: '', link: '', icon: '' },
       { title: 'Open Source License', description: '', link: '', icon: '' },
       { title: 'Accessibility', description: '', link: '', icon: '' },
@@ -75,9 +76,9 @@ export const aboutPages = [
   {
     title: 'External Links',
     links: [
-      { title: 'GitHub', description: '', link: '', icon: '' },
-      { title: 'DockerHub', description: '', link: '', icon: '' },
-      { title: 'More Apps', description: '', link: '', icon: '' },
+      { title: 'GitHub', description: 'Source code', href: 'https://github.com/lissy93/domain-locker', icon: 'pi pi-github' },
+      { title: 'DockerHub', description: '', href: '', icon: '' },
+      { title: 'More Apps', description: '', href: 'https://apps.aliciasykes.com', icon: '' },
     ],
   },
 ];
