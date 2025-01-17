@@ -9,6 +9,7 @@ export interface AboutLink {
 
 export interface AboutPage {
   title: string;
+  dirSlug?: string;
   links: AboutLink[];
 }
 
@@ -63,14 +64,15 @@ export const aboutPages: AboutPage[] = [
   },
   {
     title: 'Legal',
+    dirSlug: 'legal',
     links: [
-      { title: 'Privacy Policy', description: '', link: '/about/legal/privacy-policy', icon: '' },
-      { title: 'Terms of Service', description: '', link: '', icon: '' },
-      { title: 'Open Source License', description: '', link: '', icon: '' },
-      { title: 'Accessibility', description: '', link: '', icon: '' },
-      { title: 'Security.txt', description: '', link: '', icon: '' },
-      { title: 'GDPR Compliance', description: '', link: '', icon: '' },
-      { title: 'Fair Use Policy', description: '', link: '', icon: '' },
+      // { title: 'Privacy Policy', description: '', link: '/about/legal/privacy-policy', icon: '' },
+      // { title: 'Terms of Service', description: '', link: '', icon: '' },
+      // { title: 'Open Source License', description: '', link: '', icon: '' },
+      // { title: 'Accessibility', description: '', link: '', icon: '' },
+      // { title: 'Security.txt', description: '', link: '', icon: '' },
+      // { title: 'GDPR Compliance', description: '', link: '', icon: '' },
+      // { title: 'Fair Use Policy', description: '', link: '', icon: '' },
     ],
   },
   {

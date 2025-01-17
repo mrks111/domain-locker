@@ -6,6 +6,17 @@
   </a>
   
   <ul class="pl-4">
+    <!-- Auto links, based on the *.md files in a given directory -->
+    @if (section.dirSlug && autoLinks[section.dirSlug]) {
+      <li *ngFor="let file of autoLinks[section.dirSlug]">
+        <a [routerLink]="['/about', section.dirSlug, file.slug]" class="text-primary font-semibold no-underline">
+          {{ file.attributes.title }}
+        </a>
+        <span *ngIf="file.attributes.description" class="opacity-70 italic ml-2">- {{ file.attributes.description }}</span>
+      </li>
+    }
+
+    <!-- Links defined in about-page-links.ts -->
     <li *ngFor="let link of section.links">
       <a *ngIf="link.href; else routerLinkTemplate" [href]="link.href" class="text-primary font-semibold no-underline">
         {{ link.title }}
