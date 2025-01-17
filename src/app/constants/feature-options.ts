@@ -17,6 +17,9 @@ export type FeatureDefinitions = {
   changeHistory: FeatureConfig<boolean>;
   accountSettings: FeatureConfig<boolean>;
   writePermissions: FeatureConfig<boolean>;
+  disableDocs: FeatureConfig<boolean>;
+  disableSignUp: FeatureConfig<boolean>;
+  disableSocialLogin: FeatureConfig<boolean>;
 };
 
 export const features: FeatureDefinitions = {
@@ -83,6 +86,18 @@ export const features: FeatureDefinitions = {
     default: true,
     demo: false,
   },
+  disableDocs: {
+    default: false,
+    demo: true,
+  },
+  disableSignUp: {
+    default: false,
+    demo: true,
+  },
+  disableSocialLogin: {
+    default: false,
+    demo: true,
+  },
 };
 
 export const featureDescriptions: Record<keyof FeatureDefinitions, { label: string; description: string }> = {
@@ -117,5 +132,17 @@ export const featureDescriptions: Record<keyof FeatureDefinitions, { label: stri
   writePermissions: {
     label: 'Write Permissions',
     description: 'Allow others to write to your account',
+  },
+  disableDocs: {
+    label: 'No Documentation',
+    description: 'Disable access to the local documentation',
+  },
+  disableSignUp: {
+    label: 'Disable Sign Up',
+    description: 'Prevent new users from signing up',
+  },
+  disableSocialLogin: {
+    label: 'Disable Social Login',
+    description: 'Prevent users from signing up or logging in with social accounts',
   },
 };

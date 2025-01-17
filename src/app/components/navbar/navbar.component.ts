@@ -64,6 +64,10 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
+    // Initial check for auth status
+    this.checkAuthStatus();
+    this.billingService.fetchUserPlan();
+
     this.subscriptions.add(
       this.supabaseService.authState$.subscribe(isAuthenticated => {
         this.isAuthenticated = isAuthenticated;
@@ -71,10 +75,6 @@ export class NavbarComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
       })
     );
-
-    // Initial check for auth status
-    this.checkAuthStatus();
-    this.billingService.fetchUserPlan();
   }
 
   ngAfterViewInit() {
@@ -134,18 +134,23 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     this.supabaseService.setAuthState(isAuthenticated);
   }
 
-  initializeMenuItems() {
-    this.items = [];
-
+  async initializeMenuItems() {
     if (this.isAuthenticated) {
+      // User is logged in, show authenticated nav links
       this.items = authenticatedNavLinks as MenuItem[];
       this.itemsWithSettings = [
         ...(authenticatedNavLinks as MenuItem[]),
         { label: 'Settings', routerLink: '/settings', icon: 'pi pi-wrench',  items: settingsLinks as MenuItem[] },
       ];
     } else {
+      // User is not logged in, show docs links
       this.items = unauthenticatedNavLinks;
       this.itemsWithSettings = unauthenticatedNavLinks;
+      if (await this.featureService.isFeatureEnabledPromise('disableDocs')) {
+        // Docs is disabled, don't show docs links
+        this.items = [];
+        this.itemsWithSettings = [];
+      }
     }
   }
 

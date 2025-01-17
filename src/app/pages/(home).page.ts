@@ -28,6 +28,7 @@ import { HeroComponent } from '@components/home-things/hero/hero.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { EnvService } from '@/app/services/environment.service';
+import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -73,11 +74,13 @@ export default class HomePageComponent implements OnInit {
     public supabaseService: SupabaseService,
     private environmentService: EnvService,
     private errorHandlerService: ErrorHandlerService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
     this.setAuthState();
     this.loadDomains();
+    this.demoInstanceLoginRedirect();
   }
 
   setAuthState() {
@@ -118,5 +121,14 @@ export default class HomePageComponent implements OnInit {
 
   toggleInsights() {
     this.showInsights = !this.showInsights;
+  }
+
+  // If running demo instance, and user not authenticated, redirect to login page
+  demoInstanceLoginRedirect() {
+    if (this.environmentService.getEnvironmentType() === 'demo' && !this.isAuthenticated) {
+      this.router.navigate(['/login']).then(() => {
+        this.loading = false;
+      });
+    }
   }
 }

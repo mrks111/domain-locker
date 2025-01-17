@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, firstValueFrom, map, Observable } from 'rxjs';
 import { BillingService } from '@/app/services/billing.service';
 import { EnvService, type EnvironmentType } from '@/app/services/environment.service';
-import { features, type FeatureConfig, type FeatureDefinitions } from '@/app/constants/feature-options';
+import { features, type FeatureDefinitions } from '@/app/constants/feature-options';
 
 @Injectable({
   providedIn: 'root',
@@ -44,6 +44,8 @@ export class FeatureService {
         } else if (typeof config.managed === 'object') {
           // Otherwise, check for userPlan-specific value
           features[feature] = config.managed[userPlan] ?? config.default;
+        } else {
+          features[feature] = config.default;
         }
       } else if (config[this.environment] !== undefined) {
         // If there's an environment-specific value (e.g., selfHosted, demo)
