@@ -9,6 +9,8 @@ import { Subscription } from 'rxjs';
 import { GlobalMessageService } from '@/app/services/messaging.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { FeatureService } from '@/app/services/features.service';
+import { EnvService } from '@/app/services/environment.service';
+import { LogoComponent} from '@components/home-things/logo/logo.component';
 
 @Component({
   standalone: true,
@@ -17,6 +19,7 @@ import { FeatureService } from '@/app/services/features.service';
     ReactiveFormsModule,
     FormsModule,
     PrimeNgModule,
+    LogoComponent,
   ],
   templateUrl: './login.page.html',
   styles: [`
@@ -48,6 +51,7 @@ export default class LoginPageComponent implements OnInit {
   factorId: string | null = null;
   challengeId: string | null = null
   partialSession: any;
+  isDemoInstance = false;
 
   private subscriptions: Subscription = new Subscription();
 
@@ -62,6 +66,7 @@ export default class LoginPageComponent implements OnInit {
     private messagingService: GlobalMessageService,
     private errorHandlerService: ErrorHandlerService,
     private featureService: FeatureService,
+    private environmentService: EnvService,
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -84,6 +89,9 @@ export default class LoginPageComponent implements OnInit {
 
     // Initial check for auth status
     this.checkAuthStatus();
+
+    // If demo instance, show banner and auto-fill credentials
+    this.checkIfDemoInstance();
 
     const isNewSignup = this.route.snapshot.queryParamMap.get('newUser');
     if (isNewSignup !== null) {
@@ -151,6 +159,16 @@ export default class LoginPageComponent implements OnInit {
         'It\'s not possible to create new accounts on the demo instance.',
       );
       this.isLogin = true;
+    }
+  }
+
+  checkIfDemoInstance() {
+    if (this.environmentService.getEnvironmentType() === 'demo') {
+      this.isDemoInstance = true;
+      const demoUser = this.environmentService.getEnvVar('DL_DEMO_USER') || '';
+      const demoPass = this.environmentService.getEnvVar('DL_DEMO_PASS') || '';
+      this.form.get('email')?.setValue(demoUser);
+      this.form.get('password')?.setValue(demoPass);
     }
   }
 

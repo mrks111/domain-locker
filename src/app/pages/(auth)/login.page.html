@@ -1,6 +1,21 @@
 
 <div class="flex items-center justify-center h-full flex-col gap-4">
 
+  <!-- Demo Instance -->
+   <div *ngIf="isDemoInstance" class="max-w-[500px] w-[calc(100%-0.5rem)]">
+    <p-messages severity="info">
+      <ng-template pTemplate>
+          <app-logo />
+          <div class="ml-2 flex flex-col gap-2">
+            <span class="font-semibold">This instance is running in demo-mode</span>
+            <span>
+              Data saved here will be reset daily. Some features have been disabled for security.
+            </span>
+          </div>
+      </ng-template>
+    </p-messages>
+  </div>
+
   <!-- New User, welcome -->
   <div *ngIf="showWelcomeCard && !isAuthenticated" class="max-w-[500px] w-[calc(100%-0.5rem)]">
     <h2 class="font-semibold text-primary">Welcome!</h2>

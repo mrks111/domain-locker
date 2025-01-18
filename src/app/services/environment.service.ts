@@ -18,6 +18,8 @@ type EnvVar =
 | 'DL_PG_NAME'          // Postgres DB name
 | 'DL_PG_USER'          // Postgres user
 | 'DL_PG_PASSWORD'      // Postgres password
+| 'DL_DEMO_USER'        // Demo user email (for auto-filling on demo instance)
+| 'DL_DEMO_PASS'        // Demo user password (for auto-filling on demo instance)
 ;
 
 @Injectable({
