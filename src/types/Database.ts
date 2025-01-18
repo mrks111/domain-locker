@@ -13,6 +13,33 @@ import {
   Subdomain,
   Link,
 } from './common';
+import { DnsQueries as SbDnsQueries } from '@/app/services/db-query-services/sb/db-dns.service';
+import { HistoryQueries as SbHistoryQueries } from '@/app/services/db-query-services/sb/db-history.service';
+import { HostsQueries as SbHostsQueries } from '@/app/services/db-query-services/sb/db-hosts.service';
+import { IpQueries as SbIpQueries } from '@/app/services/db-query-services/sb/db-ips.service';
+import { LinkQueries as SbLinkQueries } from '@/app/services/db-query-services/sb/db-links.service';
+import { NotificationQueries as SbNotificationQueries } from '@/app/services/db-query-services/sb/db-notifications.service';
+import { RegistrarQueries as SbRegistrarQueries } from '@/app/services/db-query-services/sb/db-registrars.service';
+import { SslQueries as SbSslQueries } from '@/app/services/db-query-services/sb/db-ssl.service';
+import { StatusQueries as SbStatusQueries } from '@/app/services/db-query-services/sb/db-statuses.service';
+import { SubdomainsQueries as SbSubdomainsQueries } from '@/app/services/db-query-services/sb/db-subdomains.service';
+import { TagQueries as SbTagQueries } from '@/app/services/db-query-services/sb/db-tags.service';
+import { ValuationQueries as SbValuationQueries } from '@/app/services/db-query-services/sb/db-valuations.service';
+import { WhoisQueries as SbWhoisQueries } from '@/app/services/db-query-services/sb/db-whois.service';
+
+import { DnsQueries as PgDnsQueries } from '@/app/services/db-query-services/pg/db-dns.service';
+import { HistoryQueries as PgHistoryQueries } from '@/app/services/db-query-services/pg/db-history.service';
+import { HostsQueries as PgHostsQueries } from '@/app/services/db-query-services/pg/db-hosts.service';
+import { IpQueries as PgIpQueries } from '@/app/services/db-query-services/pg/db-ips.service';
+import { LinkQueries as PgLinkQueries } from '@/app/services/db-query-services/pg/db-links.service';
+import { NotificationQueries as PgNotificationQueries } from '@/app/services/db-query-services/pg/db-notifications.service';
+import { RegistrarQueries as PgRegistrarQueries } from '@/app/services/db-query-services/pg/db-registrars.service';
+import { SslQueries as PgSslQueries } from '@/app/services/db-query-services/pg/db-ssl.service';
+import { StatusQueries as PgStatusQueries } from '@/app/services/db-query-services/pg/db-statuses.service';
+import { SubdomainsQueries as PgSubdomainsQueries } from '@/app/services/db-query-services/pg/db-subdomains.service';
+import { TagQueries as PgTagQueries } from '@/app/services/db-query-services/pg/db-tags.service';
+import { ValuationQueries as PgValuationQueries } from '@/app/services/db-query-services/pg/db-valuations.service';
+import { WhoisQueries as PgWhoisQueries } from '@/app/services/db-query-services/pg/db-whois.service';
 
 export {
   Timestamps,
@@ -86,75 +113,17 @@ export interface SaveDomainData {
 }
 
 export abstract class DatabaseService {
-  // abstract domainExists(userId: string, domainName: string): Promise<boolean>;
-  // abstract saveDomain(data: SaveDomainData): Observable<DbDomain>;
-  // abstract deleteDomain(domainId: string): Observable<void>;
-
-  // // IP Address functions
-  // abstract addIpAddress(ipAddress: Omit<IpAddress, 'id' | 'created_at' | 'updated_at'>): Observable<IpAddress>;
-  // abstract getIpAddresses(isIpv6: boolean): Observable<{ ip_address: string; domains: string[] }[]>;
-  // abstract updateIpAddress(id: string, ipAddress: Partial<IpAddress>): Observable<IpAddress>;
-  // abstract deleteIpAddress(id: string): Observable<void>;
-
-  // // Tag functions
-  // abstract addTag(tag: Omit<Tag, 'id'>): Observable<Tag>;
-  // abstract getTag(tagName: string): Observable<Tag>;
-  // abstract getTags(): Observable<Tag[]>;
-  // abstract deleteTag(id: string): Observable<void>;
-  // abstract createTag(tag: Tag): Observable<any>;
-  // abstract updateTag(tag: any): Observable<void>;
-
-  // // Domain functions
-  // abstract getDomain(domainName: string): Observable<DbDomain>;
-  // abstract listDomainNames(): Observable<string[]>;
-  // abstract listDomains(): Observable<DbDomain[]>;
-  // abstract getDomainById(id: string): Promise<DbDomain>;
-  // abstract updateDomain(domainId: string, domainData: SaveDomainData): Observable<DbDomain>;
-  // abstract getTotalDomains(): Observable<number>;
-  // abstract getDomainsByStatus(statusCode: string): Observable<DbDomain[]>;
-  // abstract getDomainsByEppCodes(statuses: string[]): Observable<Record<string, { domainId: string; domainName: string }[]>>;
-  // abstract getDomainExpirations(): Observable<DomainExpiration[]>;
-  // abstract getDomainCountsByTag(): Observable<Record<string, number>>;
-  // abstract getDomainsByTag(tagName: string): Observable<DbDomain[]>;
-  // abstract getDomainCountsByRegistrar(): Observable<Record<string, number>>;
-  // abstract getDomainsByRegistrar(registrarName: string): Observable<DbDomain[]>;
-  // abstract getDomainCostings(): Observable<any[]>;
-  // abstract updateDomainCostings(updates: any[]): Observable<void>;
-  // abstract fetchAllForExport(domainName: string, includeFields: {label: string, value: string}[]): Observable<any[]>;
-  // abstract getChangeHistory(domainName?: string, days?: number): Observable<any[]>;
-
-  // // Notification functions
-  // abstract addNotification(notification: Omit<Notification, 'id' | 'created_at' | 'updated_at'>): Observable<Notification>;
-  // abstract updateNotification(id: string, notification: Partial<Notification>): Observable<Notification>;
-  // abstract deleteNotification(id: string): Observable<void>;
-  // abstract getNotificationPreferences(): Observable<{ domain_id: string; notification_type: string; is_enabled: boolean }[]>;
-  // abstract updateBulkNotificationPreferences(preferences: { domain_id: string; notification_type: string; is_enabled: boolean }[]): Observable<void>;
-  // abstract getUserNotifications(limit?: number, offset?: number): Observable<{ notifications: (Notification & { domain_name: string })[]; total: number }>;
-  // abstract markAllNotificationsRead(read?: boolean): Promise<Observable<void>>;
-  // abstract markNotificationReadStatus(notificationId: string, readStatus: boolean): Observable<void>;
-  // abstract getUnreadNotificationCount(): Observable<number>;
-
-  // // Host functions
-  // abstract getHosts(): Observable<Host[]>;
-  // abstract getDomainCountsByHost(): Observable<Record<string, number>>;
-  // abstract getDomainsByHost(hostIsp: string): Observable<DbDomain[]>;
-  // abstract getHostsWithDomainCounts(): Observable<(Host & { domain_count: number })[]>;
-
-  // // SSL functions
-  // abstract getSslIssuersWithDomainCounts(): Observable<{ issuer: string; domain_count: number }[]>;
-  // abstract getDomainsBySslIssuer(issuer: string): Observable<DbDomain[]>;
-
-  // // DNS functions
-  // abstract getDnsRecords(recordType: string): Observable<any[]>;
-
-  // // Registrar functions
-  // abstract getRegistrars(): Observable<Registrar[]>;
-
-  // // Asset counts
-  // abstract getAssetCount(assetType: string): Observable<number>;
-
-  // // Tag and domain association functions
-  // abstract getDomainsForTag(tagId: string): Observable<{ available: any[]; selected: any[] }>;
-  // abstract saveDomainsForTag(tagId: string, selectedDomains: any[]): Observable<void>;
-  // abstract getTagsWithDomainCounts(): Observable<any[]>;
+  notificationQueries!: SbNotificationQueries | PgNotificationQueries;
+  linkQueries!: SbLinkQueries | PgLinkQueries;
+  tagQueries!: SbTagQueries | PgTagQueries;
+  historyQueries!: SbHistoryQueries | PgHistoryQueries;
+  valuationQueries!: SbValuationQueries | PgValuationQueries;
+  registrarQueries!: SbRegistrarQueries | PgRegistrarQueries;
+  dnsQueries!: SbDnsQueries | PgDnsQueries;
+  hostsQueries!: SbHostsQueries | PgHostsQueries;
+  ipQueries!: SbIpQueries | PgIpQueries;
+  sslQueries!: SbSslQueries | PgSslQueries;
+  whoisQueries!: SbWhoisQueries | PgWhoisQueries;
+  statusQueries!: SbStatusQueries | PgStatusQueries;
+  subdomainsQueries!: SbSubdomainsQueries | PgSubdomainsQueries;
 }

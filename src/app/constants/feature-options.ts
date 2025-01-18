@@ -89,6 +89,7 @@ export const features: FeatureDefinitions = {
   disableDocs: {
     default: false,
     demo: true,
+    selfHosted: true,
   },
   disableSignUp: {
     default: false,

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from '@/app/services/supabase.service';
 import { DatabaseService, DbDomain, IpAddress, SaveDomainData, DomainExpiration } from '@/types/Database';
-import { catchError, from, map, Observable, throwError, retry } from 'rxjs';
+import { catchError, from, map, Observable, throwError, retry, switchMap } from 'rxjs';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { GlobalMessageService } from '@services/messaging.service';
@@ -28,20 +28,6 @@ import { FeatureService } from '../features.service';
   providedIn: 'root',
 })
 export default class MainDatabaseService extends DatabaseService {
-
-  public linkQueries!: LinkQueries;
-  public tagQueries!: TagQueries;
-  public notificationQueries!: NotificationQueries;
-  public historyQueries!: HistoryQueries;
-  public valuationQueries!: ValuationQueries;
-  public registrarQueries!: RegistrarQueries;
-  public dnsQueries!: DnsQueries;
-  public hostsQueries!: HostsQueries;
-  public ipQueries!: IpQueries;
-  public sslQueries!: SslQueries;
-  public whoisQueries!: WhoisQueries;
-  public statusQueries!: StatusQueries;
-  public subdomainsQueries!: SubdomainsQueries;
 
   constructor(
     private supabase: SupabaseService,
@@ -213,10 +199,14 @@ export default class MainDatabaseService extends DatabaseService {
   }
 
   saveDomain(data: SaveDomainData): Observable<DbDomain> {
-    if (!this.featureService.isFeatureEnabled('writePermissions')) {
-      return throwError(() => new Error('Write permissions disabled'));
-    }
-    return from(this.saveDomainInternal(data)).pipe(
+    return this.featureService.isFeatureEnabled('writePermissions').pipe(
+      map(isEnabled => {
+        if (!isEnabled) {
+          this.globalMessagingService.showWarn('Write permissions are disabled', 'Skipping save operation');
+          throw new Error('Write permissions disabled');
+        }
+      }),
+      switchMap(() => from(this.saveDomainInternal(data))),
       catchError(error => this.handleError(error))
     );
   }
@@ -301,14 +291,17 @@ export default class MainDatabaseService extends DatabaseService {
   }
   
   deleteDomain(domainId: string): Observable<void> {
-    if (!this.featureService.isFeatureEnabled('writePermissions')) {
-      return throwError(() => new Error('Write permissions disabled'));
-    }
-    return from(this.supabase.supabase.rpc('delete_domain', { domain_id: domainId })).pipe(
+    return this.featureService.isFeatureEnabled('writePermissions').pipe(
+      map(isEnabled => {
+        if (!isEnabled) {
+          this.globalMessagingService.showWarn('Write permissions are disabled', 'Skipping delete operation');
+          throw new Error('Write permissions disabled');
+        }
+      }),
+      switchMap(() => from(this.supabase.supabase.rpc('delete_domain', { domain_id: domainId }))),
       map(() => void 0),
       catchError(error => {
-        console.error('Error deleting domain:', error);
-        return throwError(() => new Error('Failed to delete domain'));
+        return throwError(() => error || new Error('Failed to delete domain'));
       })
     );
   }

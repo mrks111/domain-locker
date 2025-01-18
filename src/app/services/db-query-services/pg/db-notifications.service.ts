@@ -33,6 +33,10 @@ export class NotificationQueries {
     await this.pgApiUtil.postToPgExecutor(query, params).toPromise();
   }
 
+  async updateNotificationTypes(domainId: string, notifications: { type: string; isEnabled: boolean }[]): Promise<void> {
+    // TODO: Implement this
+  }
+
   async getNotificationChannels() {
     const userId = await this.getCurrentUser().then((user) => user?.id);
     if (!userId) return null;
