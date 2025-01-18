@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
 import { aboutPages } from '@/app/pages/about/data/about-page-list';
@@ -13,12 +13,6 @@ import { DocAttributes } from '@/app/components/about-things/doc-viewer.componen
 })
 export default class AboutPageComponent {
   sections = aboutPages;
-
-//   <a [routerLink]="file.slug" class="text-primary font-semibold no-underline">
-//   {{ file.attributes.title }}
-// </a>
-
-
 
   readonly autoLinks: { [key: string]: any } = {
     legal: injectContentFiles<DocAttributes>((contentFile) =>

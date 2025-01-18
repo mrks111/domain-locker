@@ -1,9 +1,9 @@
-import { injectContent, injectContentFiles, MarkdownComponent } from '@analogjs/content';
-import { AsyncPipe, CommonModule, NgIf } from '@angular/common';
+import { ContentFile, injectContent, injectContentFiles, MarkdownComponent } from '@analogjs/content';
+import { CommonModule, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { aboutPages, AboutLink } from './data/about-page-list';
 import { ActivatedRoute } from '@angular/router';
-import { switchMap } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 
 import NotFoundPage from '@/app/pages/[...not-found].page'
@@ -17,7 +17,7 @@ export interface DocAttributes {
 
 @Component({
   standalone: true,
-  imports: [MarkdownComponent, AsyncPipe, NgIf, CommonModule, PrimeNgModule, NotFoundPage],
+  imports: [MarkdownComponent, NgIf, CommonModule, PrimeNgModule, NotFoundPage],
   templateUrl: './[slug].page.html',
 })
 export default class DocsComponent implements OnInit {
@@ -27,12 +27,13 @@ export default class DocsComponent implements OnInit {
 
   public docsNotFound: boolean = false;
   public linksTitle: string | null = null;
-  public links: AboutLink[] | null = null;
+  public links: AboutLink[] = [];
 
-  readonly doc$ = injectContent<DocAttributes>({
+  readonly doc$: Observable<ContentFile | null> = injectContent<DocAttributes>({
     param: 'slug',
     subdirectory: 'docs',
-  });
+  }) as Observable<ContentFile | null>;
+  public doc: ContentFile | null = null;
 
   readonly docs = injectContentFiles<DocAttributes>((contentFile) => {
     return contentFile.filename.includes('/src/content/docs/')
@@ -46,6 +47,8 @@ export default class DocsComponent implements OnInit {
     this.doc$.subscribe(doc => {
       if (!doc?.slug) {
         this.docsNotFound = true;
+      } else {
+        this.doc = doc;
       }
     });
 
@@ -65,14 +68,28 @@ export default class DocsComponent implements OnInit {
   }
 
   fondLinks(title: string): AboutLink[] | null {
+    this.links = [];
+
+    // Find list of docs which are in the current content directory
+    this.docs.forEach(doc => {
+      if (doc.filename.includes(`/${this.currentPage}/`)) {
+        this.links.push({
+          title: doc.attributes.title,
+          description: doc.attributes.description,
+          icon: '',
+          link: `/about/${this.currentPage}/${doc.attributes.slug}`
+        });
+      }
+    });
+
+    // Find list of docs which are defined in the about-page-list.ts
     const foundSection = this.aboutPages.find(page => this.makeId(page.title) === this.makeId(title));
     if (foundSection) {
       this.linksTitle = foundSection.title;
-      this.links = foundSection.links;
+      this.links = [...this.links, ...foundSection.links];
       return foundSection.links;
     }
     return null;
   }
-
 
 }
