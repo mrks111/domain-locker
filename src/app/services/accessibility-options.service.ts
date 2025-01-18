@@ -8,6 +8,7 @@ export interface AccessibilityOptions {
   largeText: boolean;
   removeIcons: boolean;
   grayscale: boolean;
+  nightShift: boolean;
 }
 
 // Default values for all accessibility options, when not yet set by user
@@ -18,6 +19,7 @@ export const defaultAccessibilityOptions: AccessibilityOptions = {
   largeText: false,
   removeIcons: false,
   grayscale: false,
+  nightShift: false,
 }
 
 /**
@@ -34,6 +36,7 @@ export const accessibilityOptionsInfo: ReadonlyArray<{
   { key: 'largeText', label: 'Large Type', className: 'a11y_large-type' },
   { key: 'removeIcons', label: 'Remove Icons', className: 'a11y_remove-icons' },
   { key: 'grayscale', label: 'No Color', className: 'a11y_grayscale' },
+  { key: 'nightShift', label: 'Night Shift', className: 'a11y_no-blue-light' },
 ];
 
 

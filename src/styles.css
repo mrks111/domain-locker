@@ -124,8 +124,9 @@ h1 {
     display: none;
   }
 }
-
-
+.a11y_no-blue-light {
+  filter: sepia(100%) hue-rotate(-30deg) saturate(200%);
+}
 
 .grid { margin: 0; }
 
