@@ -26,6 +26,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { TranslationService } from './services/translation.service';
 import { AccessibilityService } from '@/app/services/accessibility-options.service';
 import { EnvService } from '@/app/services/environment.service';
+import { FeatureService } from '@/app/services/features.service';
 
 @Component({
   selector: 'app-root',
@@ -94,6 +95,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private _translationService: TranslationService,
     private accessibilityService: AccessibilityService,
     private environmentService: EnvService,
+    private featureService: FeatureService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}  
 
@@ -106,6 +108,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.pagePath = currentRoute;
 
           if (currentRoute.startsWith('/about')) {
+            this.checkIfDocsDisabled();
             this.isBigFooter = true;
           } else {
             this.isBigFooter = false;
@@ -153,6 +156,13 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.subscription) {
       this.subscription.unsubscribe();
+    }
+  }
+
+  private async checkIfDocsDisabled() {
+    if (await this.featureService.isFeatureEnabledPromise('disableDocs')) {
+      this.globalMessageService.showWarn('Documentation is disabled for this instance', 'Navigating back to homepage');
+      this.router.navigate(['/']);
     }
   }
 
