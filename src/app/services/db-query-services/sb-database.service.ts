@@ -21,97 +21,163 @@ import { WhoisQueries } from '@/app/services/db-query-services/sb/db-whois.servi
 import { StatusQueries } from '@/app/services/db-query-services/sb/db-statuses.service';
 import { SubdomainsQueries } from '@/app/services/db-query-services/sb/db-subdomains.service';
 
+import { createDbProxy } from '@/app/utils/db-proxy.factory';
+import { FeatureService } from '../features.service';
+
 @Injectable({
   providedIn: 'root',
 })
 export default class MainDatabaseService extends DatabaseService {
 
-  public linkQueries: LinkQueries;
-  public tagQueries: TagQueries;
-  public notificationQueries: NotificationQueries;
-  public historyQueries: HistoryQueries;
-  public valuationQueries: ValuationQueries;
-  public registrarQueries: RegistrarQueries;
-  public dnsQueries: DnsQueries;
-  public hostsQueries: HostsQueries;
-  public ipQueries: IpQueries;
-  public sslQueries: SslQueries;
-  public whoisQueries: WhoisQueries;
-  public statusQueries: StatusQueries;
-  public subdomainsQueries: SubdomainsQueries;
+  public linkQueries!: LinkQueries;
+  public tagQueries!: TagQueries;
+  public notificationQueries!: NotificationQueries;
+  public historyQueries!: HistoryQueries;
+  public valuationQueries!: ValuationQueries;
+  public registrarQueries!: RegistrarQueries;
+  public dnsQueries!: DnsQueries;
+  public hostsQueries!: HostsQueries;
+  public ipQueries!: IpQueries;
+  public sslQueries!: SslQueries;
+  public whoisQueries!: WhoisQueries;
+  public statusQueries!: StatusQueries;
+  public subdomainsQueries!: SubdomainsQueries;
 
   constructor(
     private supabase: SupabaseService,
     private errorHandler: ErrorHandlerService,
     private globalMessagingService: GlobalMessageService,
+    private featureService: FeatureService,
   ) {
     super();
-    this.linkQueries = new LinkQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.listDomainNames.bind(this),
-    );
-    this.tagQueries = new TagQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.getCurrentUser.bind(this),
-    );
-    this.notificationQueries = new NotificationQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.getCurrentUser.bind(this),
-    );
-    this.historyQueries = new HistoryQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-    );
-    this.valuationQueries = new ValuationQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-    );
-    this.registrarQueries = new RegistrarQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.getCurrentUser.bind(this),
-      this.formatDomainData.bind(this),
-    );
-    this.dnsQueries = new DnsQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.getCurrentUser.bind(this),
-    );
-    this.hostsQueries = new HostsQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.formatDomainData.bind(this),
-    );
-    this.ipQueries = new IpQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.getCurrentUser.bind(this),
-    );
-    this.sslQueries = new SslQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.getCurrentUser.bind(this),
-      this.getFullDomainQuery.bind(this),
-      this.formatDomainData.bind(this),
-    );
-    this.whoisQueries = new WhoisQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.getCurrentUser.bind(this),
-    );
-    this.statusQueries = new StatusQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.getCurrentUser.bind(this),
-    );
-    this.subdomainsQueries = new SubdomainsQueries(
-      this.supabase.supabase,
-      this.handleError.bind(this),
-      this.globalMessagingService,
-    );
+
+    const subservices: Array<{property: string; cls: new (...args: any[]) => any; args: any[];}> = [
+      {
+        property: 'tagQueries',
+        cls: TagQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.getCurrentUser.bind(this),
+        ],
+      },
+      {
+        property: 'linkQueries',
+        cls: LinkQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.listDomainNames.bind(this),
+        ],
+      },
+      {
+        property: 'notificationQueries',
+        cls: NotificationQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.getCurrentUser.bind(this),
+        ],
+      },
+      {
+        property: 'historyQueries',
+        cls: HistoryQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+        ],
+      },
+      {
+        property: 'valuationQueries',
+        cls: ValuationQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+        ],
+      },
+      {
+        property: 'registrarQueries',
+        cls: RegistrarQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.getCurrentUser.bind(this),
+          this.formatDomainData.bind(this),
+        ],
+      },
+      {
+        property: 'dnsQueries',
+        cls: DnsQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.getCurrentUser.bind(this),
+        ],
+      },
+      {
+        property: 'hostsQueries',
+        cls: HostsQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.formatDomainData.bind(this),
+        ],
+      },
+      {
+        property: 'ipQueries',
+        cls: IpQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.getCurrentUser.bind(this),
+        ],
+      },
+      {
+        property: 'sslQueries',
+        cls: SslQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.getCurrentUser.bind(this),
+          this.getFullDomainQuery.bind(this),
+          this.formatDomainData.bind(this),
+        ],
+      },
+      {
+        property: 'whoisQueries',
+        cls: WhoisQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.getCurrentUser.bind(this),
+        ],
+      },
+      {
+        property: 'statusQueries',
+        cls: StatusQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.getCurrentUser.bind(this),
+        ],
+      },
+      {
+        property: 'subdomainsQueries',
+        cls: SubdomainsQueries,
+        args: [
+          this.supabase.supabase,
+          this.handleError.bind(this),
+          this.globalMessagingService,
+        ],
+      },
+    ] as const;
+
+    // Instantiate each subservice, wrap it in write protection proxy
+    subservices.forEach(({ property, cls, args }) => {
+      const real = new cls(...args);
+      const proxied = createDbProxy(real, this.featureService, this.globalMessagingService);
+      (this as any)[property] = proxied;
+    });
   }
 
   private handleError(error: any): Observable<never> {
@@ -147,6 +213,9 @@ export default class MainDatabaseService extends DatabaseService {
   }
 
   saveDomain(data: SaveDomainData): Observable<DbDomain> {
+    if (!this.featureService.isFeatureEnabled('writePermissions')) {
+      return throwError(() => new Error('Write permissions disabled'));
+    }
     return from(this.saveDomainInternal(data)).pipe(
       catchError(error => this.handleError(error))
     );
@@ -232,6 +301,9 @@ export default class MainDatabaseService extends DatabaseService {
   }
   
   deleteDomain(domainId: string): Observable<void> {
+    if (!this.featureService.isFeatureEnabled('writePermissions')) {
+      return throwError(() => new Error('Write permissions disabled'));
+    }
     return from(this.supabase.supabase.rpc('delete_domain', { domain_id: domainId })).pipe(
       map(() => void 0),
       catchError(error => {

@@ -15,6 +15,7 @@ export class SubdomainsQueries {
     domain: string,
     subdomains: { name: string; sd_info?: string }[]
   ): Observable<void> {
+    console.log('saveSubdomainsForDomainName');
     return this.fetchDomainId(domain).pipe(
       switchMap((domainId) => {
         return from(this.saveSubdomains(domainId, subdomains));
@@ -26,8 +27,6 @@ export class SubdomainsQueries {
   }
   
   
-  
-
   // Reusable function to fetch domain ID based on domain name
   fetchDomainId(domain: string): Observable<string> {
     return from(
