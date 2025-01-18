@@ -78,16 +78,7 @@ h1 {
 }
 
 /* Highlight color */
-
-/* For modern browsers (Chrome, Safari, etc.) */
-::selection {
+::selection, ::-moz-selection  {
   background-color: var(--primary-color);
   color: var(--surface-0);
 }
-
-/* For Firefox specifically */
-::-moz-selection {
-  background-color: var(--primary-color);
-  color: var(--surface-0);
-}
-
