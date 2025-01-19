@@ -48,7 +48,7 @@ export class ValuationQueries {
     return from(
       this.supabase
         .from('domain_costings')
-        .upsert(updates, { onConflict: 'domain_id' }) // Use the unique constraint on domain_id
+        .upsert(updates, { onConflict: 'domain_id' })
         .then((response) => {
           if (response.error) {
             throw response.error;

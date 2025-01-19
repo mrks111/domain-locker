@@ -250,8 +250,12 @@ CREATE TABLE IF NOT EXISTS "public"."domain_costings" (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT domain_costings_pkey PRIMARY KEY (id),
-    CONSTRAINT domain_costings_domain_id_fkey FOREIGN KEY (domain_id) REFERENCES "public"."domains" (id) ON DELETE CASCADE
+    CONSTRAINT domain_costings_domain_id_fkey FOREIGN KEY (domain_id) REFERENCES "public"."domains" (id) ON DELETE CASCADE,
+    CONSTRAINT domain_costings_domain_id_key UNIQUE (domain_id) -- Unique constraint on domain_id
 );
+
+-- Index for domain_id to improve query performance
+CREATE INDEX IF NOT EXISTS idx_domain_costings_domain_id ON "public"."domain_costings" (domain_id);
 
 -- Domain statuses table
 CREATE TABLE IF NOT EXISTS "public"."domain_statuses" (

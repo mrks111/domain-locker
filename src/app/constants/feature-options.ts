@@ -61,6 +61,7 @@ export const features: FeatureDefinitions = {
   },
   domainMonitor: {
     default: true,
+    selfHosted: false,
     managed: {
       free: false,
       hobby: false,
@@ -70,6 +71,7 @@ export const features: FeatureDefinitions = {
   },
   changeHistory: {
     default: true,
+    selfHosted: false,
     managed: {
       free: false,
       hobby: true,

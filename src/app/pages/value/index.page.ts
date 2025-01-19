@@ -8,6 +8,7 @@ import { localeToCurrency } from '@/app/constants/currencies';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { DbDomain } from '@/types/Database';
 
 @Component({
   standalone: true,
@@ -55,7 +56,7 @@ export default class ValuationPageComponent implements OnInit {
   private loadDomains() {
     this.loading = true;
     this.databaseService.instance.listDomains().subscribe({
-      next: (domains) => {
+      next: (domains: DbDomain[]) => {
         this.databaseService.instance.valuationQueries.getDomainCostings().subscribe({
           next: (costings) => {
             // Populate costings or default to 0.0 if not present
@@ -89,7 +90,7 @@ export default class ValuationPageComponent implements OnInit {
           },
         });
       },
-      error: (error) => {
+      error: (error: Error) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',

@@ -24,7 +24,7 @@ export class ValuationQueries {
       LEFT JOIN registrars r ON d.registrar_id = r.id
     `;
 
-    return from(postToPgExecutor(query)).pipe(
+    return from(this.pgApiUtil.postToPgExecutor(query)).pipe(
       map((response) => {
         const data = response.data;
 
@@ -54,7 +54,7 @@ export class ValuationQueries {
         renewal_cost = EXCLUDED.renewal_cost,
         auto_renew = EXCLUDED.auto_renew
     `;
-
+  
     const params = updates.flatMap(update => [
       update.domain_id,
       update.purchase_price,
@@ -62,8 +62,8 @@ export class ValuationQueries {
       update.renewal_cost,
       update.auto_renew
     ]);
-
-    return from(postToPgExecutor(query, params)).pipe(
+  
+    return from(this.pgApiUtil.postToPgExecutor(query, params)).pipe(
       map(() => void 0), // Return void after successful execution
       catchError((error) => {
         this.handleError(error);
@@ -71,4 +71,5 @@ export class ValuationQueries {
       })
     );
   }
+  
 }
