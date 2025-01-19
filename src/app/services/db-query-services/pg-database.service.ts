@@ -235,7 +235,67 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
 
   getDomain(domainName: string): Observable<DbDomain> {
     const query = `
-      SELECT ${this.getFullDomainQuery()}
+      SELECT
+        domains.id,
+        domains.user_id,
+        domains.domain_name,
+        domains.expiry_date,
+        domains.registration_date,
+        domains.updated_date,
+        domains.notes,
+        -- Aggregate related data
+        COALESCE(JSON_AGG(DISTINCT jsonb_build_object('ip_address', ip_addresses.ip_address, 'is_ipv6', ip_addresses.is_ipv6)) 
+                 FILTER (WHERE ip_addresses.ip_address IS NOT NULL), '[]') AS ip_addresses,
+        COALESCE(JSON_AGG(DISTINCT jsonb_build_object('notification_type', notification_preferences.notification_type, 'is_enabled', notification_preferences.is_enabled)) 
+                 FILTER (WHERE notification_preferences.notification_type IS NOT NULL), '[]') AS notification_preferences,
+        COALESCE(JSON_AGG(DISTINCT jsonb_build_object('name', tags.name)) 
+                 FILTER (WHERE tags.name IS NOT NULL), '[]') AS tags,
+        COALESCE(JSON_AGG(DISTINCT jsonb_build_object('record_type', dns_records.record_type, 'record_value', dns_records.record_value)) 
+                 FILTER (WHERE dns_records.record_type IS NOT NULL), '[]') AS dns,
+        COALESCE(JSON_AGG(DISTINCT jsonb_build_object('name', sub_domains.name, 'sd_info', sub_domains.sd_info)) 
+                 FILTER (WHERE sub_domains.name IS NOT NULL), '[]') AS sub_domains,
+        COALESCE(JSON_AGG(DISTINCT jsonb_build_object('link_name', domain_links.link_name, 'link_url', domain_links.link_url, 'link_description', domain_links.link_description)) 
+                 FILTER (WHERE domain_links.link_name IS NOT NULL), '[]') AS domain_links,
+        jsonb_build_object(
+          'issuer', ssl_certificates.issuer,
+          'issuer_country', ssl_certificates.issuer_country,
+          'subject', ssl_certificates.subject,
+          'valid_from', ssl_certificates.valid_from,
+          'valid_to', ssl_certificates.valid_to,
+          'fingerprint', ssl_certificates.fingerprint,
+          'key_size', ssl_certificates.key_size,
+          'signature_algorithm', ssl_certificates.signature_algorithm
+        ) AS ssl,
+        jsonb_build_object(
+          'name', whois_info.name,
+          'organization', whois_info.organization,
+          'country', whois_info.country,
+          'street', whois_info.street,
+          'city', whois_info.city,
+          'state', whois_info.state,
+          'postal_code', whois_info.postal_code
+        ) AS whois,
+        jsonb_build_object(
+          'name', registrars.name,
+          'url', registrars.url
+        ) AS registrar,
+        jsonb_build_object(
+          'purchase_price', domain_costings.purchase_price,
+          'current_value', domain_costings.current_value,
+          'renewal_cost', domain_costings.renewal_cost,
+          'auto_renew', domain_costings.auto_renew
+        ) AS domain_costings,
+        jsonb_build_object(
+          'ip', hosts.ip,
+          'lat', hosts.lat,
+          'lon', hosts.lon,
+          'isp', hosts.isp,
+          'org', hosts.org,
+          'as_number', hosts.as_number,
+          'city', hosts.city,
+          'region', hosts.region,
+          'country', hosts.country
+        ) AS host
       FROM domains
       LEFT JOIN registrars ON domains.registrar_id = registrars.id
       LEFT JOIN ip_addresses ON domains.id = ip_addresses.domain_id
@@ -252,6 +312,7 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
       LEFT JOIN sub_domains ON domains.id = sub_domains.domain_id
       LEFT JOIN domain_links ON domains.id = domain_links.domain_id
       WHERE domains.domain_name = $1
+      GROUP BY domains.id, registrars.id, ssl_certificates.id, whois_info.id, domain_costings.id, hosts.id
     `;
   
     return this.pgApiUtil.postToPgExecutor<DbDomain>(query, [domainName]).pipe(
@@ -265,6 +326,58 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
       catchError((error) => this.handleError(error))
     );
   }
+  
+
+  updateDomain(domainId: string, domainData: SaveDomainData): Observable<DbDomain> {
+    return from(this.updateDomainInternal(domainId, domainData)).pipe(
+      catchError((error) => this.handleError(error))
+    );
+  }
+  
+  private async updateDomainInternal(domainId: string, data: any): Promise<DbDomain> {
+    const { domain, tags, notifications, subdomains, links } = data;
+  
+    // Update domain's basic information
+    const updateDomainQuery = `
+      UPDATE domains
+      SET
+        expiry_date = $1,
+        notes = $2,
+        registrar_id = $3
+      WHERE id = $4
+      RETURNING *;
+    `;
+    const registrarId = await this.registrarQueries.getOrInsertRegistrarId(domain.registrar);
+    const domainParams = [domain.expiry_date, domain.notes, registrarId, domainId];
+    const updatedDomain = await this.executeQuery(updateDomainQuery, domainParams).toPromise();
+  
+    if (!updatedDomain.length) {
+      throw new Error('Failed to update domain');
+    }
+  
+    // Handle tags
+    if (tags) {
+      await this.tagQueries.updateTags(domainId, tags);
+    }
+  
+    // Handle notifications
+    if (notifications) {
+      await this.notificationQueries.updateNotificationTypes(domainId, notifications);
+    }
+  
+    // Handle subdomains
+    if (subdomains) {
+      await this.subdomainsQueries.updateSubdomains(domainId, subdomains);
+    }
+  
+    // Handle links
+    if (links) {
+      await this.linkQueries.updateLinks(domainId, links);
+    }
+  
+    return this.getDomainById(domainId);
+  }
+  
 
   getDomainExpirations(): Observable<DomainExpiration[]> {
     const query = `
@@ -312,6 +425,89 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
     );
   }
 
+  getStatusesWithDomainCounts(): Observable<{ eppCode: string; description: string; domainCount: number }[]> {
+    const query = `
+      SELECT 
+        domain_statuses.status_code AS epp_code,
+        COUNT(domain_statuses.domain_id) AS domain_count
+      FROM 
+        domain_statuses
+      GROUP BY 
+        domain_statuses.status_code
+      ORDER BY 
+        domain_count DESC;
+    `;
+  
+    return this.pgApiUtil.postToPgExecutor<{ epp_code: string; domain_count: number }>(query).pipe(
+      map(({ data }) => 
+        data.map((item) => ({
+          eppCode: item.epp_code,
+          description: '', // You can populate the description if necessary
+          domainCount: Number(item.domain_count),
+        }))
+      ),
+      catchError((error) => this.handleError(error))
+    );
+  }
+
+  getDomainsByStatus(statusCode: string): Observable<DbDomain[]> {
+    const query = `
+      SELECT 
+        domains.*,
+        registrars.name AS registrar_name,
+        registrars.url AS registrar_url,
+        ip_addresses.ip_address,
+        ip_addresses.is_ipv6,
+        ssl_certificates.issuer,
+        ssl_certificates.issuer_country,
+        ssl_certificates.subject,
+        ssl_certificates.valid_from,
+        ssl_certificates.valid_to,
+        ssl_certificates.fingerprint,
+        ssl_certificates.key_size,
+        ssl_certificates.signature_algorithm,
+        whois_info.name AS whois_name,
+        whois_info.organization AS whois_organization,
+        whois_info.country AS whois_country,
+        whois_info.street AS whois_street,
+        whois_info.city AS whois_city,
+        whois_info.state AS whois_state,
+        whois_info.postal_code AS whois_postal_code,
+        hosts.ip AS host_ip,
+        hosts.lat AS host_lat,
+        hosts.lon AS host_lon,
+        hosts.isp AS host_isp,
+        hosts.org AS host_org,
+        hosts.as_number AS host_as_number,
+        hosts.city AS host_city,
+        hosts.region AS host_region,
+        hosts.country AS host_country,
+        dns_records.record_type,
+        dns_records.record_value,
+        tags.name AS tag_name,
+        domain_statuses.status_code AS domain_status_code
+      FROM 
+        domains
+      LEFT JOIN registrars ON domains.registrar_id = registrars.id
+      LEFT JOIN ip_addresses ON domains.id = ip_addresses.domain_id
+      LEFT JOIN ssl_certificates ON domains.id = ssl_certificates.domain_id
+      LEFT JOIN whois_info ON domains.id = whois_info.domain_id
+      LEFT JOIN domain_hosts ON domains.id = domain_hosts.domain_id
+      LEFT JOIN hosts ON domain_hosts.host_id = hosts.id
+      LEFT JOIN dns_records ON domains.id = dns_records.domain_id
+      LEFT JOIN domain_tags ON domains.id = domain_tags.domain_id
+      LEFT JOIN tags ON domain_tags.tag_id = tags.id
+      LEFT JOIN domain_statuses ON domains.id = domain_statuses.domain_id
+      WHERE 
+        domain_statuses.status_code = $1;
+    `;
+  
+    return this.pgApiUtil.postToPgExecutor<DbDomain>(query, [statusCode]).pipe(
+      map(({ data }) => data.map((domain) => this.formatDomainData(domain))),
+      catchError((error) => this.handleError(error))
+    );
+  }
+  
 
   private getTimeIntervalForTimeframe(timeframe: string): string {
     switch (timeframe) {
