@@ -40,6 +40,7 @@ import { SubdomainsQueries as PgSubdomainsQueries } from '@/app/services/db-quer
 import { TagQueries as PgTagQueries } from '@/app/services/db-query-services/pg/db-tags.service';
 import { ValuationQueries as PgValuationQueries } from '@/app/services/db-query-services/pg/db-valuations.service';
 import { WhoisQueries as PgWhoisQueries } from '@/app/services/db-query-services/pg/db-whois.service';
+import { Observable } from 'rxjs';
 
 export {
   Timestamps,
@@ -126,4 +127,6 @@ export abstract class DatabaseService {
   whoisQueries!: SbWhoisQueries | PgWhoisQueries;
   statusQueries!: SbStatusQueries | PgStatusQueries;
   subdomainsQueries!: SbSubdomainsQueries | PgSubdomainsQueries;
+
+  abstract getDomainUptime(userId: string, domainId: string, timeframe: string): any;
 }

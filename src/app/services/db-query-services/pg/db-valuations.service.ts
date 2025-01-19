@@ -3,8 +3,8 @@ import { PgApiUtilService } from '@/app/utils/pg-api.util';
 
 export class ValuationQueries {
   constructor(
-    private handleError: (error: any) => Observable<never>,
     private pgApiUtil: PgApiUtilService,
+    private handleError: (error: any) => Observable<never>,
   ) {}
 
   // Get all domains with costings info

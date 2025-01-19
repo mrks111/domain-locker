@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { DatabaseService, DbDomain, IpAddress, SaveDomainData, DomainExpiration } from '@/types/Database';
-import { catchError, from, map, Observable, throwError } from 'rxjs';
+import { DatabaseService, DbDomain, DomainExpiration, SaveDomainData } from '@/types/Database';
+import { catchError, from, map, Observable, retry, throwError } from 'rxjs';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
-import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 // Database queries grouped by functionality into sub-services
 import { LinkQueries } from '@/app/services/db-query-services/pg/db-links.service';
@@ -25,53 +23,28 @@ import { PgApiUtilService } from '@/app/utils/pg-api.util';
   providedIn: 'root',
 })
 export default class PgDatabaseService extends DatabaseService {
-  public linkQueries: LinkQueries;
-  public tagQueries: TagQueries;
-  public notificationQueries: NotificationQueries;
-  public historyQueries: HistoryQueries;
-  public valuationQueries: ValuationQueries;
-  public registrarQueries: RegistrarQueries;
-  public dnsQueries: DnsQueries;
-  public hostsQueries: HostsQueries;
-  public ipQueries: IpQueries;
-  public sslQueries: SslQueries;
-  public whoisQueries: WhoisQueries;
-  public statusQueries: StatusQueries;
-  public subdomainsQueries: SubdomainsQueries;
 
   constructor(private pgApiUtil: PgApiUtilService) {
     super();
-    this.linkQueries = new LinkQueries(this.pgApiUtil, this.handleError.bind(this));
-    this.tagQueries = new TagQueries(this.pgApiUtil, this.handleError.bind(this));
+    this.linkQueries = new LinkQueries(this.pgApiUtil, this.handleError.bind(this), this.listDomains.bind(this));
+    this.tagQueries = new TagQueries(this.pgApiUtil, this.handleError.bind(this), this.getCurrentUser.bind(this));
     this.notificationQueries = new NotificationQueries(this.pgApiUtil, this.handleError.bind(this), this.getCurrentUser.bind(this));
     this.historyQueries = new HistoryQueries(this.pgApiUtil, this.handleError.bind(this));
     this.valuationQueries = new ValuationQueries(this.pgApiUtil, this.handleError.bind(this));
-    this.registrarQueries = new RegistrarQueries(this.pgApiUtil, this.handleError.bind(this));
-    this.dnsQueries = new DnsQueries(this.pgApiUtil, this.handleError.bind(this));
-    this.hostsQueries = new HostsQueries(this.pgApiUtil, this.handleError.bind(this));
+    this.registrarQueries = new RegistrarQueries(this.pgApiUtil, this.handleError.bind(this), this.formatDomainData.bind(this));
+    this.dnsQueries = new DnsQueries(this.pgApiUtil, this.handleError.bind(this), this.getCurrentUser.bind(this));
+    this.hostsQueries = new HostsQueries(this.pgApiUtil, this.handleError.bind(this), this.formatDomainData.bind(this));
     this.ipQueries = new IpQueries(this.pgApiUtil, this.handleError.bind(this));
-    this.sslQueries = new SslQueries(this.pgApiUtil, this.handleError.bind(this));
+    this.sslQueries = new SslQueries(this.pgApiUtil, this.handleError.bind(this), this.getFullDomainQuery.bind(this), this.formatDomainData.bind(this));
     this.whoisQueries = new WhoisQueries(this.pgApiUtil, this.handleError.bind(this));
     this.statusQueries = new StatusQueries(this.pgApiUtil, this.handleError.bind(this));
     this.subdomainsQueries = new SubdomainsQueries(this.pgApiUtil, this.handleError.bind(this));
   }
 
-  // constructor(private http: HttpClient, private errorHandler: ErrorHandlerService) {
-  //   super();
-  //   this.linkQueries = new LinkQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.tagQueries = new TagQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.notificationQueries = new NotificationQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.historyQueries = new HistoryQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.valuationQueries = new ValuationQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.registrarQueries = new RegistrarQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.dnsQueries = new DnsQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.hostsQueries = new HostsQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.ipQueries = new IpQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.sslQueries = new SslQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.whoisQueries = new WhoisQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.statusQueries = new StatusQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  //   this.subdomainsQueries = new SubdomainsQueries(this.executeQuery.bind(this), this.handleError.bind(this));
-  // }
+
+  private getCurrentUser(): Promise<{ id: string } | null> {
+    return Promise.resolve({ id: 'a0000000-aaaa-42a0-a0a0-00a000000a69' });
+  }
 
 
   private handleError(error: any): Observable<never> {
@@ -164,10 +137,6 @@ export default class PgDatabaseService extends DatabaseService {
     return domainData;
   }
 
-  async getCurrentUser(): Promise<{ id: string } | null> {
-    return { id: 'a0000000-aaaa-42a0-a0a0-00a000000a69' };
-  }
-
   getFullDomainQuery(): string {
     return `
       domains.*,
@@ -250,5 +219,154 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
       catchError((error) => this.handleError(error))
     );
   }
+
+  listDomainNames(): Observable<string[]> {
+    const query = `
+      SELECT LOWER(domain_name) AS domain_name
+      FROM domains
+    `;
   
+    return this.pgApiUtil.postToPgExecutor<{ domain_name: string }>(query).pipe(
+      map(({ data }) => data.map((row) => row.domain_name)),
+      retry(3),
+      catchError((error) => this.handleError(error))
+    );
+  }
+
+  getDomain(domainName: string): Observable<DbDomain> {
+    const query = `
+      SELECT ${this.getFullDomainQuery()}
+      FROM domains
+      LEFT JOIN registrars ON domains.registrar_id = registrars.id
+      LEFT JOIN ip_addresses ON domains.id = ip_addresses.domain_id
+      LEFT JOIN ssl_certificates ON domains.id = ssl_certificates.domain_id
+      LEFT JOIN whois_info ON domains.id = whois_info.domain_id
+      LEFT JOIN domain_tags ON domains.id = domain_tags.domain_id
+      LEFT JOIN tags ON domain_tags.tag_id = tags.id
+      LEFT JOIN notification_preferences ON domains.id = notification_preferences.domain_id
+      LEFT JOIN domain_hosts ON domains.id = domain_hosts.domain_id
+      LEFT JOIN hosts ON domain_hosts.host_id = hosts.id
+      LEFT JOIN dns_records ON domains.id = dns_records.domain_id
+      LEFT JOIN domain_statuses ON domains.id = domain_statuses.domain_id
+      LEFT JOIN domain_costings ON domains.id = domain_costings.domain_id
+      LEFT JOIN sub_domains ON domains.id = sub_domains.domain_id
+      LEFT JOIN domain_links ON domains.id = domain_links.domain_id
+      WHERE domains.domain_name = $1
+    `;
+  
+    return this.pgApiUtil.postToPgExecutor<DbDomain>(query, [domainName]).pipe(
+      map(({ data }) => {
+        if (!data || data.length === 0) {
+          throw new Error('Domain not found');
+        }
+        return this.formatDomainData(data[0]);
+      }),
+      retry(3), // Retries the request 3 times for transient issues
+      catchError((error) => this.handleError(error))
+    );
+  }
+
+  getDomainExpirations(): Observable<DomainExpiration[]> {
+    const query = `
+      SELECT domain_name, expiry_date
+      FROM domains
+    `;
+  
+    return this.pgApiUtil.postToPgExecutor<{ domain_name: string; expiry_date: string }>(query).pipe(
+      map(({ data }) => 
+        data.map((d) => ({
+          domain: d.domain_name,
+          expiration: new Date(d.expiry_date),
+        }))
+      ),
+      catchError((error) => this.handleError(error))
+    );
+  }
+
+  getAssetCount(assetType: string): Observable<number> {
+    const tableMap: Record<string, string> = {
+      'registrars': 'registrars',
+      'ip addresses': 'ip_addresses',
+      'ssl certificates': 'ssl_certificates',
+      'hosts': 'hosts',
+      'dns records': 'dns_records',
+      'tags': 'tags',
+      'links': 'domain_links',
+      'subdomains': 'sub_domains',
+      'domain statuses': 'domain_statuses',
+    };
+  
+    const table = tableMap[assetType];
+    if (!table) {
+      throw new Error(`Unknown asset type: ${assetType}`);
+    }
+  
+    const query = `
+      SELECT COUNT(*) AS count
+      FROM ${table}
+    `;
+  
+    return this.pgApiUtil.postToPgExecutor<{ count: string }>(query).pipe(
+      map(({ data }) => (data?.[0]?.count ? parseInt(data[0].count, 10) : 0)),
+      catchError((error) => this.handleError(error))
+    );
+  }
+
+
+  private getTimeIntervalForTimeframe(timeframe: string): string {
+    switch (timeframe) {
+      case 'day':
+        return '1 day';
+      case 'week':
+        return '1 week';
+      case 'month':
+        return '1 month';
+      case 'year':
+        return '1 year';
+      default:
+        return '1 day';
+    }
+  }
+
+  
+  async getDomainUptime(userId: string, domainId: string, timeframe: string): Promise<{
+    checked_at: string;
+    is_up: boolean;
+    response_code: number;
+    response_time_ms: number;
+    dns_lookup_time_ms: number;
+    ssl_handshake_time_ms: number;
+  }[]> {
+    const timeInterval = this.getTimeIntervalForTimeframe(timeframe);
+  
+    const query = `
+      SELECT
+        u.checked_at,
+        u.is_up,
+        u.response_code,
+        u.response_time_ms,
+        u.dns_lookup_time_ms,
+        u.ssl_handshake_time_ms
+      FROM
+        uptime u
+      JOIN
+        domains d ON u.domain_id = d.id
+      WHERE
+        d.user_id = $1
+        AND u.domain_id = $2
+        AND u.checked_at >= NOW() - $3::INTERVAL
+      ORDER BY
+        u.checked_at
+    `;
+  
+    const params = [userId, domainId, timeInterval];
+  
+    try {
+      const data = await this.executeQuery(query, params).toPromise();
+      return data;
+    } catch (error) {
+      this.handleError(error);
+      throw error;
+    }
+  }
 }

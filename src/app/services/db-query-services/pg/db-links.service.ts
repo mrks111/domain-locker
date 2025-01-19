@@ -1,13 +1,13 @@
 import { catchError, from, map, Observable, switchMap } from 'rxjs';
 import { PgApiUtilService } from '@/app/utils/pg-api.util';
-import { Link } from '@/types/Database';
+import { DbDomain, Link } from '@/types/Database';
 import { LinkResponse, ModifiedLink } from '@/app/pages/assets/links/index.page';
 
 export class LinkQueries {
   constructor(
     private pgApiUtil: PgApiUtilService,
     private handleError: (error: any) => Observable<never>,
-    private listDomainNames: () => Observable<string[]>,
+    private listDomainNames: () => Observable<DbDomain[]>,
   ) {}
 
   async updateLinks(domainId: string, links: Link[]): Promise<void> {

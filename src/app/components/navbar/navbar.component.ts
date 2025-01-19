@@ -140,7 +140,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
   // Set the navbar links, depending if user is logged in or not
   async initializeMenuItems() {
-    if (this.isAuthenticated) {
+    if (this.isAuthenticated || this.environmentService.getEnvironmentType() === 'selfHosted') {
       // User is logged in, show authenticated nav links
       this.items = authenticatedNavLinks as MenuItem[];
       this.itemsWithSettings = [

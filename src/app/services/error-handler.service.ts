@@ -120,7 +120,7 @@ export class ErrorHandlerService {
     }
 
     // Show error toast if showError is true
-    if (showToast && message) {
+    if (showToast && message && error) {
       if (error.message) {
         this.showToast(message, error.message);
       } else {

@@ -1,12 +1,10 @@
 import { catchError, forkJoin, from, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { PgApiUtilService } from '@/app/utils/pg-api.util';
-import { GlobalMessageService } from '../../messaging.service';
 
 export class SubdomainsQueries {
   constructor(
     private pgApiUtil: PgApiUtilService,
     private handleError: (error: any) => Observable<never>,
-    private messageService: GlobalMessageService,
   ) {}
 
   saveSubdomainsForDomainName(
