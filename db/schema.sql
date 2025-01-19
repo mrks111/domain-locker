@@ -233,8 +233,9 @@ CREATE TABLE IF NOT EXISTS "public"."dns_records" (
     record_value text NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT dns_records_pkey PRIMARY KEY (id),
-    CONSTRAINT dns_records_domain_id_fkey FOREIGN KEY (domain_id) REFERENCES "public"."domains" (id) ON DELETE CASCADE
+    PRIMARY KEY (id),
+    CONSTRAINT unique_dns_record UNIQUE (domain_id, record_type, record_value),
+    CONSTRAINT fk_domain FOREIGN KEY (domain_id) REFERENCES domains (id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_dns_records_domain_id ON "public"."dns_records" (domain_id);

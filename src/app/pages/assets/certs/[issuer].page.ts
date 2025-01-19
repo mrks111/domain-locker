@@ -6,6 +6,7 @@ import { DbDomain } from '@/types/Database';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
 import { DomainCollectionComponent } from '@/app/components/domain-things/domain-collection/domain-collection.component';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 @Component({
   standalone: true,
@@ -31,7 +32,8 @@ export default class SslIssuerDomainsPageComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private databaseService: DatabaseService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private errorHandler: ErrorHandlerService,
   ) {}
 
   ngOnInit() {
@@ -56,11 +58,8 @@ export default class SslIssuerDomainsPageComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error(`Error fetching domains for SSL issuer ${this.issuer}:`, error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load domains for this SSL issuer'
+        this.errorHandler.handleError({
+          error, message: 'Failed to load domains for this SSL issuer', showToast: true, location: 'SslIssuerDomainsPageComponent'
         });
         this.loading = false;
       }
