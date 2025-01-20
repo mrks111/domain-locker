@@ -44,7 +44,7 @@ export class NotificationQueries {
     const query = `SELECT notification_channels FROM user_info WHERE id = $1`;
     const params = [userId];
 
-    const { data } = await this.pgApiUtil.postToPgExecutor(query, params).toPromise();
+    const { data } = await this.pgApiUtil.postToPgExecutor(query, params).toPromise() as { data: any[]};
     return data?.[0]?.notification_channels || null;
   }
 
@@ -67,9 +67,9 @@ export class NotificationQueries {
     const query = `SELECT domain_id, notification_type, is_enabled FROM notification_preferences`;
 
     return from(this.pgApiUtil.postToPgExecutor(query)).pipe(
-      map(({ data }) => data),
-      catchError((error) => this.handleError(error)),
-    );
+      map(({ data }) => data) as any,
+      catchError((error) => this.handleError(error) as any),
+    ) as any;
   }
 
   updateBulkNotificationPreferences(preferences: { domain_id: string; notification_type: string; is_enabled: boolean }[]): Observable<void> {
@@ -85,8 +85,8 @@ export class NotificationQueries {
 
     return forkJoin(updates).pipe(
       map(() => undefined),
-      catchError((error) => this.handleError(error)),
-    );
+      catchError((error) => this.handleError(error) as any),
+    ) as any;
   }
 
   getUserNotifications(limit = 25, offset = 0): Observable<{ notifications: (Notification & { domain_name: string })[]; total: number }> {
@@ -101,7 +101,7 @@ export class NotificationQueries {
 
     return from(this.pgApiUtil.postToPgExecutor(query, params)).pipe(
       map(({ data }) => ({
-        notifications: (data as any).map((n) => ({
+        notifications: (data as any).map((n: any) => ({
           id: n.id,
           domainId: n.domain_id,
           change_type: n.change_type,
@@ -113,8 +113,8 @@ export class NotificationQueries {
         })),
         total: data.length,
       })),
-      catchError((error) => this.handleError(error)),
-    );
+      catchError((error) => this.handleError(error) as any),
+    ) as any;
   }
 
   markNotificationReadStatus(notificationId: string, readStatus: boolean): Observable<void> {
@@ -123,16 +123,16 @@ export class NotificationQueries {
 
     return from(this.pgApiUtil.postToPgExecutor(query, params)).pipe(
       map(() => undefined),
-      catchError((error) => this.handleError(error)),
-    );
+      catchError((error) => this.handleError(error) as any),
+    ) as any;
   }
 
   getUnreadNotificationCount(): Observable<number> {
     const query = `SELECT COUNT(*) AS count FROM notifications WHERE read = false`;
 
     return from(this.pgApiUtil.postToPgExecutor(query)).pipe(
-      map(({ data }) => parseInt(data?.[0]?.count || '0', 10)),
-      catchError((error) => this.handleError(error)),
-    );
+      map(({ data }: any) => parseInt(data?.[0]?.count || '0', 10)),
+      catchError((error) => this.handleError(error) as any),
+    ) as any;
   }
 }

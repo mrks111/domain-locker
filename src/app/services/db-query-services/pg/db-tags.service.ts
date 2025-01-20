@@ -1,4 +1,4 @@
-import { catchError, concatMap, forkJoin, from, map, Observable, switchMap } from 'rxjs';
+import { catchError, concatMap, forkJoin, from, map, Observable, of, switchMap } from 'rxjs';
 import { Tag } from '@/types/Database';
 import { PgApiUtilService } from '@/app/utils/pg-api.util';
 
@@ -15,7 +15,7 @@ export class TagQueries {
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    const params = [tag.name, tag.color || null, tag.icon || null, tag.description || null, tag.user_id];
+    const params = [tag.name, tag.color || null, tag.icon || null, tag.description || null];
     return from(this.pgApiUtil.postToPgExecutor(query, params)).pipe(
       map(response => response.data[0] as Tag),
       catchError(error => this.handleError(error))
@@ -43,33 +43,46 @@ export class TagQueries {
 
   async saveTags(domainId: string, tags: string[]): Promise<void> {
     if (tags.length === 0) return;
-
-    const userId = await this.getCurrentUser().then(user => user?.id);
-    if (!userId) throw new Error('User must be authenticated to save tags.');
-
-    for (const tag of tags) {
-      const insertTagQuery = `
-        INSERT INTO tags (name, user_id)
-        VALUES ($1, $2)
-        ON CONFLICT (name, user_id) DO NOTHING
-        RETURNING id
-      `;
-      const selectTagQuery = `SELECT id FROM tags WHERE name = $1 AND user_id = $2`;
-      const linkDomainQuery = `INSERT INTO domain_tags (domain_id, tag_id) VALUES ($1, $2)`;
-
-      const tagId = await from(this.pgApiUtil.postToPgExecutor(insertTagQuery, [tag, userId])).pipe(
-        switchMap(response => {
-          if (response.data.length > 0) return of(response.data[0].id);
-          return from(this.pgApiUtil.postToPgExecutor(selectTagQuery, [tag, userId])).pipe(
-            map(selectResponse => selectResponse.data[0].id)
-          );
-        }),
-        catchError(error => this.handleError(error))
-      ).toPromise();
-
-      await from(this.pgApiUtil.postToPgExecutor(linkDomainQuery, [domainId, tagId])).toPromise();
-    }
+  
+    const user = await this.getCurrentUser();
+    if (!user || !user.id) throw new Error('User must be authenticated to save tags.');
+    const userId = user.id;
+  
+    // Ensure unique constraint exists: tags(name, user_id)
+    const insertTagsQuery = `
+      INSERT INTO tags (name, user_id)
+      VALUES ${tags.map((_, i) => `($${i * 2 + 1}, $${i * 2 + 2})`).join(', ')}
+      ON CONFLICT (name, user_id) DO NOTHING
+      RETURNING id, name
+    `;
+    const tagParams = tags.flatMap(tag => [tag, userId]);
+  
+    // Insert tags and get their IDs
+    const { data: insertedTags, error: tagError } = await this.pgApiUtil.postToPgExecutor(insertTagsQuery, tagParams).toPromise() as any;
+    if (tagError) throw tagError;
+  
+    // Fetch missing tags
+    const missingTags = tags.filter(tag => !insertedTags.some((t: any) => t.name === tag));
+    const selectTagsQuery = `SELECT id, name FROM tags WHERE name = ANY($1) AND user_id = $2`;
+    const { data: selectedTags, error: selectError } = await this.pgApiUtil
+      .postToPgExecutor(selectTagsQuery, [missingTags, userId])
+      .toPromise() as any;
+    if (selectError) throw selectError;
+  
+    // Combine all tag IDs
+    const allTags = [...insertedTags, ...selectedTags];
+  
+    // Link tags to domain
+    const linkTagsQuery = `
+      INSERT INTO domain_tags (domain_id, tag_id)
+      VALUES ${allTags.map((_, i) => `($1, $${i + 2})`).join(', ')}
+      ON CONFLICT DO NOTHING
+    `;
+    const linkParams = [domainId, ...allTags.map((t: any) => t.id)];
+    const { error: linkError } = await this.pgApiUtil.postToPgExecutor(linkTagsQuery, linkParams).toPromise() as any;
+    if (linkError) throw linkError;
   }
+  
 
   getTagsWithDomainCounts(): Observable<any[]> {
     const query = `

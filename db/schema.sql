@@ -153,6 +153,7 @@ CREATE TABLE IF NOT EXISTS "public"."registrars" (
     CONSTRAINT registrars_user_id_name_key UNIQUE (user_id, name)
 );
 
+-- Tags table
 CREATE TABLE IF NOT EXISTS "public"."tags" (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name text NOT NULL,
@@ -160,15 +161,18 @@ CREATE TABLE IF NOT EXISTS "public"."tags" (
     description text,
     icon text,
     user_id uuid DEFAULT 'a0000000-aaaa-42a0-a0a0-00a000000a69',
-    CONSTRAINT tags_pkey PRIMARY KEY (id)
+    CONSTRAINT tags_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_tag_user UNIQUE (name, user_id) -- Ensures unique combination of name and user_id
 );
 
+-- Domain tags table
 CREATE TABLE IF NOT EXISTS "public"."domain_tags" (
     domain_id uuid NOT NULL,
     tag_id uuid NOT NULL,
     CONSTRAINT domain_tags_pkey PRIMARY KEY (domain_id, tag_id),
     CONSTRAINT domain_tags_domain_id_fkey FOREIGN KEY (domain_id) REFERENCES "public"."domains" (id) ON DELETE CASCADE,
-    CONSTRAINT domain_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES "public"."tags" (id) ON DELETE CASCADE
+    CONSTRAINT domain_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES "public"."tags" (id) ON DELETE CASCADE,
+    CONSTRAINT unique_domain_tag UNIQUE (domain_id, tag_id) -- Ensures unique combination of domain_id and tag_id
 );
 
 -- Indexes for performance optimization

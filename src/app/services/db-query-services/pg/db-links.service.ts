@@ -1,7 +1,7 @@
 import { catchError, from, map, Observable, switchMap } from 'rxjs';
 import { PgApiUtilService } from '@/app/utils/pg-api.util';
 import { DbDomain, Link } from '@/types/Database';
-import { LinkResponse, ModifiedLink } from '@/app/pages/assets/links/index.page';
+import { LinkResponse } from '@/app/pages/assets/links/index.page';
 
 export class LinkQueries {
   constructor(
@@ -12,7 +12,7 @@ export class LinkQueries {
 
   async updateLinks(domainId: string, links: Link[]): Promise<void> {
     const existingQuery = `SELECT id, link_name, link_url, link_description FROM domain_links WHERE domain_id = $1`;
-    const { data: existingLinks } = await this.pgApiUtil.postToPgExecutor(existingQuery, [domainId]).toPromise();
+    const { data: existingLinks } = await this.pgApiUtil.postToPgExecutor(existingQuery, [domainId]).toPromise() as { data: Link[]};
 
     const linksToAdd = links.filter(
       (newLink) => !existingLinks.some(
@@ -84,7 +84,7 @@ export class LinkQueries {
           return acc;
         }, {});
 
-        const linkDomains = data.reduce((acc, link) => {
+        const linkDomains = data.reduce((acc: any, link: any) => {
           const key = link.link_url;
           if (!acc[key]) {
             acc[key] = {
@@ -98,9 +98,9 @@ export class LinkQueries {
           acc[key].link_ids.add(link.id);
           if (link.domain_name) acc[key].domains.add(link.domain_name);
           return acc;
-        }, {});
+        }, {}) as any;
 
-        const linksWithDomains = Object.values(linkDomains).map(({ link_name, link_url, link_description, link_ids, domains }) => ({
+        const linksWithDomains = Object.values(linkDomains).map(({ link_name, link_url, link_description, link_ids, domains }: any) => ({
           id: undefined,
           link_name,
           link_url,
@@ -112,18 +112,17 @@ export class LinkQueries {
         return { groupedByDomain, linksWithDomains };
       }),
       catchError((error) => this.handleError(error))
-    );
+    ) as any;
   }
 
   addLinkToDomains(linkData: { link_name?: string; link_url?: string; link_description?: string; domains?: string[] }): Observable<void> {
     const { link_name, link_url, link_description, domains } = linkData;
-
     return this.listDomainNames().pipe(
       switchMap((availableDomains) => {
-        const validDomains = (domains || []).filter((domain) => availableDomains.includes(domain));
+        const validDomains = (domains || []).filter((domain) => availableDomains.map((av) => av.domain_name).includes(domain));
         const fetchQuery = `SELECT id FROM domains WHERE domain_name = ANY($1)`;
         return from(this.pgApiUtil.postToPgExecutor(fetchQuery, [validDomains])).pipe(
-          map(({ data }) => data.map((domain) => domain.id)),
+          map(({ data }: any) => data.map((domain: DbDomain) => domain.id)),
           switchMap((domainIds) => {
             if (domainIds.length === 0) {
               throw new Error('No valid domains found to associate with the link.');
@@ -131,8 +130,8 @@ export class LinkQueries {
 
             const insertQuery = `
               INSERT INTO domain_links (domain_id, link_name, link_url, link_description)
-              VALUES ${domainIds.map((_, i) => `($${i * 4 + 1}, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4})`).join(', ')}`;
-            const insertParams = domainIds.flatMap((id) => [id, link_name, link_url, link_description]);
+              VALUES ${domainIds.map((_: any, i: number) => `($${i * 4 + 1}, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4})`).join(', ')}`;
+            const insertParams = domainIds.flatMap((id: string) => [id, link_name, link_url, link_description]);
             return from(this.pgApiUtil.postToPgExecutor(insertQuery, insertParams)).pipe(map(() => void 0));
           })
         );

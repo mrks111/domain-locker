@@ -1,5 +1,5 @@
 import { SaveDomainData } from '@/types/Database';
-import { catchError, from, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { PgApiUtilService } from '@/app/utils/pg-api.util';
 
 export class WhoisQueries {

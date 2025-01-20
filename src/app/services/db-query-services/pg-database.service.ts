@@ -156,7 +156,7 @@ export default class PgDatabaseService extends DatabaseService {
       -- IP Addresses
       COALESCE(
         jsonb_agg(
-          jsonb_build_object(
+          DISTINCT jsonb_build_object(
             'ip_address', ip_addresses.ip_address,
             'is_ipv6', ip_addresses.is_ipv6
           )
@@ -166,7 +166,7 @@ export default class PgDatabaseService extends DatabaseService {
       -- SSL Certificates
       COALESCE(
         jsonb_agg(
-          jsonb_build_object(
+          DISTINCT jsonb_build_object(
             'issuer', ssl_certificates.issuer,
             'issuer_country', ssl_certificates.issuer_country,
             'subject', ssl_certificates.subject,
@@ -193,14 +193,14 @@ export default class PgDatabaseService extends DatabaseService {
       -- Tags
       COALESCE(
         jsonb_agg(
-          jsonb_build_object('name', tags.name)
+          DISTINCT jsonb_build_object('name', tags.name)
         ) FILTER (WHERE tags.name IS NOT NULL), '[]'
       ) AS tags,
   
       -- Notification Preferences
       COALESCE(
         jsonb_agg(
-          jsonb_build_object(
+          DISTINCT jsonb_build_object(
             'notification_type', notification_preferences.notification_type,
             'is_enabled', notification_preferences.is_enabled
           )
@@ -210,7 +210,7 @@ export default class PgDatabaseService extends DatabaseService {
       -- Hosts
       COALESCE(
         jsonb_agg(
-          jsonb_build_object(
+          DISTINCT jsonb_build_object(
             'ip', hosts.ip,
             'lat', hosts.lat,
             'lon', hosts.lon,
@@ -227,7 +227,7 @@ export default class PgDatabaseService extends DatabaseService {
       -- DNS Records
       COALESCE(
         jsonb_agg(
-          jsonb_build_object(
+          DISTINCT jsonb_build_object(
             'record_type', dns_records.record_type,
             'record_value', dns_records.record_value
           )
@@ -237,7 +237,7 @@ export default class PgDatabaseService extends DatabaseService {
       -- Domain Statuses
       COALESCE(
         jsonb_agg(
-          jsonb_build_object('status_code', domain_statuses.status_code)
+          DISTINCT jsonb_build_object('status_code', domain_statuses.status_code)
         ) FILTER (WHERE domain_statuses.status_code IS NOT NULL), '[]'
       ) AS domain_statuses,
   
@@ -252,7 +252,7 @@ export default class PgDatabaseService extends DatabaseService {
       -- Subdomains
       COALESCE(
         jsonb_agg(
-          jsonb_build_object(
+          DISTINCT jsonb_build_object(
             'name', sub_domains.name,
             'sd_info', sub_domains.sd_info
           )
@@ -262,7 +262,7 @@ export default class PgDatabaseService extends DatabaseService {
       -- Domain Links
       COALESCE(
         jsonb_agg(
-          jsonb_build_object(
+          DISTINCT jsonb_build_object(
             'link_name', domain_links.link_name,
             'link_url', domain_links.link_url,
             'link_description', domain_links.link_description
@@ -273,26 +273,26 @@ export default class PgDatabaseService extends DatabaseService {
   }
   
   
+  
   formatDomainData(data: any): DbDomain {
-    console.log(data);
     const formattedData = {
       ...data,
       tags: this.extractTags(data),
       whois: data.whois_info,
-      host: data.domain_hosts?.[0]?.hosts || null,
       dns: {
-        mxRecords: data.dns?.filter((record: any) => record.record_type === 'MX').map((record: any) => record.record_value) || [],
-        txtRecords: data.dns?.filter((record: any) => record.record_type === 'TXT').map((record: any) => record.record_value) || [],
-        nameServers: data.dns?.filter((record: any) => record.record_type === 'NS').map((record: any) => record.record_value) || [],
+        mxRecords: data.dns_records?.filter((record: any) => record.record_type === 'MX').map((record: any) => record.record_value) || [],
+        txtRecords: data.dns_records?.filter((record: any) => record.record_type === 'TXT').map((record: any) => record.record_value) || [],
+        nameServers: data.dns_records?.filter((record: any) => record.record_type === 'NS').map((record: any) => record.record_value) || [],
       },
+      ssl: data.ssl_certificates?.[0] || null,
+      host: data.hosts?.[0] || null,
       statuses: makeEppArrayFromLabels(data.domain_statuses?.map((status: any) => status.status_code) || []),
     };
-    console.log('formattedData', formattedData);
     return formattedData;
   }
   
   private extractTags(data: any): string[] {
-    return data.domain_tags?.map((tagItem: any) => tagItem.tags?.name) || [];
+    return data.tags?.map((tagItem: any) => tagItem?.name) || [];
   }
 
   listDomains(): Observable<DbDomain[]> {
@@ -477,43 +477,101 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
       catchError((error) => this.handleError(error))
     );
   }
-
   getDomainsByStatus(statusCode: string): Observable<DbDomain[]> {
     const query = `
       SELECT 
-        domains.*,
-        registrars.name AS registrar_name,
-        registrars.url AS registrar_url,
-        ip_addresses.ip_address,
-        ip_addresses.is_ipv6,
-        ssl_certificates.issuer,
-        ssl_certificates.issuer_country,
-        ssl_certificates.subject,
-        ssl_certificates.valid_from,
-        ssl_certificates.valid_to,
-        ssl_certificates.fingerprint,
-        ssl_certificates.key_size,
-        ssl_certificates.signature_algorithm,
-        whois_info.name AS whois_name,
-        whois_info.organization AS whois_organization,
-        whois_info.country AS whois_country,
-        whois_info.street AS whois_street,
-        whois_info.city AS whois_city,
-        whois_info.state AS whois_state,
-        whois_info.postal_code AS whois_postal_code,
-        hosts.ip AS host_ip,
-        hosts.lat AS host_lat,
-        hosts.lon AS host_lon,
-        hosts.isp AS host_isp,
-        hosts.org AS host_org,
-        hosts.as_number AS host_as_number,
-        hosts.city AS host_city,
-        hosts.region AS host_region,
-        hosts.country AS host_country,
-        dns_records.record_type,
-        dns_records.record_value,
-        tags.name AS tag_name,
-        domain_statuses.status_code AS domain_status_code
+        domains.id,
+        domains.user_id,
+        domains.domain_name,
+        domains.expiry_date,
+        domains.registration_date,
+        domains.updated_date,
+        domains.notes,
+  
+        -- Registrar
+        jsonb_build_object(
+          'name', registrars.name,
+          'url', registrars.url
+        ) AS registrar,
+  
+        -- IP Addresses
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'ip_address', ip_addresses.ip_address,
+              'is_ipv6', ip_addresses.is_ipv6
+            )
+          ) FILTER (WHERE ip_addresses.ip_address IS NOT NULL), '[]'
+        ) AS ip_addresses,
+  
+        -- SSL Certificates
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'issuer', ssl_certificates.issuer,
+              'issuer_country', ssl_certificates.issuer_country,
+              'subject', ssl_certificates.subject,
+              'valid_from', ssl_certificates.valid_from,
+              'valid_to', ssl_certificates.valid_to,
+              'fingerprint', ssl_certificates.fingerprint,
+              'key_size', ssl_certificates.key_size,
+              'signature_algorithm', ssl_certificates.signature_algorithm
+            )
+          ) FILTER (WHERE ssl_certificates.issuer IS NOT NULL), '[]'
+        ) AS ssl_certificates,
+  
+        -- WHOIS Information
+        jsonb_build_object(
+          'name', whois_info.name,
+          'organization', whois_info.organization,
+          'country', whois_info.country,
+          'street', whois_info.street,
+          'city', whois_info.city,
+          'state', whois_info.state,
+          'postal_code', whois_info.postal_code
+        ) AS whois_info,
+  
+        -- Tags
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object('name', tags.name)
+          ) FILTER (WHERE tags.name IS NOT NULL), '[]'
+        ) AS tags,
+  
+        -- Hosts
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'ip', hosts.ip,
+              'lat', hosts.lat,
+              'lon', hosts.lon,
+              'isp', hosts.isp,
+              'org', hosts.org,
+              'as_number', hosts.as_number,
+              'city', hosts.city,
+              'region', hosts.region,
+              'country', hosts.country
+            )
+          ) FILTER (WHERE hosts.ip IS NOT NULL), '[]'
+        ) AS hosts,
+  
+        -- DNS Records
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'record_type', dns_records.record_type,
+              'record_value', dns_records.record_value
+            )
+          ) FILTER (WHERE dns_records.record_type IS NOT NULL), '[]'
+        ) AS dns_records,
+  
+        -- Domain Statuses
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object('status_code', domain_statuses.status_code)
+          ) FILTER (WHERE domain_statuses.status_code IS NOT NULL), '[]'
+        ) AS domain_statuses
+  
       FROM 
         domains
       LEFT JOIN registrars ON domains.registrar_id = registrars.id
@@ -527,9 +585,25 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
       LEFT JOIN tags ON domain_tags.tag_id = tags.id
       LEFT JOIN domain_statuses ON domains.id = domain_statuses.domain_id
       WHERE 
-        domain_statuses.status_code = $1;
+        domain_statuses.status_code = $1
+      GROUP BY 
+        domains.id,
+        domains.user_id,
+        domains.domain_name,
+        domains.expiry_date,
+        domains.registration_date,
+        domains.updated_date,
+        domains.notes,
+        registrars.id,
+        whois_info.name,
+        whois_info.organization,
+        whois_info.country,
+        whois_info.street,
+        whois_info.city,
+        whois_info.state,
+        whois_info.postal_code;
     `;
-  
+    
     return this.pgApiUtil.postToPgExecutor<DbDomain>(query, [statusCode]).pipe(
       map(({ data }) => data.map((domain) => this.formatDomainData(domain))),
       catchError((error) => this.handleError(error))
@@ -554,7 +628,138 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
 
   getDomainsByTag(tagName: string): Observable<DbDomain[]> {
     const query = `
-      SELECT DISTINCT ON (domains.id) ${this.getFullDomainQuery()}
+      SELECT 
+        domains.id,
+        domains.user_id,
+        domains.domain_name,
+        domains.expiry_date,
+        domains.registration_date,
+        domains.updated_date,
+        domains.notes,
+  
+        -- Registrar
+        jsonb_build_object(
+          'name', registrars.name,
+          'url', registrars.url
+        ) AS registrar,
+  
+        -- IP Addresses
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'ip_address', ip_addresses.ip_address,
+              'is_ipv6', ip_addresses.is_ipv6
+            )
+          ) FILTER (WHERE ip_addresses.ip_address IS NOT NULL), '[]'
+        ) AS ip_addresses,
+  
+        -- SSL Certificates
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'issuer', ssl_certificates.issuer,
+              'issuer_country', ssl_certificates.issuer_country,
+              'subject', ssl_certificates.subject,
+              'valid_from', ssl_certificates.valid_from,
+              'valid_to', ssl_certificates.valid_to,
+              'fingerprint', ssl_certificates.fingerprint,
+              'key_size', ssl_certificates.key_size,
+              'signature_algorithm', ssl_certificates.signature_algorithm
+            )
+          ) FILTER (WHERE ssl_certificates.issuer IS NOT NULL), '[]'
+        ) AS ssl_certificates,
+  
+        -- WHOIS Information
+        jsonb_build_object(
+          'name', whois_info.name,
+          'organization', whois_info.organization,
+          'country', whois_info.country,
+          'street', whois_info.street,
+          'city', whois_info.city,
+          'state', whois_info.state,
+          'postal_code', whois_info.postal_code
+        ) AS whois_info,
+  
+        -- Tags
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object('name', tags.name)
+          ) FILTER (WHERE tags.name IS NOT NULL), '[]'
+        ) AS tags,
+  
+        -- Notification Preferences
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'notification_type', notification_preferences.notification_type,
+              'is_enabled', notification_preferences.is_enabled
+            )
+          ) FILTER (WHERE notification_preferences.notification_type IS NOT NULL), '[]'
+        ) AS notification_preferences,
+  
+        -- Hosts
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'ip', hosts.ip,
+              'lat', hosts.lat,
+              'lon', hosts.lon,
+              'isp', hosts.isp,
+              'org', hosts.org,
+              'as_number', hosts.as_number,
+              'city', hosts.city,
+              'region', hosts.region,
+              'country', hosts.country
+            )
+          ) FILTER (WHERE hosts.ip IS NOT NULL), '[]'
+        ) AS hosts,
+  
+        -- DNS Records
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'record_type', dns_records.record_type,
+              'record_value', dns_records.record_value
+            )
+          ) FILTER (WHERE dns_records.record_type IS NOT NULL), '[]'
+        ) AS dns_records,
+  
+        -- Domain Statuses
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object('status_code', domain_statuses.status_code)
+          ) FILTER (WHERE domain_statuses.status_code IS NOT NULL), '[]'
+        ) AS domain_statuses,
+  
+        -- Domain Costings
+        jsonb_build_object(
+          'purchase_price', domain_costings.purchase_price,
+          'current_value', domain_costings.current_value,
+          'renewal_cost', domain_costings.renewal_cost,
+          'auto_renew', domain_costings.auto_renew
+        ) AS domain_costings,
+  
+        -- Subdomains
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'name', sub_domains.name,
+              'sd_info', sub_domains.sd_info
+            )
+          ) FILTER (WHERE sub_domains.name IS NOT NULL), '[]'
+        ) AS sub_domains,
+  
+        -- Domain Links
+        COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'link_name', domain_links.link_name,
+              'link_url', domain_links.link_url,
+              'link_description', domain_links.link_description
+            )
+          ) FILTER (WHERE domain_links.link_name IS NOT NULL), '[]'
+        ) AS domain_links
+  
       FROM domains
       INNER JOIN domain_tags ON domains.id = domain_tags.domain_id
       INNER JOIN tags ON domain_tags.tag_id = tags.id
@@ -568,9 +773,26 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
       LEFT JOIN notification_preferences ON domains.id = notification_preferences.domain_id
       LEFT JOIN domain_statuses ON domains.id = domain_statuses.domain_id
       LEFT JOIN domain_costings ON domains.id = domain_costings.domain_id
-      LEFT JOIN sub_domains ON domains.id = sub_domains.domain_id -- Ensure sub_domains is included
+      LEFT JOIN sub_domains ON domains.id = sub_domains.domain_id
       LEFT JOIN domain_links ON domains.id = domain_links.domain_id
       WHERE tags.name = $1
+      GROUP BY 
+        domains.id,
+        domains.user_id,
+        domains.domain_name,
+        domains.expiry_date,
+        domains.registration_date,
+        domains.updated_date,
+        domains.notes,
+        registrars.id,
+        whois_info.name,
+        whois_info.organization,
+        whois_info.country,
+        whois_info.street,
+        whois_info.city,
+        whois_info.state,
+        whois_info.postal_code,
+        domain_costings.id
     `;
   
     const params = [tagName];
@@ -585,6 +807,7 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
       catchError(error => this.handleError(error))
     );
   }
+    
   
   
   async getDomainUptime(userId: string, domainId: string, timeframe: string): Promise<{
