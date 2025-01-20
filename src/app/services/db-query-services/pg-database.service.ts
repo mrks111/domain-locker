@@ -122,7 +122,7 @@ export default class PgDatabaseService extends DatabaseService {
     return this.getDomainById(insertedDomain.id);
   }
 
-  private async getDomainById(id: string): Promise<DbDomain> {
+  async getDomainById(id: string): Promise<DbDomain> {
     const query = `
       SELECT *
       FROM domains
@@ -405,6 +405,41 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
   
     return this.getDomainById(domainId);
   }
+
+  deleteDomain(domainId: string): Observable<void> {
+    const query = `
+      DO $$
+      BEGIN
+        -- Delete related records
+        DELETE FROM notifications WHERE notifications.domain_id = $1;
+        DELETE FROM ip_addresses WHERE ip_addresses.domain_id = $1;
+        DELETE FROM domain_tags WHERE domain_tags.domain_id = $1;
+        DELETE FROM notification_preferences WHERE notification_preferences.domain_id = $1;
+        DELETE FROM dns_records WHERE dns_records.domain_id = $1;
+        DELETE FROM ssl_certificates WHERE ssl_certificates.domain_id = $1;
+        DELETE FROM whois_info WHERE whois_info.domain_id = $1;
+        DELETE FROM domain_hosts WHERE domain_hosts.domain_id = $1;
+        DELETE FROM domain_costings WHERE domain_costings.domain_id = $1;
+        DELETE FROM sub_domains WHERE sub_domains.domain_id = $1;
+  
+        -- Delete the domain itself
+        DELETE FROM domains WHERE domains.id = $1;
+  
+        -- Clean up orphaned records
+        DELETE FROM tags WHERE tags.id NOT IN (SELECT DISTINCT tag_id FROM domain_tags);
+        DELETE FROM hosts WHERE hosts.id NOT IN (SELECT DISTINCT host_id FROM domain_hosts);
+        DELETE FROM registrars WHERE registrars.id NOT IN (SELECT DISTINCT registrar_id FROM domains);
+      END $$;
+    `;
+  
+    return from(this.pgApiUtil.postToPgExecutor(query, [domainId])).pipe(
+      map(() => void 0),
+      catchError(error => {
+        this.handleError(error);
+        return throwError(error);
+      }
+    ));
+  }  
   
 
   getDomainExpirations(): Observable<DomainExpiration[]> {
@@ -850,4 +885,177 @@ SELECT domains.*, registrars.name AS registrar_name, tags.name AS tag_name, host
       throw error;
     }
   }
+  
+  getDomainsByEppCodes(statuses: string[]): Observable<Record<string, { domainId: string; domainName: string }[]>> {
+    const query = `
+      SELECT 
+        domain_statuses.status_code, 
+        domains.id AS domain_id, 
+        domains.domain_name
+      FROM 
+        domain_statuses
+      INNER JOIN 
+        domains ON domain_statuses.domain_id = domains.id
+      WHERE 
+        domain_statuses.status_code = ANY($1::text[])
+    `;
+  
+    const params = [statuses];
+  
+    return this.pgApiUtil.postToPgExecutor<{ status_code: string; domain_id: string; domain_name: string }[]>(query, params).pipe(
+      map(({ data }) => {
+        if (!data || data.length === 0) {
+          return statuses.reduce((acc, status) => ({ ...acc, [status]: [] }), {});
+        }
+  
+        const domainsByStatus: Record<string, { domainId: string; domainName: string }[]> = {};
+  
+        statuses.forEach(status => {
+          domainsByStatus[status] = data
+            .filter((d: any) => d.status_code === status)
+            .map((d: any) => ({ domainId: d.domain_id, domainName: d.domain_name }));
+        });
+  
+        return domainsByStatus;
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+  
+
+  fetchAllForExport(domainNames: string, includeFields: { label: string; value: string }[]): Observable<any[]> {
+    const fieldMap: { [key: string]: string } = {
+      domain_statuses: `
+        COALESCE(
+          jsonb_agg(jsonb_build_object('status_code', domain_statuses.status_code))
+          FILTER (WHERE domain_statuses.status_code IS NOT NULL), '[]'
+        ) AS domain_statuses
+      `,
+      ip_addresses: `
+        COALESCE(
+          jsonb_agg(jsonb_build_object('ip_address', ip_addresses.ip_address, 'is_ipv6', ip_addresses.is_ipv6))
+          FILTER (WHERE ip_addresses.ip_address IS NOT NULL), '[]'
+        ) AS ip_addresses
+      `,
+      whois_info: `
+        jsonb_build_object(
+          'name', whois_info.name,
+          'organization', whois_info.organization,
+          'country', whois_info.country,
+          'street', whois_info.street,
+          'city', whois_info.city,
+          'state', whois_info.state,
+          'postal_code', whois_info.postal_code
+        ) AS whois_info
+      `,
+      domain_tags: `
+        COALESCE(
+          jsonb_agg(jsonb_build_object('name', tags.name))
+          FILTER (WHERE tags.name IS NOT NULL), '[]'
+        ) AS tags
+      `,
+      ssl_certificates: `
+        COALESCE(
+          jsonb_agg(jsonb_build_object(
+            'issuer', ssl_certificates.issuer,
+            'issuer_country', ssl_certificates.issuer_country,
+            'subject', ssl_certificates.subject,
+            'valid_from', ssl_certificates.valid_from,
+            'valid_to', ssl_certificates.valid_to,
+            'fingerprint', ssl_certificates.fingerprint,
+            'key_size', ssl_certificates.key_size,
+            'signature_algorithm', ssl_certificates.signature_algorithm
+          ))
+          FILTER (WHERE ssl_certificates.issuer IS NOT NULL), '[]'
+        ) AS ssl_certificates
+      `,
+      notifications: `
+        COALESCE(
+          jsonb_agg(jsonb_build_object('notification_type', notification_preferences.notification_type, 'is_enabled', notification_preferences.is_enabled))
+          FILTER (WHERE notification_preferences.notification_type IS NOT NULL), '[]'
+        ) AS notifications
+      `,
+      domain_hosts: `
+        COALESCE(
+          jsonb_agg(jsonb_build_object(
+            'ip', hosts.ip,
+            'lat', hosts.lat,
+            'lon', hosts.lon,
+            'isp', hosts.isp,
+            'org', hosts.org,
+            'as_number', hosts.as_number,
+            'city', hosts.city,
+            'region', hosts.region,
+            'country', hosts.country
+          ))
+          FILTER (WHERE hosts.ip IS NOT NULL), '[]'
+        ) AS hosts
+      `,
+      dns_records: `
+        COALESCE(
+          jsonb_agg(jsonb_build_object('record_type', dns_records.record_type, 'record_value', dns_records.record_value))
+          FILTER (WHERE dns_records.record_type IS NOT NULL), '[]'
+        ) AS dns_records
+      `,
+      domain_costings: `
+        jsonb_build_object(
+          'purchase_price', domain_costings.purchase_price,
+          'current_value', domain_costings.current_value,
+          'renewal_cost', domain_costings.renewal_cost,
+          'auto_renew', domain_costings.auto_renew
+        ) AS domain_costings
+      `
+    };
+  
+    let selectQuery = 'domains.*'; // Default selection
+    if (includeFields.length > 0) {
+      const selectedRelations = includeFields
+        .map(field => fieldMap[field.value])
+        .filter(Boolean);
+  
+      if (selectedRelations.length > 0) {
+        selectQuery += `, ${selectedRelations.join(', ')}`;
+      }
+    }
+  
+    const query = `
+      SELECT ${selectQuery}
+      FROM domains
+      LEFT JOIN domain_statuses ON domains.id = domain_statuses.domain_id
+      LEFT JOIN ip_addresses ON domains.id = ip_addresses.domain_id
+      LEFT JOIN whois_info ON domains.id = whois_info.domain_id
+      LEFT JOIN domain_tags ON domains.id = domain_tags.domain_id
+      LEFT JOIN tags ON domain_tags.tag_id = tags.id
+      LEFT JOIN ssl_certificates ON domains.id = ssl_certificates.domain_id
+      LEFT JOIN notification_preferences ON domains.id = notification_preferences.domain_id
+      LEFT JOIN domain_hosts ON domains.id = domain_hosts.domain_id
+      LEFT JOIN hosts ON domain_hosts.host_id = hosts.id
+      LEFT JOIN dns_records ON domains.id = dns_records.domain_id
+      LEFT JOIN domain_costings ON domains.id = domain_costings.domain_id
+      WHERE domains.domain_name = ANY($1::text[])
+      GROUP BY domains.id
+    `;
+  
+    const params = [domainNames.split(',')];
+  
+    return this.pgApiUtil.postToPgExecutor<any[]>(query, params).pipe(
+      map(({ data }) => {
+        if (!data || data.length === 0) {
+          throw new Error('No data found for the specified domains.');
+        }
+  
+        return data.map((domain: any) => ({
+          ...domain,
+          ip_addresses: domain.ip_addresses || [],
+          ssl_certificates: domain.ssl_certificates || [],
+          dns_records: domain.dns_records || [],
+          tags: domain.tags || [],
+          notifications: domain.notifications || [],
+          hosts: domain.hosts || [],
+        }));
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+  
 }

@@ -132,4 +132,16 @@ export abstract class DatabaseService {
   abstract listDomains(): Observable<DbDomain[]>;
   abstract domainExists(inputUserId: string | null, domainName: string): Promise<boolean>;
   abstract saveDomain(data: SaveDomainData): Observable<DbDomain>;
+  abstract fetchAllForExport(domainNames: string, includeFields: { label: string; value: string }[]): Observable<any[]>;
+  abstract getDomainsByEppCodes(statuses: string[]): Observable<Record<string, { domainId: string; domainName: string }[]>>;
+  abstract getDomainExpirations(): Observable<DomainExpiration[]>;
+  abstract deleteDomain(domainId: string): Observable<void>;
+  abstract getAssetCount(assetType: string): Observable<number>;
+  abstract listDomainNames(): Observable<string[]>;
+  abstract getDomainsByStatus(statusCode: string): Observable<DbDomain[]>;
+  abstract getStatusesWithDomainCounts(): Observable<{ eppCode: string; description: string; domainCount: number }[]>;
+  abstract getDomainsByTag(tagName: string): Observable<DbDomain[]>;
+  abstract getDomainById(id: string): Promise<DbDomain>;
+  abstract getDomain(domainName: string): Observable<DbDomain>;
+  abstract updateDomain(domainId: string, domainData: SaveDomainData): Observable<DbDomain>;
 }

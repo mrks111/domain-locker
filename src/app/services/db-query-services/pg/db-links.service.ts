@@ -1,7 +1,7 @@
-import { catchError, from, map, Observable, switchMap } from 'rxjs';
+import { catchError, from, map, Observable, of, switchMap } from 'rxjs';
 import { PgApiUtilService } from '@/app/utils/pg-api.util';
 import { DbDomain, Link } from '@/types/Database';
-import { LinkResponse } from '@/app/pages/assets/links/index.page';
+import { LinkResponse, ModifiedLink } from '@/app/pages/assets/links/index.page';
 
 export class LinkQueries {
   constructor(
@@ -150,4 +150,96 @@ export class LinkQueries {
       catchError((error) => this.handleError(error))
     );
   }
+
+  updateLinkInDomains(linkData: ModifiedLink): Observable<void> {
+    const { link_ids, link_name, link_url, link_description, domains } = linkData;
+    console.log(linkData);
+  
+    return this.listDomainNames().pipe(
+      switchMap((availableDomains) => {
+        // Filter valid domains
+        const validDomains = (domains || []).filter((domain) => availableDomains.map((av) => av.domain_name).includes(domain));
+        if (validDomains.length === 0) return of([]);
+  
+        // Fetch domain IDs for valid domains
+        const fetchDomainQuery = `
+          SELECT id, domain_name
+          FROM domains
+          WHERE domain_name = ANY($1)
+        `;
+        return from(
+          this.pgApiUtil.postToPgExecutor(fetchDomainQuery, [validDomains])
+        ).pipe(
+          map(({ data }) => data || []),
+        );
+      }),
+      switchMap(async (domainData) => {
+        if (!link_ids) return;
+  
+        // Fetch existing links
+        const fetchLinksQuery = `
+          SELECT id, domain_id
+          FROM domain_links
+          WHERE id = ANY($1)
+        `;
+        const { data: existingLinks } = await this.pgApiUtil
+          .postToPgExecutor(fetchLinksQuery, [link_ids])
+          .toPromise() as { data: Link[] };
+  
+        const existingDomainIds = existingLinks?.map((link: any) => link.domain_id) || [];
+        const domainsToAdd = domainData.filter((d: any) => !existingDomainIds.includes(d.id));
+        const domainsToUpdate = domainData.filter((d: any) => existingDomainIds.includes(d.id)) as DbDomain[];
+        const domainsToRemove = existingDomainIds.filter((id: any) => !domainData.some((d: any) => d.id === id));
+  
+        const tasks: Promise<void>[] = [];
+  
+        // Add new links
+        if (domainsToAdd.length > 0) {
+          const addLinksQuery = `
+            INSERT INTO domain_links (domain_id, link_name, link_url, link_description)
+            VALUES ${domainsToAdd
+              .map((_, i) => `($${i * 4 + 1}, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4})`)
+              .join(', ')}
+          `;
+          const addLinksParams = domainsToAdd.flatMap((d: any) => [d.id, link_name, link_url, link_description]);
+          tasks.push(this.pgApiUtil.postToPgExecutor(addLinksQuery, addLinksParams).toPromise() as any);
+        }
+  
+        // Update existing links
+        if (domainsToUpdate.length > 0) {
+          for (const domain of domainsToUpdate) {
+            const updateLinksQuery = `
+              UPDATE domain_links
+              SET link_name = $1, link_url = $2, link_description = $3
+              WHERE domain_id = $4 AND id = $5
+            `;
+            const updateLinksParams = [
+              link_name,
+              link_url,
+              link_description,
+              domain?.id,
+              link_ids.find((id) => existingLinks.some((link) => link.id === id)),
+            ];
+            tasks.push(this.pgApiUtil.postToPgExecutor(updateLinksQuery, updateLinksParams).toPromise() as any);
+          }
+        }
+  
+        // Remove links for unchecked domains
+        if (domainsToRemove.length > 0) {
+          const removeLinksQuery = `
+            DELETE FROM domain_links
+            WHERE domain_id = ANY($1)
+          `;
+          tasks.push(
+            this.pgApiUtil.postToPgExecutor(removeLinksQuery, [domainsToRemove]).toPromise() as any
+          );
+        }
+  
+        await Promise.all(tasks);
+      }),
+      map(() => void 0),
+      catchError((error) => this.handleError(error)),
+    );
+  }
+  
 }

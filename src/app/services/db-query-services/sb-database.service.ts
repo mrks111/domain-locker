@@ -260,7 +260,7 @@ export default class MainDatabaseService extends DatabaseService {
     return this.getDomainById(insertedDomain.id);
   }
 
-  private async getDomainById(id: string): Promise<DbDomain> {
+  async getDomainById(id: string): Promise<DbDomain> {
     const { data, error } = await this.supabase.supabase
       .from('domains')
       .select(this.getFullDomainQuery())

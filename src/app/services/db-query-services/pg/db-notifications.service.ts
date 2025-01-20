@@ -1,4 +1,4 @@
-import { catchError, forkJoin, from, map, Observable, of } from 'rxjs';
+import { catchError, forkJoin, from, map, Observable, of, throwError } from 'rxjs';
 import { Notification } from '@/types/Database';
 import { PgApiUtilService } from '@/app/utils/pg-api.util';
 import { Inject, Injectable } from '@angular/core';
@@ -135,4 +135,27 @@ export class NotificationQueries {
       catchError((error) => this.handleError(error) as any),
     ) as any;
   }
+
+  async markAllNotificationsRead(read = true): Promise<Observable<void>> {
+    const userId = await this.getCurrentUser().then(user => user?.id);
+    if (!userId) {
+      throw new Error('User must be authenticated to mark notifications as read.');
+    }
+  
+    const query = `
+      UPDATE notifications
+      SET read = $1
+      WHERE user_id = $2
+    `;
+    const params = [read, userId];
+  
+    return from(this.pgApiUtil.postToPgExecutor(query, params)).pipe(
+      map(() => undefined),
+      catchError(error => {
+        this.handleError(error);
+        return throwError(() => error);
+      })
+    );
+  }
+  
 }
