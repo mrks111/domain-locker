@@ -203,17 +203,35 @@ export class SupabaseService {
     const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth-callback`,
       },
     });
-  
     if (error) {
-      console.error('Error during GitHub login:', error.message);
+      this.errorHandler.handleError({
+        error, message: 'Failed to sign in with GitHub', showToast: true, location: 'SupabaseService.signInWithGitHub',
+      });
       throw error;
     }
-  
-    // Handle the response data (e.g., redirect or notify user)
   }
+
+  async signInWithGoogle(): Promise<void> {
+    const { data, error } = await this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth-callback`
+      }
+    });
+    if (error) {
+      this.errorHandler.handleError({
+        error,
+        message: 'Failed to sign in with Google',
+        showToast: true,
+        location: 'SupabaseService.signInWithGoogle',
+      });
+      throw error;
+    }
+  }
+  
 
   async signOut() {
     const { error } = await this.supabase.auth.signOut();
@@ -492,7 +510,7 @@ export class SupabaseService {
       }
   
       // Check if MFA is not enabled (exclude social logins)
-      if (!(await this.isMFAEnabled()) && user?.user?.identities?.[0]?.provider !== 'github') {
+      if (!(await this.isMFAEnabled()) && user?.user?.identities?.[0]?.provider === 'email') {
         issues.push({
           type: 'warn',
           message: 'You have not enabled multi-factor authentication. Add an extra layer of security.',

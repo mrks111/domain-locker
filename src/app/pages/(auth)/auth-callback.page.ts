@@ -7,7 +7,7 @@ import { ErrorHandlerService } from '@/app/services/error-handler.service';
 @Component({
   standalone: true,
   selector: 'app-auth-callback',
-  template: `<p>Processing GitHub login...</p>`,
+  template: `<p>Processing social login...</p>`,
 })
 export default class AuthCallbackComponent implements OnInit {
   constructor(
@@ -19,29 +19,21 @@ export default class AuthCallbackComponent implements OnInit {
 
   private errorHappened(error: Error | any) {
     this.errorHandlerService.handleError({
-      message: 'Unable to authenticate with your GitHub account',
+      message: 'Unable to authenticate with your social account',
       error,
       location: 'auth-callback',
-      showToast: true,
     });
     this.router.navigate(['/login']);
   }
 
   async ngOnInit(): Promise<void> {
-    try {
-      const { data, error } = await this.supabaseService.supabase.auth.exchangeCodeForSession(window.location.href);
-
-      if (error) {
-        this.errorHappened(error);
-        return;
-      }
-
-      // Successfully logged in
-      console.log('GitHub login successful:', data);
-      this.messagingService.showSuccess('Authenticated', 'Successfully logged in with GitHub');
-      this.router.navigate(['/']);
-    } catch (error) {
+    const { data, error } = await this.supabaseService.supabase.auth.exchangeCodeForSession(window.location.href);
+    if (error) {
       this.errorHappened(error);
     }
+    // Successfully logged in
+    this.messagingService.showSuccess('Authenticated', 'Successfully logged in');
+    this.router.navigate(['/']);
+
   }
 }

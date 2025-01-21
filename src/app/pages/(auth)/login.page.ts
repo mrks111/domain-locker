@@ -194,8 +194,19 @@ export default class LoginPageComponent implements OnInit {
       this.errorHandlerService.handleError({ error, message: 'Failed to sign in with GitHub', showToast: true, location: 'login' });
     }
   }
+  async loginWithGoogle(): Promise<void> {
+    try {
+      await this.supabaseService.signInWithGoogle();
+    } catch (error: any) {
+      this.errorHandlerService.handleError({ 
+        error, 
+        message: 'Failed to sign in with Google', 
+        showToast: true, 
+        location: 'loginWithGoogle' 
+      });
+    }
+  }  
 
-  async loginWithGoogle(): Promise<void> {}
   async loginWithFacebook(): Promise<void> {}
   
   async onSubmit() {
