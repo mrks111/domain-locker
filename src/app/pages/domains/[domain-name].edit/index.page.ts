@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import DatabaseService from '@services/database.service';
+import DatabaseService from '@/app/services/database.service';
 import { DbDomain, Link, SaveDomainData } from '@/types/Database';
 import { notificationTypes, NotificationType } from '@/app/constants/notification-types';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { GlobalMessageService } from '@services/messaging.service';
+import { GlobalMessageService } from '@/app/services/messaging.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 
 @Component({

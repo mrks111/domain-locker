@@ -4,7 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Subdomain } from '@/types/Database';
 import DatabaseService from '@/app/services/database.service';
 import { PrimeNgModule } from '@/app/prime-ng.module';
-import { DomainFaviconComponent } from '@components/misc/favicon.component';
+import { DomainFaviconComponent } from '@/app/components/misc/favicon.component';
 import { ConfirmationService } from 'primeng/api';
 import { makeKVList } from './subdomain-utils';
 import { MenuItem } from 'primeng/api';

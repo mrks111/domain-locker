@@ -2,8 +2,8 @@ import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import DatabaseService from '@services/database.service';
-import { ErrorHandlerService } from '@services/error-handler.service';
+import DatabaseService from '@/app/services/database.service';
+import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { ApexOptions } from 'ng-apexcharts';
 
 interface UptimeData {

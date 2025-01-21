@@ -7,11 +7,11 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { catchError, throwError, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
-import DatabaseService from '@services/database.service';
-import { SaveDomainData } from '@typings/Database';
+import DatabaseService from '@/app/services/database.service';
+import { SaveDomainData } from '@/app/types/Database';
 import { notificationTypes } from '@/app/constants/notification-types';
 
-import type { DomainInfo } from '@typings/DomainInfo';
+import type { DomainInfo } from '@/app/types/DomainInfo';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Registrar } from '@/types/common';
 import { subdomainsReadyForSave } from '@/app/pages/assets/subdomains/subdomain-utils';

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DomainFaviconComponent } from '@components/misc/favicon.component';
+import { DomainFaviconComponent } from '@/app/components/misc/favicon.component';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 
 @Component({

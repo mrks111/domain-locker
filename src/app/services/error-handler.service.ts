@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import * as Sentry from '@sentry/angular';
 import { EnvService } from '@/app/services/environment.service';
 
-import { GlobalMessageService } from '@services/messaging.service';
+import { GlobalMessageService } from '@/app/services/messaging.service';
 
 interface ErrorParams {
   error?: Error | any, // Should be error, but might be funny error type

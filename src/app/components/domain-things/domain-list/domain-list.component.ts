@@ -2,8 +2,8 @@ import { Component, Input } from '@angular/core';
 import { DbDomain } from '@/types/Database';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { NgFor, NgSwitch, NgSwitchCase, DatePipe, CommonModule } from '@angular/common';
-import { DomainFaviconComponent } from '@components/misc/favicon.component';
-import { DomainUtils } from '@services/domain-utils.service';
+import { DomainFaviconComponent } from '@/app/components/misc/favicon.component';
+import { DomainUtils } from '@/app/services/domain-utils.service';
 
 @Component({
   standalone: true,

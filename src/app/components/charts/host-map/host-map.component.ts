@@ -1,6 +1,6 @@
 import { Component, OnInit, AfterViewInit, PLATFORM_ID, Inject, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import DatabaseService from '@services/database.service';
+import DatabaseService from '@/app/services/database.service';
 import { Host } from '@/types/Database';
 import { ThemeService } from '@/app/services/theme.service';
 import { Subscription } from 'rxjs';

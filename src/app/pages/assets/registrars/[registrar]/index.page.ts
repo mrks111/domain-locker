@@ -5,8 +5,8 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { DbDomain } from '@/types/Database';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
-import { DomainCollectionComponent } from '@components/domain-things/domain-collection/domain-collection.component';
-import { DomainFaviconComponent } from '@components/misc/favicon.component';
+import { DomainCollectionComponent } from '@/app/components/domain-things/domain-collection/domain-collection.component';
+import { DomainFaviconComponent } from '@/app/components/misc/favicon.component';
 
 @Component({
   standalone: true,

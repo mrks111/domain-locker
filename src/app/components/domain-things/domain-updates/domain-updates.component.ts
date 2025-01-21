@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, of } from 'rxjs';
-import DatabaseService from '@services/database.service';
+import DatabaseService from '@/app/services/database.service';
 import { NgIf, NgFor } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { PaginatorModule } from 'primeng/paginator';

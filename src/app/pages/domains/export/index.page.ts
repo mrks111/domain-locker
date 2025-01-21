@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import DatabaseService from '@services/database.service';
+import DatabaseService from '@/app/services/database.service';
 import savePkg from 'file-saver';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';

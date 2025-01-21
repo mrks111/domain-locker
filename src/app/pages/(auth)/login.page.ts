@@ -10,7 +10,7 @@ import { GlobalMessageService } from '@/app/services/messaging.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { FeatureService } from '@/app/services/features.service';
 import { EnvService } from '@/app/services/environment.service';
-import { LogoComponent} from '@components/home-things/logo/logo.component';
+import { LogoComponent} from '@/app/components/home-things/logo/logo.component';
 
 @Component({
   standalone: true,

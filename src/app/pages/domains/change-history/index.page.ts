@@ -4,7 +4,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { DomainUpdatesComponent } from '@/app/components/domain-things/domain-updates/domain-updates.component';
 import { ChangeHistoryChartComponent } from '@/app/components/charts/change-history/change-history.component';
 import { FeatureService } from '@/app/services/features.service';
-import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
+import { FeatureNotEnabledComponent } from '@/app/components/misc/feature-not-enabled.component';
 
 @Component({
   standalone: true,

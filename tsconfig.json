@@ -25,13 +25,6 @@
     ],
     "paths": {
       "@/*": ["src/*"],
-      "@components/*": ["src/app/components/*"],
-      "@services/*": ["src/app/services/*"],
-      "@typings/*": ["src/types/*"],
-      "@guards/*": ["src/guards/*"],
-      "@pages/*": ["src/app/pages/*"],
-      "@styles/*": ["src/styles/*"],
-      "@constants/*": ["src/constants/*"],
     }
   },
   "angularCompilerOptions": {

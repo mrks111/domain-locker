@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
-import { LoadingComponent } from '@components/misc/loading.component';
+import { LoadingComponent } from '@/app/components/misc/loading.component';
 import { getByEppCode, type SecurityCategory, securityCategories } from '@/app/constants/security-categories';
 
 @Component({

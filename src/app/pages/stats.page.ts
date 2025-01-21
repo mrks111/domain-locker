@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { ExtendedMenuItem, statsLinks } from '@/app/constants/navigation-links';
 import { FeatureService } from '@/app/services/features.service';
-import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
+import { FeatureNotEnabledComponent } from '@/app/components/misc/feature-not-enabled.component';
 
 @Component({
   standalone: true,

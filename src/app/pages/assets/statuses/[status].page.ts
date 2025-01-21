@@ -5,7 +5,7 @@ import { PrimeNgModule } from '@/app/prime-ng.module';
 import { DbDomain } from '@/types/Database';
 import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
-import { DomainCollectionComponent } from '@components/domain-things/domain-collection/domain-collection.component';
+import { DomainCollectionComponent } from '@/app/components/domain-things/domain-collection/domain-collection.component';
 import { getByEppCode, type SecurityCategory } from '@/app/constants/security-categories';
 
 @Component({

@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import DatabaseService from '@/app/services/database.service';
 import { Notification } from '@/types/Database';
 import { PrimeNgModule } from '@/app/prime-ng.module';
-import { DomainFaviconComponent } from '@components/misc/favicon.component';
+import { DomainFaviconComponent } from '@/app/components/misc/favicon.component';
 import { CommonModule } from '@angular/common';
 import { PaginatorModule } from 'primeng/paginator';
 

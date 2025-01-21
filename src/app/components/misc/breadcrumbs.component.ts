@@ -2,8 +2,8 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { MenuItem } from 'primeng/api';
-import { DomainFaviconComponent } from '@components/misc/favicon.component';
-import { DlIconComponent } from '@components/misc/svg-icon.component';
+import { DomainFaviconComponent } from '@/app/components/misc/favicon.component';
+import { DlIconComponent } from '@/app/components/misc/svg-icon.component';
 import {
   statsLinks,
   settingsLinks,

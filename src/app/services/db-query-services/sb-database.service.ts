@@ -4,7 +4,7 @@ import { DatabaseService, DbDomain, IpAddress, SaveDomainData, DomainExpiration 
 import { catchError, from, map, Observable, throwError, retry, switchMap } from 'rxjs';
 import { makeEppArrayFromLabels } from '@/app/constants/security-categories';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
-import { GlobalMessageService } from '@services/messaging.service';
+import { GlobalMessageService } from '@/app/services/messaging.service';
 
 // Database queries grouped by functionality into sub-services
 import { LinkQueries } from '@/app/services/db-query-services/sb/db-links.service';

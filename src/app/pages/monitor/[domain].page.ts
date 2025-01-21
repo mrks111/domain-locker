@@ -2,22 +2,22 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PrimeNgModule } from '@/app/prime-ng.module';
-import DatabaseService from '@services/database.service';
-import { type DbDomain } from '@typings/Database';
-import { DomainUtils } from '@services/domain-utils.service';
-import { DomainFaviconComponent } from '@components/misc/favicon.component';
+import DatabaseService from '@/app/services/database.service';
+import { type DbDomain } from '@/app/types/Database';
+import { DomainUtils } from '@/app/services/domain-utils.service';
+import { DomainFaviconComponent } from '@/app/components/misc/favicon.component';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { LoadingComponent } from '@components/misc/loading.component';
-import { GlobalMessageService } from '@services/messaging.service';
+import { LoadingComponent } from '@/app/components/misc/loading.component';
+import { GlobalMessageService } from '@/app/services/messaging.service';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { DomainSparklineComponent } from '@/app/components/monitor/sparklines/sparklines.component';
 import { UptimeHistoryComponent } from '@/app/components/monitor/uptime-history/uptime-history.component';
 import { FeatureService } from '@/app/services/features.service';
-import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
+import { FeatureNotEnabledComponent } from '@/app/components/misc/feature-not-enabled.component';
 import { LazyLoadDirective } from '@/app/utils/lazy.directive';
-import { NotFoundComponent } from '@components/misc/domain-not-found.component';
+import { NotFoundComponent } from '@/app/components/misc/domain-not-found.component';
 
 @Component({
   standalone: true,

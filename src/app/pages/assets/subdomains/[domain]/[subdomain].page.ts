@@ -10,7 +10,7 @@ import { DomainInfoComponent } from '@/app/components/domain-things/domain-info/
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs';
 import { DbDomain } from '@/types/Database';
-import { NotFoundComponent } from '@components/misc/domain-not-found.component';
+import { NotFoundComponent } from '@/app/components/misc/domain-not-found.component';
 import { FeatureService } from '@/app/services/features.service';
 import { GlobalMessageService } from '@/app/services/messaging.service';
 

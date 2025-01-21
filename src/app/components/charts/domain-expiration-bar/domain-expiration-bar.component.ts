@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MeterItem } from 'primeng/metergroup';
 import { PrimeNgModule } from '../../../prime-ng.module';
-import DatabaseService from '@services/database.service';
+import DatabaseService from '@/app/services/database.service';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { DomainExpiration } from '@/types/Database';
 

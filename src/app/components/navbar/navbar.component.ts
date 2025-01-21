@@ -11,12 +11,12 @@ import { OverlayModule } from 'primeng/overlay';
 import { Subscription } from 'rxjs';
 import { authenticatedNavLinks, unauthenticatedNavLinks, settingsLinks } from '@/app/constants/navigation-links';
 import { UiSettingsComponent } from '@/app/components/settings/ui-options/ui-options.component';
-import { NotificationsListComponent } from '@components/notifications-list/notifications-list.component';
+import { NotificationsListComponent } from '@/app/components/notifications-list/notifications-list.component';
 import { OverlayPanel } from 'primeng/overlaypanel';
 import DatabaseService from '@/app/services/database.service';
 import { BillingService, UserType } from '@/app/services/billing.service';
 import { EnvironmentType, EnvService } from '@/app/services/environment.service';
-import { LogoComponent} from '@components/home-things/logo/logo.component';
+import { LogoComponent} from '@/app/components/home-things/logo/logo.component';
 import { FeatureService } from '@/app/services/features.service';
 
 @Component({

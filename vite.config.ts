@@ -29,13 +29,6 @@ export default defineConfig( ({ mode }) => {
     resolve: {
       alias: {
         '@': resolve(__dirname, './src'),
-        '@components': resolve(__dirname, './src/app/components'),
-        '@services': resolve(__dirname, './src/app/services'),
-        '@typings': resolve(__dirname, './src/types'),
-        '@guards': resolve(__dirname, './src/guards'),
-        '@pages': resolve(__dirname, './src/pages'),
-        '@styles': resolve(__dirname, './src/styles'),
-        '@constants': resolve(__dirname, './src/constants'),
       }
     },
     plugins: [

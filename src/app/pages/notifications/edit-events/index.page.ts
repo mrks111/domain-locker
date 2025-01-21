@@ -4,12 +4,12 @@ import { notificationTypes } from '@/app/constants/notification-types';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { GlobalMessageService } from '@services/messaging.service';
+import { GlobalMessageService } from '@/app/services/messaging.service';
 import { CommonModule } from '@angular/common';
 import { DbDomain } from '@/types/Database';
 import { forkJoin } from 'rxjs';
 import { FeatureService } from '@/app/services/features.service';
-import { FeatureNotEnabledComponent } from '@components/misc/feature-not-enabled.component';
+import { FeatureNotEnabledComponent } from '@/app/components/misc/feature-not-enabled.component';
 
 @Component({
   standalone: true,

@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
-import DatabaseService from '@services/database.service';
+import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { RouterModule } from '@angular/router';

@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit, Pipe, PipeTransform, PLATFORM_ID } from '@angular/core';
-import DatabaseService from '@services/database.service';
+import DatabaseService from '@/app/services/database.service';
 import { MessageService } from 'primeng/api';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { isPlatformBrowser } from '@angular/common';
