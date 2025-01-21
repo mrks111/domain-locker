@@ -8,6 +8,7 @@ export default defineConfig( ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
+    base: '/',
     publicDir: 'src/assets',
     optimizeDeps: {
       include: ['@angular/common'],
@@ -22,7 +23,7 @@ export default defineConfig( ({ mode }) => {
     build: {
       target: ['es2020'],
       sourcemap: mode === 'development' ? 'inline' : false,
-      outDir: 'dist/client',
+      outDir: 'dist',
       assetsDir: 'assets',
     },
     resolve: {
