@@ -118,6 +118,8 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'pricing': 'money-bill',
       'features': 'star',
       'external-tools': 'external-link',
+      'faq': 'question-circle',
+      'legal': 'hammer',
     };
     const iconName = icons[path];
     if (!iconName) return;
@@ -140,6 +142,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'ips': 'IP Addresses',
       'edit-events': 'Edit Events',
       'external-tools': 'External Tools',
+      'faq': 'Frequently Asked Questions',
     };
     const capitalizeFirstLetter = (str: string) =>
         str.includes('.') ? str : str.charAt(0).toUpperCase() + str.slice(1);

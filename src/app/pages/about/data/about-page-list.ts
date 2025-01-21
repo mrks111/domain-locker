@@ -39,7 +39,7 @@ export const aboutPages: AboutPage[] = [
     title: 'Support',
     links: [
       { title: 'Docs', description: '', link: '', icon: '' },
-      { title: 'FaQ', description: '', link: '', icon: '' },
+      { title: 'FaQ', description: 'Answers to commonly asked questions', link: '/about/faq', icon: 'pi-question-circle' },
       { title: 'Contact', description: '', link: '/about/contact', icon: '' },
     ],
   },

@@ -5,7 +5,8 @@
   <ul class="pl-4">
     <li *ngFor="let link of links">
       <a [routerLink]="link.link" class="text-primary font-semibold no-underline">{{ link.title }}</a>
-      @if (link.description) { - {{ link.description }} }
+      @if (link.description) { - <span class="opacity-70 italic">{{ link.description }}</span> }
+      
     </li>
   </ul>
 </section>

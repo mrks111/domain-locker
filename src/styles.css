@@ -78,7 +78,7 @@ h1 {
 }
 
 /* Highlight color */
-::selection, ::-moz-selection  {
+::selection {
   background-color: var(--primary-color);
   color: var(--surface-0);
 }
