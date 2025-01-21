@@ -8,9 +8,9 @@ import {
 } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import DatabaseService from '@/app/services/database.service';
-import { SaveDomainData } from '@/app/types/Database';
-import { Subdomain } from '@/app/types/common';
-import { DomainInfo } from '@/app/types/DomainInfo';
+import { SaveDomainData } from '@/types/Database';
+import { Subdomain } from '@/types/common';
+import { DomainInfo } from '@/types/DomainInfo';
 import {
   of,
   from,

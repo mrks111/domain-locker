@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import DatabaseService from '@/app/services/database.service';
-import { type DbDomain } from '@/app/types/Database';
+import { type DbDomain } from '@/types/Database';
 import { DomainUtils } from '@/app/services/domain-utils.service';
 import { DomainFaviconComponent } from '@/app/components/misc/favicon.component';
 import { ConfirmationService, MessageService } from 'primeng/api';
