@@ -64,8 +64,6 @@ export default defineConfig( ({ mode }) => {
     envPrefix: ['VITE_', 'SUPABASE_', 'DL_'],
     define: {
       'import.meta.vitest': mode !== 'production',
-      // 'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env['VITE_SUPABASE_URL']),
-      // 'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env['VITE_SUPABASE_ANON_KEY']),
     },
     server: {
       fs: {
