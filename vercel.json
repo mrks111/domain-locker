@@ -1,5 +1,15 @@
 {
   "version": 2,
   "framework": "angular",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/.nitro/server/index.mjs"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/.nitro/server/index.mjs"
+    }
+  ]
 }
