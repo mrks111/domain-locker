@@ -46,6 +46,12 @@ export default defineConfig( ({ mode }) => {
             host: 'https://domain-locker.as93.net',
           },
         },
+        nitro: {
+          output: {
+            dir: '../../.vercel/output',
+            publicDir: '../../.vercel/output/static',
+          },
+        },
       }),
     ],
 
