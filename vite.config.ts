@@ -47,7 +47,7 @@ export default defineConfig( ({ mode }) => {
           },
         },
         nitro: {
-          preset: 'vercel',
+          // preset: 'vercel',
         },
       }),
     ],

@@ -5,6 +5,7 @@
 /bazel-out
 .vercel
 .nitro
+.netlify
 
 # Node
 /node_modules
