@@ -47,10 +47,7 @@ export default defineConfig( ({ mode }) => {
           },
         },
         nitro: {
-          output: {
-            dir: '../../.vercel/output',
-            publicDir: '../../.vercel/output/static',
-          },
+          preset: 'vercel',
         },
       }),
     ],

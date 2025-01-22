@@ -3,7 +3,8 @@
 /tmp
 /out-tsc
 /bazel-out
-/di /*
+.vercel
+.nitro
 
 # Node
 /node_modules
@@ -140,4 +141,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-.vercel

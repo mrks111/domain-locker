@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "my-app": {
+    "domain-locker": {
       "projectType": "application",
       "schematics": {},
       "root": ".",
@@ -118,16 +118,16 @@
           "builder": "@analogjs/platform:vite-dev-server",
           "defaultConfiguration": "development",
           "options": {
-            "buildTarget": "my-app:build",
+            "buildTarget": "domain-locker:build",
             "port": 5173
           },
           "configurations": {
             "development": {
-              "buildTarget": "my-app:build:development",
+              "buildTarget": "domain-locker:build:development",
               "hmr": true
             },
             "production": {
-              "buildTarget": "my-app:build:production"
+              "buildTarget": "domain-locker:build:production"
             }
           }
         },
