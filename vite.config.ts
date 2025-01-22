@@ -6,6 +6,21 @@ import { resolve } from 'path';
 export default defineConfig( ({ mode }) => {
 
   const env = loadEnv(mode, process.cwd(), '')
+  const buildPreset = env['BUILD_PRESET'] || env['NITRO_PRESET'] || 'node';
+
+  const nitroPreset = (() => {
+    switch (buildPreset) {
+      case 'vercel':
+        console.log('🔼 Building for Vercel');
+        return 'vercel';
+      case 'netlify':
+        console.log('🪁 Building for Netlify');
+        return 'netlify';
+      default:
+        console.log('🚀 Building for Node.js');
+        return 'node-server';
+    }
+  })();
 
   return {
     base: '/',
@@ -47,7 +62,7 @@ export default defineConfig( ({ mode }) => {
           },
         },
         nitro: {
-          // preset: 'vercel',
+          preset: nitroPreset,
         },
       }),
     ],
