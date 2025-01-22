@@ -6,6 +6,7 @@
 .vercel
 .nitro
 .netlify
+.output
 
 # Node
 /node_modules
