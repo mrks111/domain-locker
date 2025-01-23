@@ -52,10 +52,7 @@ export default defineConfig( ({ mode }) => {
           routes: [
             '/',
             '/login',
-            '/domains',
             '/about',
-            '/settings',
-            '/*',
           ],
           sitemap: {
             host: 'https://domain-locker.as93.net',
