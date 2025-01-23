@@ -23,9 +23,10 @@ export default defineConfig( ({ mode }) => {
   })();
 
   return {
+    base: '/',
     publicDir: 'src/assets',
     optimizeDeps: {
-      include: ['@angular/common', '@angular/router'],
+      include: ['@angular/common'],
     },
     ssr: {
       noExternal: [
