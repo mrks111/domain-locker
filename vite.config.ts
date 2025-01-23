@@ -38,6 +38,7 @@ export default defineConfig( ({ mode }) => {
     build: {
       target: ['es2020'],
       sourcemap: mode === 'development' ? 'inline' : false,
+      outDir: 'dist',
       assetsDir: 'assets',
     },
     resolve: {
@@ -52,10 +53,11 @@ export default defineConfig( ({ mode }) => {
             '/',
             '/login',
             '/about',
+            '/*',
           ],
-          sitemap: {
-            host: 'https://domain-locker.as93.net',
-          },
+          // sitemap: {
+          //   host: 'https://domain-locker.as93.net',
+          // },
         },
         nitro: {
           preset: nitroPreset,
