@@ -1,4 +1,0 @@
-[build]
-  command = "npm i --save-dev @nx/devkit && npm run build:netlify"
-  publish = "dist"
-  functions = ".netlify/functions"
