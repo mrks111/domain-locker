@@ -23,10 +23,9 @@ export default defineConfig( ({ mode }) => {
   })();
 
   return {
-    base: '/',
     publicDir: 'src/assets',
     optimizeDeps: {
-      include: ['@angular/common'],
+      include: ['@angular/common', '@angular/router'],
     },
     ssr: {
       noExternal: [
@@ -38,7 +37,6 @@ export default defineConfig( ({ mode }) => {
     build: {
       target: ['es2020'],
       sourcemap: mode === 'development' ? 'inline' : false,
-      outDir: 'dist',
       assetsDir: 'assets',
     },
     resolve: {
