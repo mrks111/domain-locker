@@ -5,6 +5,8 @@ import {
 import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideFileRouter } from '@analogjs/router';
+import { withPrismHighlighter } from '@analogjs/content/prism-highlighter';
+import { withShikiHighlighter } from '@analogjs/content/shiki-highlighter'
 import { provideContent, withMarkdownRenderer } from '@analogjs/content';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -33,7 +35,7 @@ export const appConfig: ApplicationConfig = {
     // Core Providers
     provideHttpClient(withFetch()),
     provideClientHydration(),
-    provideContent(withMarkdownRenderer()),
+    provideContent(withMarkdownRenderer(), withShikiHighlighter()),
     provideAnimations(),
     provideFileRouter(
       withInMemoryScrolling({ anchorScrolling: 'enabled' }),

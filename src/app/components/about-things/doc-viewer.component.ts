@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { ContentFile } from '@analogjs/content';
 import { Observable } from 'rxjs';
@@ -57,12 +57,15 @@ export interface DocAttributes {
     </div>
   </section>
   `,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['../../styles/prism.css'],
   styles: [`
-    ::ng-deep article hr {
+    h2 { opacity: 70%; }
+    h3 { opacity: 90%; margin-top: 1rem !important; }
+    hr {
       border-color: var(--surface-50);
       margin-bottom: 2rem;
     }
-    ::ng-deep article  h2 { opacity: 70%; }
   `]
 })
 export class DocsViewerComponent {

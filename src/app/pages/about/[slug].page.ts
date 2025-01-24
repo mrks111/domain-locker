@@ -1,6 +1,6 @@
 import { ContentFile, injectContent, injectContentFiles, MarkdownComponent } from '@analogjs/content';
 import { CommonModule, NgIf } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { aboutPages, AboutLink } from './data/about-page-list';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, switchMap } from 'rxjs';
@@ -20,6 +20,8 @@ export interface DocAttributes {
   standalone: true,
   imports: [MarkdownComponent, NgIf, CommonModule, PrimeNgModule, NotFoundPage],
   templateUrl: './[slug].page.html',
+  styleUrls: ['../../styles/prism.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export default class DocsComponent implements OnInit {
 

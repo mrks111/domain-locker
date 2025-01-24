@@ -62,6 +62,12 @@ export default defineConfig( ({ mode }) => {
         nitro: {
           preset: nitroPreset,
         },
+        content: {
+          highlighter: 'prism',
+          prismOptions: {
+            additionalLangs: ['diff'],
+          },
+        },
       }),
     ],
 
