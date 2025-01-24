@@ -279,28 +279,39 @@ export const unauthenticatedNavLinks = [
     routerLink: '/about',
     items: [
       {
-        label: 'Overview',
-        routerLink: '/about'
+        label: 'Helpful Articles',
+        routerLink: '/about/articles',
+        icon: 'pi pi-folder-open',
       },
       {
-        label: 'Getting Started Guides',
-        routerLink: '/about'
-      },
-      {
-        label: 'Articles',
-        routerLink: '/about'
+        label: 'Useful Links',
+        routerLink: '/about/external-links',
+        icon: 'pi pi-paperclip',
       },
       {
         label: 'Support',
-        routerLink: '/about'
+        routerLink: '/about/support',
+        icon: 'pi pi-question-circle',
       },
       {
-        label: 'Security',
-        routerLink: '/about'
+        label: 'Legal Documents',
+        routerLink: '/about/legal',
+        icon: 'pi pi-hammer',
       },
       {
-        label: 'Legal',
-        routerLink: '/about'
+        label: 'Self-Hosting',
+        routerLink: '/about/self-hosting',
+        icon: 'pi pi-server',
+      },
+      {
+        label: 'Community',
+        routerLink: '/about/community',
+        icon: 'pi pi-users',
+      },
+      {
+        label: 'Developer Guides',
+        routerLink: '/about/developing',
+        icon: 'pi pi-code',
       },
     ],
   },

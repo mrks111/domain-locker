@@ -22,6 +22,14 @@ export interface DocAttributes {
   templateUrl: './[slug].page.html',
   styleUrls: ['../../styles/prism.css'],
   encapsulation: ViewEncapsulation.None,
+  styles: [`
+    h2 { opacity: 70%; }
+    h3 { opacity: 90%; margin-top: 1rem !important; }
+    hr {
+      border-color: var(--surface-50);
+      margin-bottom: 2rem;
+    }
+  `],
 })
 export default class DocsComponent implements OnInit {
 

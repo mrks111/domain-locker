@@ -59,20 +59,20 @@ export class FooterComponent {
         left: [
           { label: translations['FOOTER.LINKS.LEFT.FEATURES'], link: '/about/features' },
           { label: translations['FOOTER.LINKS.LEFT.PRICING'], link: '/about/pricing' },
-          { label: translations['FOOTER.LINKS.LEFT.SELF_HOSTING'], link: '' },
-          { label: translations['FOOTER.LINKS.LEFT.ALTERNATIVES'], link: '' },
+          { label: translations['FOOTER.LINKS.LEFT.SELF_HOSTING'], link: '/about/self-hosting' },
+          { label: translations['FOOTER.LINKS.LEFT.ALTERNATIVES'], link: '/about/alternatives' },
         ],
         middle: [
           { label: translations['FOOTER.LINKS.MIDDLE.GITHUB'], link: 'https://github.com/lissy93/domain-locker' },
           { label: translations['FOOTER.LINKS.MIDDLE.MORE_APPS'], link: 'https://as93.net' },
-          { label: translations['FOOTER.LINKS.MIDDLE.SUPPORT'], link: '/about/get-help' },
+          { label: translations['FOOTER.LINKS.MIDDLE.SUPPORT'], link: '/about/support' },
           { label: translations['FOOTER.LINKS.MIDDLE.ATTRIBUTIONS'], link: '/about/attributions' },
         ],
         right: [
           { label: translations['FOOTER.LINKS.RIGHT.LICENSE'], link: '/about/legal/license' },
           { label: translations['FOOTER.LINKS.RIGHT.SECURITY'], link: '/about/legal/security' },
-          { label: translations['FOOTER.LINKS.RIGHT.PRIVACY_POLICY'], link: '/about/legal/privacy' },
-          { label: translations['FOOTER.LINKS.RIGHT.TERMS_OF_SERVICE'], link: '/about/legal/terms' },
+          { label: translations['FOOTER.LINKS.RIGHT.PRIVACY_POLICY'], link: '/about/legal/privacy-policy' },
+          { label: translations['FOOTER.LINKS.RIGHT.TERMS_OF_SERVICE'], link: '/about/legal/terms-of-service' },
         ],
       };
     });

@@ -121,6 +121,10 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'faq': 'question-circle',
       'legal': 'hammer',
       'developing': 'code',
+      'self-hosting': 'server',
+      'alternatives': 'th-large',
+      'domain-management': 'star-fill',
+      'attributions': 'heart-fill',
     };
     const iconName = icons[path];
     if (!iconName) return;
@@ -145,10 +149,15 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'external-tools': 'External Tools',
       'faq': 'Frequently Asked Questions',
     };
-    const capitalizeFirstLetter = (str: string) =>
-        str.includes('.') ? str : str.charAt(0).toUpperCase() + str.slice(1);
+    const formatLabel = (str: string) =>
+      str.includes('.') ? str
+        : str
+            .split('-')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    
     path = decodeURIComponent(path);
-    return labels[path] || capitalizeFirstLetter(path);
+    return labels[path] || formatLabel(path);
   }
 
   private getRouteForPath(paths: string[], index: number) {

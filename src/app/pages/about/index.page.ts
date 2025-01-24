@@ -19,8 +19,8 @@ export default class AboutPageComponent {
       contentFile.filename.includes('/legal')
     ),
     developing: injectContentFiles<DocAttributes>((contentFile) =>
-      contentFile.filename.includes('/developing')
-    )
+      contentFile.filename.includes('/developing/')
+    ),
   };
   
   makeId(title: string): string {

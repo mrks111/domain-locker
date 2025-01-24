@@ -1,10 +1,10 @@
-import { Component, Input, ViewEncapsulation } from '@angular/core';
-import { CommonModule, NgIf } from '@angular/common';
+import { Component, Input, HostListener, ViewEncapsulation } from '@angular/core';
 import { ContentFile } from '@analogjs/content';
 import { Observable } from 'rxjs';
 import { MarkdownComponent } from '@analogjs/content';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 import { MetaTagsService } from '@/app/services/meta-tags.service';
+import { CommonModule, NgIf } from '@angular/common';
 
 export interface DocAttributes {
   title: string;
@@ -25,7 +25,7 @@ export interface DocAttributes {
     </article>
 
     <div class="relative h-full min-h-64 min-w-64 w-full md:w-fit mr-0 md:mr-4">
-      <nav class="p-card py-4 relative md:fixed">
+      <nav class="p-card py-4 relative md:fixed sticky-nav" [style.top]="navTop">
         <a [routerLink]="['/about', categoryName]" class="no-underline text-default">
           <h2 class="capitalize mx-4">{{ categoryName }} Docs</h2>
         </a>
@@ -66,6 +66,7 @@ export interface DocAttributes {
       border-color: var(--surface-50);
       margin-bottom: 2rem;
     }
+    .sticky-nav { transition: top 0.3s ease; }
   `]
 })
 export class DocsViewerComponent {
@@ -80,6 +81,8 @@ export class DocsViewerComponent {
 
   doc: ContentFile<DocAttributes | Record<string, never>> | null = null;
 
+  navTop = 'unset'; // default top offset
+
   constructor(private metaTagsService: MetaTagsService) {}
 
   ngOnInit() {
@@ -93,5 +96,13 @@ export class DocsViewerComponent {
         this.metaTagsService.setCustomMeta(title, description);
       }
     });
+  }
+
+  /** Called on window scroll. If user scrolled > 7rem => fix nav top at 7rem. Otherwise 0. */
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    const scrollY = window.scrollY;
+    const sevenRemInPx = 112; // approx 7rem if root font-size = 16px
+    this.navTop = scrollY > sevenRemInPx ? '1rem' : '9rem';
   }
 }

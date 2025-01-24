@@ -9,7 +9,7 @@
     <!-- Auto links, based on the *.md files in a given directory -->
     @if (section.dirSlug && autoLinks[section.dirSlug]) {
       <li *ngFor="let file of autoLinks[section.dirSlug]">
-        <a [routerLink]="['/about', section.dirSlug, (file.slug !== section.dirSlug ? file.slug : '')]"
+        <a [routerLink]="['/about', section.dirSlug, file.slug]"
           class="text-primary font-semibold no-underline">
           {{ file.attributes.title }}
         </a>
