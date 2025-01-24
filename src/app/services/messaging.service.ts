@@ -3,8 +3,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Message } from 'primeng/api';
 
-
-
 interface MessageOptions {
   position?: string;
   life?: number;

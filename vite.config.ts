@@ -49,15 +49,15 @@ export default defineConfig( ({ mode }) => {
     plugins: [
       analog({
         prerender: {
-          routes: [
+          routes: [ // Unauthenticated SSG routes
             '/',
             '/login',
             '/about',
-            '/*',
+            '/about/*',
           ],
-          // sitemap: {
-          //   host: 'https://domain-locker.as93.net',
-          // },
+          sitemap: {
+            host: 'https://domain-locker.com',
+          },
         },
         nitro: {
           preset: nitroPreset,

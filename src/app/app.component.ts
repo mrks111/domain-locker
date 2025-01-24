@@ -4,7 +4,7 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 // Dependencies
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { filter, Subscription } from 'rxjs';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
@@ -57,6 +57,7 @@ import { MetaTagsService } from '@/app/services/meta-tags.service';
       <!-- Global components -->
       <p-scrollTop />
       <p-toast />
+      <p-confirmDialog />
     </div>
     <!-- Footer -->
     <app-footer [big]="isBigFooter" />
@@ -89,6 +90,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private supabaseService: SupabaseService,
     private messageService: MessageService,
+    private confirmationService: ConfirmationService,
     private globalMessageService: GlobalMessageService,
     private errorHandler: ErrorHandlerService,
     public _themeService: ThemeService,
@@ -120,7 +122,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
           // Configuration for docs pages (at /about)
           if (currentRoute.startsWith('/about')) {
-            this.checkIfDocsDisabled();
+            this.checkIfDocsDisabled(currentRoute);
             this.isBigFooter = true;
           } else {
             this.isBigFooter = false;
@@ -177,13 +179,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async checkIfDocsDisabled() {
-    if (await this.featureService.isFeatureEnabledPromise('disableDocs')) {
-      this.globalMessageService.showWarn('Documentation is disabled for this instance', 'Navigating back to homepage');
-      this.router.navigate(['/']);
-    }
-  }
-
+  /* Check if user is authenticated, and take appropriate action */
   private async checkAuthentication(): Promise<void> {
 
     // Cancel if Supabase auth isn't enabled or setup
@@ -226,4 +222,33 @@ export class AppComponent implements OnInit, OnDestroy {
       this.loading = false;
     });
   }
+
+    /* Check if documentation enabled before navigating to any /about page */
+    private async checkIfDocsDisabled(docsPath?: string): Promise<void> {
+      if (await this.featureService.isFeatureEnabledPromise('disableDocs')) {
+        // Docs disabled, show warning and navigate back to home
+        this.globalMessageService.showWarn(
+          'Docs Disabled',
+          'Documentation has not been enabled on this instance, you can view up-to-date content at domain-locker.com',
+        );
+        this.router.navigate(['/']);
+  
+        // Give user option to view on domain-locker.com
+        if (docsPath) {
+          this.confirmationService.confirm({
+            header: 'Documentation not Enabled',
+            message: 'Would you want to view this page on the Domain Locker website?',
+            icon: 'pi pi-book',
+            acceptIcon:'pi pi-reply mr-2',
+            rejectIcon:'pi pi-arrow-left mr-2',
+            acceptButtonStyleClass:'p-button-sm p-button-primary p-button-text',
+            rejectButtonStyleClass:'p-button-sm p-button-secondary p-button-text p-button-text',
+            closeOnEscape: true,
+            accept: () => {
+              window.open(`https://domain-locker.com/${docsPath}`, '_blank');
+            },
+          }); 
+        }
+      }
+    }
 }
