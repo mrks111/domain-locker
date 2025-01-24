@@ -15,6 +15,7 @@ import type { DomainInfo } from '@/types/DomainInfo';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Registrar } from '@/types/common';
 import { subdomainsReadyForSave } from '@/app/pages/assets/subdomains/subdomain-utils';
+import { EnvService } from '@/app/services/environment.service';
 
 @Component({
   selector: 'app-add-domain',
@@ -60,6 +61,7 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
     private databaseService: DatabaseService,
     private router: Router,
     private route: ActivatedRoute,
+    private envService: EnvService,
   ) {}
 
   ngOnInit(): void {
@@ -187,8 +189,8 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
   private async fetchDomainInfo(): Promise<void> {
     const domainName = this.domainForm.get('domainName')?.value;
     if (!domainName) return;
-
-    this.http.get<{ domainInfo: DomainInfo}>(`/api/domain-info?domain=${domainName}`).pipe(
+    const domainInfoEndpoint = this.envService.getEnvVar('DL_DOMAIN_INFO_API', '/api/domain-info');
+    this.http.get<{ domainInfo: DomainInfo}>(`${domainInfoEndpoint}?domain=${domainName}`).pipe(
       catchError(this.handleHttpError.bind(this))
     ).subscribe({
       next: async (fetchedDomainInfo) => {
@@ -221,7 +223,8 @@ export default class AddDomainComponent implements OnInit, OnDestroy {
    */
   private async fetchSubdomains(domainName: string): Promise<void> {
     try {
-      const response = await this.http.get(`/api/domain-subs?domain=${domainName}`).toPromise();
+      const domainSubsEndpoint = this.envService.getEnvVar('DL_DOMAIN_SUBS_API', '/api/domain-subs');
+      const response = await this.http.get(`${domainSubsEndpoint}?domain=${domainName}`).toPromise();
       if (Array.isArray(response)) {
         this.subdomainInfo = response;
         const subdomainNames = response.map((sub) => sub.subdomain);

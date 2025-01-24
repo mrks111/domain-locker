@@ -10,6 +10,7 @@ import { catchError, finalize, lastValueFrom, map, Observable, of, switchMap, ta
 import { GlobalMessageService } from '@/app/services/messaging.service';
 import { autoSubdomainsReadyForSave, filterOutIgnoredSubdomains } from '@/app/pages/assets/subdomains/subdomain-utils';
 import { SaveDomainData } from '@/types/Database';
+import { EnvService } from '@/app/services/environment.service';
 
 @Component({
   selector: 'app-quick-add-domain',
@@ -41,6 +42,7 @@ export default class QuickAddDomain {
     private errorHandler: ErrorHandlerService,
     private router: Router,
     private messagingService: GlobalMessageService,
+    private envService: EnvService,
   ) {}
 
   async onSubmit(): Promise<void> {
@@ -69,8 +71,9 @@ export default class QuickAddDomain {
 
 
       // Fetch domain info
+      const domainInfoEndpoint = this.envService.getEnvVar('DL_DOMAIN_INFO_API', '/api/domain-info');
       const domainInfo = (await lastValueFrom(
-        this.http.get<any>(`/api/domain-info?domain=${domainName}`)
+        this.http.get<any>(`${domainInfoEndpoint}?domain=${domainName}`)
       ))?.domainInfo;
 
       if (!domainInfo?.domainName) {
@@ -114,7 +117,8 @@ export default class QuickAddDomain {
 
   private searchForSubdomains(domainName: string) {
     this.isLoading = true;
-    this.http.get<any[]>(`/api/domain-subs?domain=${domainName}`).pipe(
+    const domainSubsEndpoint = this.envService.getEnvVar('DL_DOMAIN_SUBS_API', '/api/domain-subs');
+    this.http.get<any[]>(`${domainSubsEndpoint}?domain=${domainName}`).pipe(
       // 1) filter out ignored subdomains
       map((response) => filterOutIgnoredSubdomains(response, domainName)),
       // 2) pass them to a helper that handles “found vs none,”

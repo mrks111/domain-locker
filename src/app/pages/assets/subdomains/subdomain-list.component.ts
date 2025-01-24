@@ -67,6 +67,7 @@ import { FeatureService } from '@/app/services/features.service';
         </div>
       }
     </p-divider>
+    <p-confirmDialog />
     <p-contextMenu #contextMenu [model]="menuItems"></p-contextMenu>
   `,
   providers: [ConfirmationService],

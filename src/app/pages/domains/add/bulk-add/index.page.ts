@@ -27,6 +27,7 @@ import { Router } from '@angular/router';
 import { notificationTypes } from '@/app/constants/notification-types';
 import { ErrorHandlerService } from '@/app/services/error-handler.service';
 import { GlobalMessageService } from '@/app/services/messaging.service';
+import { EnvService } from '@/app/services/environment.service';
 
 
 /**
@@ -82,7 +83,8 @@ export default class BulkAddComponent implements OnInit, OnDestroy {
     private messageService: GlobalMessageService,
     private errorHandler: ErrorHandlerService,
     private databaseService: DatabaseService,
-    private router: Router
+    private router: Router,
+    private envService: EnvService,
   ) {
     this.bulkAddForm = this.fb.group({
       domainList: ['', Validators.required],
@@ -138,6 +140,8 @@ export default class BulkAddComponent implements OnInit, OnDestroy {
     this.domainsSubMap = {};
     this.domains.clear();
 
+    const domainInfoEndpoint = this.envService.getEnvVar('DL_DOMAIN_INFO_API', '/api/domain-info');
+
     // 1) fetch domain info sequentially with delay(500)
     from(domainList)
       .pipe(
@@ -146,7 +150,7 @@ export default class BulkAddComponent implements OnInit, OnDestroy {
             delay(500),
             switchMap((d) =>
               this.http
-                .get<{ domainInfo: DomainInfo }>(`/api/domain-info?domain=${d}`)
+                .get<{ domainInfo: DomainInfo }>(`${domainInfoEndpoint}?domain=${d}`)
                 .pipe(
                   catchError((err) => {
                     this.errorHandler.handleError({
@@ -249,6 +253,8 @@ export default class BulkAddComponent implements OnInit, OnDestroy {
  */
 fetchSubdomainsInBackground(domainList: string[]): void {
   this.fetchingSubs = true;
+  
+  const domainSubsEndpoint = this.envService.getEnvVar('DL_DOMAIN_SUBS_API', '/api/domain-subs');
   this.subdomainsFetchSub = from(domainList)
     .pipe(
       concatMap((domain) =>
@@ -263,7 +269,7 @@ fetchSubdomainsInBackground(domainList: string[]): void {
                 ip: string;
                 asn: string;
                 [key: string]: any; // In case there are other fields
-              }>>(`/api/domain-subs?domain=${d}`)
+              }>>(`${domainSubsEndpoint}?domain=${d}`)
               .pipe(
                 catchError((err) => {
                   this.errorHandler.handleError({

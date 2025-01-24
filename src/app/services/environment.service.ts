@@ -4,7 +4,7 @@ import { environment } from '@/app/environments/environment';
 export type EnvironmentType = 'dev' | 'managed' | 'selfHosted' | 'demo';
 
 type EnvVar =
-'DL_BASE_URL'
+'DL_BASE_URL'           // Hostname/URL or HOST:PORT where domain locker is running
 | 'SUPABASE_URL'        // Supabase URL
 | 'SUPABASE_ANON_KEY'   // Supabase public key
 | 'DL_ENV_TYPE'         // EnvironmentType (dev, managed, selfHosted, demo)
@@ -20,6 +20,8 @@ type EnvVar =
 | 'DL_PG_PASSWORD'      // Postgres password
 | 'DL_DEMO_USER'        // Demo user email (for auto-filling on demo instance)
 | 'DL_DEMO_PASS'        // Demo user password (for auto-filling on demo instance)
+| 'DL_DOMAIN_INFO_API'  // API endpoint for /api/domain-info
+| 'DL_DOMAIN_SUBS_API'  // API endpoint for /api/domain-subs
 ;
 
 @Injectable({
@@ -112,9 +114,8 @@ export class EnvService {
 
   getPostgresApiUrl(): string {
     const endpoint = '/api/pg-executer/';
-    const baseUrl = this.getEnvVar('DL_BASE_URL', 'localhost:5173');
-    const protocol = 'http://';
-    return `${protocol}${baseUrl}${endpoint}`;
+    const baseUrl = this.getEnvVar('DL_BASE_URL', 'http://localhost:5173');
+    return `${baseUrl}${endpoint}`;
   }
 
   getPlausibleConfig(): { site: string, url: string, isConfigured: boolean } {

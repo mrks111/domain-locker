@@ -13,6 +13,7 @@ import { DbDomain } from '@/types/Database';
 import { NotFoundComponent } from '@/app/components/misc/domain-not-found.component';
 import { FeatureService } from '@/app/services/features.service';
 import { GlobalMessageService } from '@/app/services/messaging.service';
+import { EnvService } from '@/app/services/environment.service';
 
 @Component({
   standalone: true,
@@ -37,6 +38,7 @@ export default class SubdomainDetailPageComponent implements OnInit {
     private errorHandler: ErrorHandlerService,
     private confirmationService: ConfirmationService,
     private featureService: FeatureService,
+    private envService: EnvService,
   ) {}
 
   ngOnInit() {
@@ -68,8 +70,8 @@ export default class SubdomainDetailPageComponent implements OnInit {
 
   private async loadDomainInfo(): Promise<void> {
     const domainName = this.subdomainName + '.' + this.domain;
-    console.log(domainName);
-    this.http.get<{ domainInfo: DbDomain}>(`/api/domain-info?domain=${domainName}`).pipe(
+    const domainInfoEndpoint = this.envService.getEnvVar('DL_DOMAIN_INFO_API', '/api/domain-info');
+    this.http.get<{ domainInfo: DbDomain}>(`${domainInfoEndpoint}?domain=${domainName}`).pipe(
         catchError((error) => { throw error })
       ).subscribe({
         next: async (fetchedDomainInfo) => {
