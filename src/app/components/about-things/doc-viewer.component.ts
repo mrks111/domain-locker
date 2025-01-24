@@ -19,9 +19,9 @@ export interface DocAttributes {
   imports: [CommonModule, NgIf, MarkdownComponent, PrimeNgModule],
   template: `
   <section class="flex flex-row-reverse items-start gap-4 h-full mx-auto my-4 flex-wrap md:flex-nowrap">
-    <article *ngIf="doc" class="p-card p-4 flex-1 h-full min-h-64 max-w-[60rem]">
+    <article *ngIf="doc" class="p-card p-4 flex-1 h-full min-h-64 max-w-[60rem] w-2">
       <h1 class="text-3xl">{{ doc.attributes.title }}</h1>
-      <analog-markdown [content]="doc.content"></analog-markdown>
+      <analog-markdown class="block max-w-[59rem]" [content]="doc.content"></analog-markdown>
     </article>
 
     <div class="relative h-full min-h-64 min-w-64 w-full md:w-fit mr-0 md:mr-4">

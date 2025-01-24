@@ -17,6 +17,9 @@ export default class AboutPageComponent {
   readonly autoLinks: { [key: string]: any } = {
     legal: injectContentFiles<DocAttributes>((contentFile) =>
       contentFile.filename.includes('/legal')
+    ),
+    developing: injectContentFiles<DocAttributes>((contentFile) =>
+      contentFile.filename.includes('/developing')
     )
   };
   

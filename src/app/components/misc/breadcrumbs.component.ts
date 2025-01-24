@@ -120,6 +120,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'external-tools': 'external-link',
       'faq': 'question-circle',
       'legal': 'hammer',
+      'developing': 'code',
     };
     const iconName = icons[path];
     if (!iconName) return;
