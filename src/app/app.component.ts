@@ -5,7 +5,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 // Dependencies
 import { MessageService } from 'primeng/api';
-import { Subscription } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
 // PrimeNG module importing required components
@@ -27,6 +27,7 @@ import { TranslationService } from './services/translation.service';
 import { AccessibilityService } from '@/app/services/accessibility-options.service';
 import { EnvService } from '@/app/services/environment.service';
 import { FeatureService } from '@/app/services/features.service';
+import { MetaTagsService } from '@/app/services/meta-tags.service';
 
 @Component({
   selector: 'app-root',
@@ -96,17 +97,28 @@ export class AppComponent implements OnInit, OnDestroy {
     private accessibilityService: AccessibilityService,
     private environmentService: EnvService,
     private featureService: FeatureService,
+    private metaTagsService: MetaTagsService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}  
 
   ngOnInit() {
+
+    // Set meta tags on route change
+    this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.metaTagsService.setRouteMeta(event.urlAfterRedirects);
+    });
+      
     // Check auth state
     if (isPlatformBrowser(this.platformId)) {
+      // Listen for route changes (on browser only)
       this.router.events.subscribe((event) => {
         if (event instanceof NavigationEnd) {
           const currentRoute = event.urlAfterRedirects || event.url;
           this.pagePath = currentRoute;
 
+          // Configuration for docs pages (at /about)
           if (currentRoute.startsWith('/about')) {
             this.checkIfDocsDisabled();
             this.isBigFooter = true;
@@ -114,14 +126,20 @@ export class AppComponent implements OnInit, OnDestroy {
             this.isBigFooter = false;
           }
 
+          // Some pages should be full wider (like /settings or /stats), we add a class if they are active
           this.isFullWidth = this.fullWidthRoutes.some(route => currentRoute.includes(route));
 
+          // Public route
           if (this.publicRoutes.has(currentRoute) || currentRoute.startsWith('/login') || currentRoute.startsWith('/about')) {
             this.loading = false;
+            this.metaTagsService.allowRobots(true);
             return; // No auth needed for public routes
           }
 
-          // Auth needed, check if user authenticated, redirect to login if not
+          // Private route (auth required and bot no index)
+          this.metaTagsService.allowRobots(false);
+
+          // Auth needed for current route, check if user authenticated
           this.checkAuthentication().then(() => {
             this.loading = false;
             this.cdr.detectChanges();
@@ -168,6 +186,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private async checkAuthentication(): Promise<void> {
 
+    // Cancel if Supabase auth isn't enabled or setup
     if (!this.environmentService.isSupabaseEnabled()) {
       return;
     }

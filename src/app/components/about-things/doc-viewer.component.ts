@@ -4,6 +4,7 @@ import { ContentFile } from '@analogjs/content';
 import { Observable } from 'rxjs';
 import { MarkdownComponent } from '@analogjs/content';
 import { PrimeNgModule } from '@/app/prime-ng.module';
+import { MetaTagsService } from '@/app/services/meta-tags.service';
 
 export interface DocAttributes {
   title: string;
@@ -76,7 +77,18 @@ export class DocsViewerComponent {
 
   doc: ContentFile<DocAttributes | Record<string, never>> | null = null;
 
+  constructor(private metaTagsService: MetaTagsService) {}
+
   ngOnInit() {
-    this.doc$.subscribe(doc => this.doc = doc);
+    this.doc$.subscribe(doc => {
+      // Set current doc when it resolves
+      this.doc = doc;
+
+      // Then set meta tags, from doc attributes
+      if (doc?.attributes) {
+        const { title, description } = doc.attributes;
+        this.metaTagsService.setCustomMeta(title, description);
+      }
+    });
   }
 }

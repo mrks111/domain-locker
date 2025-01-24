@@ -7,6 +7,7 @@ import { Observable, switchMap } from 'rxjs';
 import { PrimeNgModule } from '@/app/prime-ng.module';
 
 import NotFoundPage from '@/app/pages/[...not-found].page'
+import { MetaTagsService } from '@/app/services/meta-tags.service';
 
 export interface DocAttributes {
   title: string;
@@ -41,6 +42,7 @@ export default class DocsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private metaTagsService: MetaTagsService,
   ) {}
   
   async ngOnInit(): Promise<void> {
@@ -48,7 +50,15 @@ export default class DocsComponent implements OnInit {
       if (!doc?.slug) {
         this.docsNotFound = true;
       } else {
+        // Set current doc, and apply meta tags
         this.doc = doc;
+        if (doc.attributes) {
+          this.metaTagsService.setCustomMeta(
+            doc.attributes['title'],
+            doc.attributes['description'],
+            doc.attributes['keywords'],
+          );
+        }
       }
     });
 
@@ -87,6 +97,7 @@ export default class DocsComponent implements OnInit {
     if (foundSection) {
       this.linksTitle = foundSection.title;
       this.links = [...this.links, ...foundSection.links];
+      this.metaTagsService.setCustomMeta(foundSection.title);
       return foundSection.links;
     }
     return null;
