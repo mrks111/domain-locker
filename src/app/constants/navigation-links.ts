@@ -284,7 +284,7 @@ export const unauthenticatedNavLinks = [
         icon: 'pi pi-folder-open',
       },
       {
-        label: 'Useful Links',
+        label: 'External Links',
         routerLink: '/about/external-links',
         icon: 'pi pi-paperclip',
       },

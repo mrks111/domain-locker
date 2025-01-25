@@ -231,6 +231,24 @@ export class SupabaseService {
       throw error;
     }
   }
+
+  async signInWithFacebook(): Promise<void> {
+    const { data, error } = await this.supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: {
+        redirectTo: `${window.location.origin}/auth-callback`
+      }
+    });
+    if (error) {
+      this.errorHandler.handleError({
+        error,
+        message: 'Failed to sign in with Facebook',
+        showToast: true,
+        location: 'SupabaseService.signInWithFacebook',
+      });
+      throw error;
+    }
+  }
   
 
   async signOut() {

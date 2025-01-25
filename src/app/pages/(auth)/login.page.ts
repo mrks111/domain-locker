@@ -207,7 +207,18 @@ export default class LoginPageComponent implements OnInit {
     }
   }  
 
-  async loginWithFacebook(): Promise<void> {}
+  async loginWithFacebook(): Promise<void> {
+    try {
+      await this.supabaseService.signInWithFacebook();
+    } catch (error: any) {
+      this.errorHandlerService.handleError({ 
+        error, 
+        message: 'Failed to sign in with Facebook', 
+        showToast: true, 
+        location: 'loginWithFacebook' 
+      });
+    }
+  }
   
   async onSubmit() {
     if (!this.form.valid || (this.requireMFA && this.form.get('mfaCode')?.invalid)) return;

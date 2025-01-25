@@ -108,8 +108,9 @@ export class AppComponent implements OnInit, OnDestroy {
     // Set meta tags on route change
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        this.metaTagsService.setRouteMeta(event.urlAfterRedirects);
+      .subscribe((event) => {
+        const navEndEvent = event as NavigationEnd;
+        this.metaTagsService.setRouteMeta(navEndEvent.urlAfterRedirects);
     });
       
     // Check auth state
