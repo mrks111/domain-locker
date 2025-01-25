@@ -1,7 +1,7 @@
 ---
 slug: translations
 title: Translations
-description: 
+description: Adding a language and internationalizationing component text
 coverImage: 
 ---
 

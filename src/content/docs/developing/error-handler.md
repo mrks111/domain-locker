@@ -1,7 +1,7 @@
 ---
 slug: error-handler
 title: Error Handler
-description: 
+description: Gracefully handle errors, log them, and show toasts to users
 coverImage: 
 ---
 

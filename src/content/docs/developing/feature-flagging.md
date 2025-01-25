@@ -1,7 +1,7 @@
 ---
 slug: feature-flagging
 title: Feature Flagging
-description: 
+description: Enabling or disabling specific features on a per-user or environment basis
 coverImage: 
 ---
 

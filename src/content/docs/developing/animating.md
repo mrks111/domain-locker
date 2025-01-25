@@ -1,7 +1,7 @@
 ---
 slug: animating
 title: Animating In
-description: 
+description: Subtle on-scroll animations for cards and components
 coverImage: 
 ---
 
