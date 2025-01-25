@@ -1,5 +1,5 @@
 import { catchError, forkJoin, from, map, Observable, of, switchMap, throwError } from 'rxjs';
-import { PgApiUtilService } from '@/app/utils/pg-api.util';
+import { PgApiUtilService } from '~/app/utils/pg-api.util';
 
 export class SubdomainsQueries {
   constructor(

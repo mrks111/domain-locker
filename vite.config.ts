@@ -43,8 +43,8 @@ export default defineConfig( ({ mode }) => {
     },
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src'),
-      }
+        '~/app': resolve(__dirname, './src/app'),
+      },
     },
     plugins: [
       analog({
