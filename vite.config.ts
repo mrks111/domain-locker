@@ -41,6 +41,8 @@ export default defineConfig( ({ mode }) => {
       sourcemap: mode === 'development' ? 'inline' : false,
       outDir: 'dist',
       assetsDir: 'assets',
+      commonjsOptions: { transformMixedEsModules: true },
+      reportCompressedSize: true,
     },
     resolve: {
       alias: {
