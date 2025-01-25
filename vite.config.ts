@@ -40,17 +40,14 @@ export default defineConfig( ({ mode }) => {
       sourcemap: mode === 'development' ? 'inline' : false,
       outDir: 'dist',
       assetsDir: 'assets',
-      commonjsOptions: { transformMixedEsModules: true },
-      reportCompressedSize: true,
     },
     resolve: {
       alias: {
-        '~/app': path.resolve(__dirname, './src/app'),
+        '~': path.resolve(__dirname, './src'),
       },
     },
     plugins: [
       analog({
-        // ssr: true,
         prerender: {
           routes: [ // Unauthenticated SSG routes
             '/',
