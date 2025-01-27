@@ -8,7 +8,7 @@ import { makeKVList } from './../subdomain-utils';
 import { ConfirmationService } from 'primeng/api';
 import { DomainInfoComponent } from '~/app/components/domain-things/domain-info/domain-info.component';
 import { HttpClient } from '@angular/common/http';
-import { catchError } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 import { DbDomain } from '~/app/../types/Database';
 import { NotFoundComponent } from '~/app/components/misc/domain-not-found.component';
 import { FeatureService } from '~/app/services/features.service';
@@ -103,18 +103,22 @@ export default class SubdomainDetailPageComponent implements OnInit {
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
+
         this.databaseService.instance.subdomainsQueries
           .deleteSubdomain(this.domain, this.subdomainName)
-          .then(() => {
-            this.messageService.showSuccess('Deleted', `Subdomain "${this.subdomainName}.${this.domain}" has been deleted successfully.`);
-            this.router.navigate(['/assets/subdomains', this.domain]);
-          })
-          .catch((error) => {
-            this.errorHandler.handleError({
-              error,
-              showToast: true,
-              message: 'Failed to delete the subdomain. Please try again.',
-            });
+          .subscribe({
+            next: () => {
+              console.log('Done');
+              this.messageService.showSuccess('Deleted', `Subdomain "${this.subdomainName}.${this.domain}" has been deleted successfully.`);
+              this.router.navigate(['/assets/subdomains', this.domain]);
+            },
+            error: (error: Error) => {
+              this.errorHandler.handleError({
+                error,
+                showToast: true,
+                message: 'Failed to delete the subdomain. Please try again.',
+              });
+            }
           });
       },
       reject: () => {
