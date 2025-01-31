@@ -65,7 +65,7 @@ export default defineConfig( ({ mode }) => {
         content: {
           highlighter: 'prism',
           prismOptions: {
-            additionalLangs: ['diff'],
+            additionalLangs: ['diff', 'yaml'],
           },
         },
       }),
