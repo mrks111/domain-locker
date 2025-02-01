@@ -81,39 +81,26 @@ export class BillingService {
     return this.userPlan$.asObservable();
   }
 
-  /**
-   * All the special plans (like sponsor, complimentary, etc.) are mapped
-   * to the corresponding billing plan, used for feature availability checks.
-   * @param plan
-   * @returns
-   */
-  private mapSpecialPlanToBillingPlan(plan: UserType): BillingPlans {
-    if (['free', 'hobby', 'pro', 'enterprise'].includes(plan)) {
-      return plan as BillingPlans;
+
+  async createCheckoutSession(productId: string): Promise<string> {
+    const userId = (await this.supabaseService.getCurrentUser())?.id;
+    const endpoint = this.envService.getEnvVar('DL_STRIPE_CHECKOUT_URL', '/api/v1/checkout-session');
+
+    try {
+      const body = { userId, productId };
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || 'Failed to create checkout session');
+      }
+      return data.url;
+    } catch (error) {
+      throw error;
     }
-    const planMap: Record<SpecialPlans, BillingPlans> = {
-      sponsor: 'hobby',
-      complimentary: 'hobby',
-      tester: 'pro',
-      demo: 'pro',
-      super: 'enterprise',
-    };
-    return planMap[plan as SpecialPlans] || 'free';
   }
-
-    /**
-   * Creates a Stripe checkout session for the selected plan.
-   * @param planId Plan identifier
-   */
-    async createCheckoutSession(planId: string): Promise<{ url: string }> {
-      // const { data, error } = await this.supabaseService.callFunction('create_checkout_session', { plan_id: planId });
-      // if (error) {
-      //   console.error('Failed to create checkout session:', error);
-      //   throw error;
-      // }
-      // return data;
-      return { url: 'https://dummy-url.com' }; // TODO: Replace with actual implementation
-    }
-
 
 }

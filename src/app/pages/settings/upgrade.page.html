@@ -66,6 +66,7 @@
       routerLink="/settings/upgrade"
       label="Upgrade"
       [severity]="plan.suggested ? 'success' : 'secondary'"
+      (click)="handleUpgrade(plan.planId)"
       class="mx-4 p-button-primary {{ plan.suggested ? '' : 'p-button-outlined' }}"></button>
   </div>
 </div>

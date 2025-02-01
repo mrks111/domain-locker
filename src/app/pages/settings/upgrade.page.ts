@@ -4,6 +4,7 @@ import { PrimeNgModule } from '~/app/prime-ng.module';
 import { BillingService } from '~/app/services/billing.service';
 import { pricingFeatures } from '~/app/constants/pricing-features';
 import { Observable } from 'rxjs';
+import { ErrorHandlerService } from '~/app/services/error-handler.service';
 
 @Component({
   selector: 'app-upgrade',
@@ -21,7 +22,10 @@ export default class UpgradePage implements OnInit {
     { label: 'Monthly', value: false, icon: 'pi pi-calendar-minus' }
   ];
 
-  constructor(private billingService: BillingService) {
+  constructor(
+    private billingService: BillingService,
+    private errorHandler: ErrorHandlerService,
+  ) {
     this.currentPlan$ = this.billingService.getUserPlan();
   }
 
@@ -32,13 +36,29 @@ export default class UpgradePage implements OnInit {
     );
   }
 
+  getStripePlanId(planId: string): string {
+    const planMap: { [key: string]: { annual: string; monthly: string } } = {
+      free: { annual: '', monthly: '' },
+      hobby: { annual: 'dl_hobby_annual', monthly: 'dl_hobby_monthly' },
+      pro: { annual: 'dl_pro_annual', monthly: 'dl_pro_monthly' },
+    };
+
+    const billingCycle = this.isAnnual ? 'annual' : 'monthly';
+    return planMap[planId]?.[billingCycle] || '';
+  }
+
   async handleUpgrade(planId: string): Promise<void> {
+    const stripePlanId = this.getStripePlanId(planId);
+    if (!stripePlanId) {
+      this.errorHandler.handleError({ message: 'Invalid plan ID', showToast: true });
+      return;
+    }
     try {
-      if (!planId) return;
-      const stripeSession = await this.billingService.createCheckoutSession(planId);
-      window.location.href = stripeSession.url; // Redirect to Stripe Checkout
+      const stripeSession = await this.billingService.createCheckoutSession(stripePlanId);
+      console.log('Stripe session:', stripeSession);
+      // window.location.href = stripeSession.url;
     } catch (error) {
-      console.error('Error starting upgrade process:', error);
+      this.errorHandler.handleError({ error, message: 'Failed to create Stripe session', showToast: true });
     }
   }
 
