@@ -1,6 +1,6 @@
 ---
 slug: lazy-loading
-title: Lazy Loading Components
+title: Lazy Loading
 description: Defer loading components until they become visible in the viewport
 coverImage: 
 ---
