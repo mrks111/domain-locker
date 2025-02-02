@@ -80,8 +80,8 @@ export default defineEventHandler(async (event) => {
     };
 
     // Get params for payload body to Stripe
-    const success_url = successUrl || `${APP_BASE_URL}/settings/upgrade?success=1`;
-    const cancel_url = cancelUrl || `${APP_BASE_URL}/settings/upgrade?canceled=1`;
+    const success_url = (successUrl || `${APP_BASE_URL}/settings/upgrade`) + '?success=1&session_id={CHECKOUT_SESSION_ID}';
+    const cancel_url = (cancelUrl || `${APP_BASE_URL}/settings/upgrade`) + '?cancel=1';
     const line_items = [{ price, quantity: 1 }];
     const mode = 'subscription';
     const subscription_data = { metadata: { user_id: userId } };

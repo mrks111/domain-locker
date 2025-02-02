@@ -5,6 +5,8 @@ import { BillingService } from '~/app/services/billing.service';
 import { pricingFeatures } from '~/app/constants/pricing-features';
 import { Observable } from 'rxjs';
 import { ErrorHandlerService } from '~/app/services/error-handler.service';
+import { ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-upgrade',
@@ -15,6 +17,7 @@ import { ErrorHandlerService } from '~/app/services/error-handler.service';
 export default class UpgradePage implements OnInit {
   currentPlan$: Observable<string | null>;
   public availablePlans = pricingFeatures;
+  public billingInfo: any;
   
   public isAnnual = true;
   public billingCycleOptions = [
@@ -22,9 +25,13 @@ export default class UpgradePage implements OnInit {
     { label: 'Monthly', value: false, icon: 'pi pi-calendar-minus' }
   ];
 
+  public status: 'nothing' | 'success' | 'failed' = 'nothing';
+
   constructor(
     private billingService: BillingService,
     private errorHandler: ErrorHandlerService,
+    private route: ActivatedRoute,
+    private http: HttpClient
   ) {
     this.currentPlan$ = this.billingService.getUserPlan();
   }
@@ -34,6 +41,21 @@ export default class UpgradePage implements OnInit {
     this.billingService.fetchUserPlan().catch((error) =>
       console.error('Failed to fetch current plan:', error)
     );
+
+    const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+    const success = this.route.snapshot.queryParamMap.get('success');
+    const cancelled = this.route.snapshot.queryParamMap.get('canceled');
+    
+    if (success && sessionId) {
+      this.status = 'success';
+    } else if (cancelled) {
+      this.status = 'failed';
+    }
+
+    this.billingService.getBillingData().subscribe((data) => {
+      this.billingInfo = data;
+      console.log(data);
+    });
   }
 
   getStripePlanId(planId: string): string {
@@ -54,9 +76,8 @@ export default class UpgradePage implements OnInit {
       return;
     }
     try {
-      const stripeSession = await this.billingService.createCheckoutSession(stripePlanId);
-      console.log('Stripe session:', stripeSession);
-      // window.location.href = stripeSession.url;
+      const stripeSessionUrl = await this.billingService.createCheckoutSession(stripePlanId);
+      window.location.href = stripeSessionUrl;
     } catch (error) {
       this.errorHandler.handleError({ error, message: 'Failed to create Stripe session', showToast: true });
     }
