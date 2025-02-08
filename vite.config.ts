@@ -76,8 +76,8 @@ export default defineConfig( ({ mode }) => {
             // Copy the primeNG file(s) you need.
             // e.g. the "vela-orange" theme => rename to "vela-orange-core.css"
             src: 'node_modules/primeng/resources/themes/vela-orange/theme.css',
-            dest: 'assets/themes',
-            rename: 'orange-dark2.css'
+            dest: 'themes',
+            rename: 'orange-dark.css'
           },
           // Repeat for other primeNG theme files you want to copy
           // e.g. for `vela-blue`, etc.
