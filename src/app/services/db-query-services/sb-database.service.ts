@@ -198,15 +198,25 @@ export default class MainDatabaseService extends DatabaseService {
     return !!data;
   }
 
+  // saveDomain(data: SaveDomainData): Observable<DbDomain> {
+  //   return this.featureService.isFeatureEnabled('writePermissions').pipe(
+  //     map(isEnabled => {
+  //       if (!isEnabled) {
+  //         this.globalMessagingService.showWarn('Write permissions are disabled', 'Skipping save operation');
+  //         throw new Error('Write permissions disabled');
+  //       }
+  //       return isEnabled;
+  //     }),
+  //     switchMap(() => from(this.saveDomainInternal(data))),
+  //     catchError(error => this.handleError(error))
+  //   );
+  // }
+
   saveDomain(data: SaveDomainData): Observable<DbDomain> {
-    return this.featureService.isFeatureEnabled('writePermissions').pipe(
-      map(isEnabled => {
-        if (!isEnabled) {
-          this.globalMessagingService.showWarn('Write permissions are disabled', 'Skipping save operation');
-          throw new Error('Write permissions disabled');
-        }
-      }),
-      switchMap(() => from(this.saveDomainInternal(data))),
+    if (!this.featureService.isFeatureEnabled('writePermissions')) {
+      return throwError(() => new Error('Write permissions disabled'));
+    }
+    return from(this.saveDomainInternal(data)).pipe(
       catchError(error => this.handleError(error))
     );
   }
@@ -225,6 +235,8 @@ export default class MainDatabaseService extends DatabaseService {
       statuses,
       subdomains,
     } = data;
+
+    console.log('===> Save domain internal, for domain', domain);
   
     const dbDomain: Partial<DbDomain> = {
       domain_name: domain.domain_name,
@@ -240,6 +252,9 @@ export default class MainDatabaseService extends DatabaseService {
       .insert(dbDomain)
       .select()
       .single();
+
+    console.log('===> insertedDomain', insertedDomain);
+    console.log('===> domainError', domainError);
   
     if (domainError) this.handleError(domainError);
     if (!insertedDomain) this.handleError(new Error('Failed to insert domain'));
