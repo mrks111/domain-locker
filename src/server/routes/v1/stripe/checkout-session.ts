@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
 
     // Parse the POST body for userId, productId, successUrl, cancelUrl
     const inputBody = await readBody(event);
-    const { userId, productId, successUrl, cancelUrl } = inputBody || {};    
+    const { userId, productId, callbackUrl } = inputBody || {};    
 
     if (!userId || !productId) { // Throw error on missing essential fields
       throw new Error('Missing required fields: userId, productId');
@@ -80,14 +80,15 @@ export default defineEventHandler(async (event) => {
     };
 
     // Get params for payload body to Stripe
-    const success_url = (successUrl || `${APP_BASE_URL}/settings/upgrade`) + '?success=1&session_id={CHECKOUT_SESSION_ID}';
-    const cancel_url = (cancelUrl || `${APP_BASE_URL}/settings/upgrade`) + '?cancel=1';
+    const success_url = (callbackUrl || `${APP_BASE_URL}/settings/upgrade`) + '?success=1&session_id={CHECKOUT_SESSION_ID}';
+    const cancel_url = (callbackUrl || `${APP_BASE_URL}/settings/upgrade`) + '?cancel=1';
     const line_items = [{ price, quantity: 1 }];
     const mode = 'subscription';
     const subscription_data = { metadata: { user_id: userId } };
+    const allow_promotion_codes = true;
 
     // The payload
-    const payload = { line_items, mode, subscription_data, success_url, cancel_url };
+    const payload = { line_items, mode, subscription_data, success_url, cancel_url, allow_promotion_codes };
 
     // Create request body for Stripe, with flattened + encoded params
     const body = new URLSearchParams(flattenObject(payload)).toString();
