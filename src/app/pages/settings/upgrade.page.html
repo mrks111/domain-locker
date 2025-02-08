@@ -4,7 +4,10 @@
   <ng-template pTemplate>
     <div class="flex items-center">
       <i class="pi pi-check-circle mr-2"></i>
-      <span>Subscription updated successfully.</span>
+      <span>
+        Subscription updated successfully.
+        You may need to refresh this page for changes to take effect.
+      </span>
     </div>
   </ng-template>
 </p-messages>
@@ -76,6 +79,7 @@
         severity="danger"
         icon="pi pi-times-circle"
         size="small"
+        (click)="cancelSubscription()"
       />
     </div>
   </div>
