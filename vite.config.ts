@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import analog from '@analogjs/platform';
 import { defineConfig, loadEnv } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 import * as path from 'node:path';
 
 export default defineConfig( ({ mode }) => {
@@ -68,6 +69,24 @@ export default defineConfig( ({ mode }) => {
             additionalLangs: ['diff', 'yaml'],
           },
         },
+      }),
+      viteStaticCopy({
+        targets: [
+          {
+            // Copy the primeNG file(s) you need.
+            // e.g. the "vela-orange" theme => rename to "vela-orange-core.css"
+            src: 'node_modules/primeng/resources/themes/vela-orange/theme.css',
+            dest: 'src/assets/themes',
+            rename: 'orange-dark.css'
+          },
+          // Repeat for other primeNG theme files you want to copy
+          // e.g. for `vela-blue`, etc.
+          // {
+          //   src: 'node_modules/primeng/resources/themes/vela-blue/theme.css',
+          //   dest: 'themes/primeng/',
+          //   rename: 'vela-blue-core.css'
+          // },
+        ],
       }),
     ],
 
