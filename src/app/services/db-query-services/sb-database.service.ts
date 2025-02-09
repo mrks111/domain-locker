@@ -235,8 +235,6 @@ export default class MainDatabaseService extends DatabaseService {
       statuses,
       subdomains,
     } = data;
-
-    console.log('===> Save domain internal, for domain', domain);
   
     const dbDomain: Partial<DbDomain> = {
       domain_name: domain.domain_name,
@@ -253,9 +251,6 @@ export default class MainDatabaseService extends DatabaseService {
       .select()
       .single();
 
-    console.log('===> insertedDomain', insertedDomain);
-    console.log('===> domainError', domainError);
-  
     if (domainError) this.handleError(domainError);
     if (!insertedDomain) this.handleError(new Error('Failed to insert domain'));
   
