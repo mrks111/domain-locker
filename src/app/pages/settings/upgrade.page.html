@@ -110,7 +110,7 @@
       </ul>
     </div>  
     <button pButton
-      *ngIf="(currentPlan$ | async) !== plan.planId && plan.planId !== 'free'"
+      *ngIf="(currentPlan$ | async) === 'free' && plan.planId !== 'free'"
       routerLink="/settings/upgrade"
       label="Upgrade"
       [severity]="plan.suggested ? 'success' : 'secondary'"

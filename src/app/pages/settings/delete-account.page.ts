@@ -67,7 +67,7 @@ export default class DeleteAccountPage {
       title: 'Switch to Self-Hosted',
       body: 'If you\'re interested in self-hosting, you can switch to the self-hosted version of the app. This will allow you to host the app on your own server and have full control over your data.',
       buttonLabel: 'Self-Hosting Docs',
-      buttonLink: '/self-hosting-docs',
+      buttonLink: '/about/self-hosting',
       buttonIcon: 'pi pi-server',
       buttonSeverity: 'help',
     },
