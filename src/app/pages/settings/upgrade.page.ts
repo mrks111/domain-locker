@@ -5,16 +5,23 @@ import { BillingService } from '~/app/services/billing.service';
 import { pricingFeatures } from '~/app/constants/pricing-features';
 import { Observable } from 'rxjs';
 import { ErrorHandlerService } from '~/app/services/error-handler.service';
+import { ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { ConfirmationService } from 'primeng/api';
+import { GlobalMessageService } from '~/app/services/messaging.service';
+import { EnvService } from '~/app/services/environment.service';
 
 @Component({
   selector: 'app-upgrade',
   standalone: true,
   imports: [CommonModule, PrimeNgModule],
   templateUrl: './upgrade.page.html',
+  styles: ['::ng-deep .p-confirm-dialog { max-width: 600px; }'],
 })
 export default class UpgradePage implements OnInit {
   currentPlan$: Observable<string | null>;
   public availablePlans = pricingFeatures;
+  public billingInfo: any;
   
   public isAnnual = true;
   public billingCycleOptions = [
@@ -22,9 +29,16 @@ export default class UpgradePage implements OnInit {
     { label: 'Monthly', value: false, icon: 'pi pi-calendar-minus' }
   ];
 
+  public status: 'nothing' | 'success' | 'failed' = 'nothing';
+
   constructor(
     private billingService: BillingService,
     private errorHandler: ErrorHandlerService,
+    private route: ActivatedRoute,
+    private http: HttpClient,
+    private confirmationService: ConfirmationService,
+    private messagingService: GlobalMessageService,
+    private envService: EnvService,
   ) {
     this.currentPlan$ = this.billingService.getUserPlan();
   }
@@ -34,6 +48,20 @@ export default class UpgradePage implements OnInit {
     this.billingService.fetchUserPlan().catch((error) =>
       console.error('Failed to fetch current plan:', error)
     );
+
+    const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+    const success = this.route.snapshot.queryParamMap.get('success');
+    const cancelled = this.route.snapshot.queryParamMap.get('canceled');
+    
+    if (success && sessionId) {
+      this.status = 'success';
+    } else if (cancelled) {
+      this.status = 'failed';
+    }
+
+    this.billingService.getBillingData().subscribe((data) => {
+      this.billingInfo = data;
+    });
   }
 
   getStripePlanId(planId: string): string {
@@ -54,9 +82,8 @@ export default class UpgradePage implements OnInit {
       return;
     }
     try {
-      const stripeSession = await this.billingService.createCheckoutSession(stripePlanId);
-      console.log('Stripe session:', stripeSession);
-      // window.location.href = stripeSession.url;
+      const stripeSessionUrl = await this.billingService.createCheckoutSession(stripePlanId);
+      window.location.href = stripeSessionUrl;
     } catch (error) {
       this.errorHandler.handleError({ error, message: 'Failed to create Stripe session', showToast: true });
     }
@@ -64,5 +91,36 @@ export default class UpgradePage implements OnInit {
 
   getPrice(plan: any) {
     return this.isAnnual ? plan.priceAnnual : plan.priceMonth;
+  }
+
+  cancelSubscription() {
+    this.confirmationService.confirm({
+      message: 'You can cancel your subscription at any time, but '
+        + 'you\'ll lose access to all premium features, '
+        + 'including stats, monitor, alerts, change history, data connectors and more.'
+        + 'You may also loose access to your data if you have more than the free plan quota, '
+        + 'so it\'s recommended you check this is okay, or export your data first.',
+      header: 'Are you sure that you want to downgrade?',
+      icon: 'pi pi-exclamation-triangle',
+      rejectLabel: 'No, stay subscribed',
+      rejectButtonStyleClass: 'p-button-sm p-button-success',
+      acceptIcon:'pi pi-times-circle mr-2',
+      rejectIcon:'pi pi-check-circle mr-2',
+      acceptButtonStyleClass:'p-button-sm p-button-danger p-button-text',
+      closeOnEscape: true,
+      accept: () => {
+        const subscriptionId = this.billingInfo?.meta?.subscription_id;
+        this.billingService.cancelSubscription(subscriptionId)
+          .then(() => {
+            this.messagingService.showSuccess(
+              'Subscription Canceled',
+              'Your subscription has been successfully canceled.',
+            );
+          })
+          .catch((error) => {
+            this.errorHandler.handleError({ error, message: 'Failed to cancel subscription', showToast: true });
+          });
+      },
+    });
   }
 }

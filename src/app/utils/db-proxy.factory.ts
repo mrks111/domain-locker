@@ -4,14 +4,14 @@ import { defer, from, Observable, switchMap, throwError } from 'rxjs';
 
 const defaultWriteMethods = new Set([
   // Save domain and assets
-  'saveDomain',
-  'saveDnsRecords',
-  'saveHost',
-  'saveIpAddresses',
-  'saveRegistrar',
-  'saveSslInfo',
-  'saveStatuses',
-  'saveWhoisInfo',
+  // 'saveDomain',
+  // 'saveDnsRecords',
+  // 'saveHost',
+  // 'saveIpAddresses',
+  // 'saveRegistrar',
+  // 'saveSslInfo',
+  // 'saveStatuses',
+  // 'saveWhoisInfo',
   // Tags
   'addTag',
   'saveTags',
@@ -34,7 +34,7 @@ const defaultWriteMethods = new Set([
   'deleteLinks',
   // Notification Editing
   'saveNotifications',
-  'updateNotificationChannels',
+  // 'updateNotificationChannels',
   'updateBulkNotificationPreferences',
   'markAllNotificationsRead',
   'addNotification',

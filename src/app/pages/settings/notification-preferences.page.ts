@@ -132,6 +132,13 @@ export default class NotificationPreferencesPage implements OnInit {
         { label: 'Homeserver URL', name: 'homeserverUrl', placeholder: 'Enter homeserver URL' },
         { label: 'Access Token', name: 'accessToken', placeholder: 'Enter access token' }
       ]
+    },
+    {
+      name: 'SMS Texting',
+      formControlName: 'sms',
+      requires: [
+        { label: 'Mobile number', name: 'number', placeholder: 'Enter your mobile number with area code' },
+      ]
     }
   ];
 
