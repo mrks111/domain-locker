@@ -13,6 +13,7 @@ type EnvVar =
 | 'DL_GLITCHTIP_DSN'    // GlitchTip DSN, for error tracking
 | 'DL_PLAUSIBLE_URL'    // URL to Plausible instance, for hit counting
 | 'DL_PLAUSIBLE_SITE'   // Plausible site ID /  URL, for hit counting
+| 'DL_TURNSTILE_KEY'    // Cloudflare public site key for Turnstile captcha
 | 'DL_PG_HOST'          // Postgres host
 | 'DL_PG_PORT'          // Postgres port
 | 'DL_PG_NAME'          // Postgres DB name

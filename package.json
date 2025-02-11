@@ -49,6 +49,7 @@
     "marked-highlight": "^2.0.1",
     "marked-mangle": "^1.1.7",
     "ng-apexcharts": "^1.12.0",
+    "ngx-turnstile": "^0.2.4",
     "pg": "^8.13.1",
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",
