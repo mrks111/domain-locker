@@ -47,3 +47,15 @@ export default defineEventHandler(async (event) => {
 ```
 
 Note that this is currently only setup to support auth from Supabase instances.
+
+---
+
+### Captcha Implementation
+
+If needed, we can protect certain endpoints from potential non-human traffic by implementing a captcha.
+We've set this up using Turnstile, currently it only covers the auth routes, but it can be easily extended to other routes.
+
+For setup instructions, see [Lissy93/domain-locker#2](https://github.com/Lissy93/domain-locker/pull/2).
+
+On a side note, if you want to see how to setup a Captcha on an Angular/Supabase app,
+[here is our diff](https://github.com/Lissy93/domain-locker/commit/c60d19994b2743ef6958f328033d23b5975946f2).
