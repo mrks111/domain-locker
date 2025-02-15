@@ -3,53 +3,57 @@ import { GlobalMessageService } from '~/app/services/messaging.service';
 import { defer, from, Observable, switchMap, throwError } from 'rxjs';
 
 const defaultWriteMethods = new Set([
-  // // Save domain and assets
-  // 'saveDomain',
-  // 'saveDnsRecords',
-  // 'saveHost',
-  // 'saveIpAddresses',
-  // 'saveRegistrar',
-  // 'saveSslInfo',
-  // 'saveStatuses',
-  // 'saveWhoisInfo',
-  // // Tags
-  // 'addTag',
-  // 'saveTags',
-  // 'updateTags',
-  // 'createTag',
-  // 'updateTag',
-  // 'deleteTag',
-  // 'saveDomainsForTag',
-  // // Subdomains
-  // 'saveSubdomains',
-  // 'saveSubdomainsForDomainName',
-  // 'deleteSubdomainsByDomain',
-  // 'updateSubdomains',
-  // 'deleteSubdomain',
-  // 'saveSubdomainForDomain',
-  // // Link Editing
-  // 'updateLinks',
-  // 'addLinkToDomains',
-  // 'updateLinkInDomains',
-  // 'deleteLinks',
-  // // Notification Editing
-  // 'saveNotifications',
-  // // 'updateNotificationChannels',
-  // 'updateBulkNotificationPreferences',
-  // 'markAllNotificationsRead',
-  // 'addNotification',
-  // 'updateNotification',
-  // 'deleteNotification',
-  // 'updateNotificationTypes',
-  // // Valuation
-  // 'updateDomainCostings',
+  // Save domain and assets
+  'saveDomain',
+  'saveDnsRecords',
+  'saveHost',
+  'saveIpAddresses',
+  'saveRegistrar',
+  'saveSslInfo',
+  'saveStatuses',
+  'saveWhoisInfo',
+  // Tags
+  'addTag',
+  'saveTags',
+  'updateTags',
+  'createTag',
+  'updateTag',
+  'deleteTag',
+  'saveDomainsForTag',
+  // Subdomains
+  'saveSubdomains',
+  'saveSubdomainsForDomainName',
+  'deleteSubdomainsByDomain',
+  'updateSubdomains',
+  'deleteSubdomain',
+  'saveSubdomainForDomain',
+  // Link Editing
+  'updateLinks',
+  'addLinkToDomains',
+  'updateLinkInDomains',
+  'deleteLinks',
+  // Notification Editing
+  'saveNotifications',
+  // 'updateNotificationChannels',
+  'updateBulkNotificationPreferences',
+  'markAllNotificationsRead',
+  'addNotification',
+  'updateNotification',
+  'deleteNotification',
+  'updateNotificationTypes',
+  // Valuation
+  'updateDomainCostings',
 ]);
+
+const environmentType =  import.meta.env['DL_ENV_TYPE'];
+const disableWriteEnvVar = import.meta.env['DL_DISABLE_WRITE_METHODS'];
+const writeMethods = (environmentType === 'demo' || disableWriteEnvVar) ? defaultWriteMethods :  new Set<string>();
 
 export function createDbProxy<T extends object>(
   realService: T,
   featureService: FeatureService,
   globalMsg: GlobalMessageService,
-  writeMethodNames: Set<string> = defaultWriteMethods,
+  writeMethodNames: Set<string> = writeMethods,
 ): T {
   return new Proxy(realService, {
     get(target, property, receiver) {
@@ -66,7 +70,6 @@ export function createDbProxy<T extends object>(
 
       // If write permissions are enabled, just return the original method.
       // if (await featureService.isFeatureEnabledPromise('writePermissions')) {
-      //   console.log('Write permissions enabled for', property);
       //   return original;
       // }
 
