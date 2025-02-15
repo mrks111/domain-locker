@@ -3,7 +3,7 @@ import { GlobalMessageService } from '~/app/services/messaging.service';
 import { defer, from, Observable, switchMap, throwError } from 'rxjs';
 
 const defaultWriteMethods = new Set([
-  // Save domain and assets
+  // // Save domain and assets
   // 'saveDomain',
   // 'saveDnsRecords',
   // 'saveHost',
@@ -12,37 +12,37 @@ const defaultWriteMethods = new Set([
   // 'saveSslInfo',
   // 'saveStatuses',
   // 'saveWhoisInfo',
-  // Tags
-  'addTag',
-  'saveTags',
-  'updateTags',
-  'createTag',
-  'updateTag',
-  'deleteTag',
-  'saveDomainsForTag',
-  // Subdomains
-  'saveSubdomains',
-  'saveSubdomainsForDomainName',
-  'deleteSubdomainsByDomain',
-  'updateSubdomains',
-  'deleteSubdomain',
-  'saveSubdomainForDomain',
-  // Link Editing
-  'updateLinks',
-  'addLinkToDomains',
-  'updateLinkInDomains',
-  'deleteLinks',
-  // Notification Editing
-  'saveNotifications',
-  // 'updateNotificationChannels',
-  'updateBulkNotificationPreferences',
-  'markAllNotificationsRead',
-  'addNotification',
-  'updateNotification',
-  'deleteNotification',
-  'updateNotificationTypes',
-  // Valuation
-  'updateDomainCostings',
+  // // Tags
+  // 'addTag',
+  // 'saveTags',
+  // 'updateTags',
+  // 'createTag',
+  // 'updateTag',
+  // 'deleteTag',
+  // 'saveDomainsForTag',
+  // // Subdomains
+  // 'saveSubdomains',
+  // 'saveSubdomainsForDomainName',
+  // 'deleteSubdomainsByDomain',
+  // 'updateSubdomains',
+  // 'deleteSubdomain',
+  // 'saveSubdomainForDomain',
+  // // Link Editing
+  // 'updateLinks',
+  // 'addLinkToDomains',
+  // 'updateLinkInDomains',
+  // 'deleteLinks',
+  // // Notification Editing
+  // 'saveNotifications',
+  // // 'updateNotificationChannels',
+  // 'updateBulkNotificationPreferences',
+  // 'markAllNotificationsRead',
+  // 'addNotification',
+  // 'updateNotification',
+  // 'deleteNotification',
+  // 'updateNotificationTypes',
+  // // Valuation
+  // 'updateDomainCostings',
 ]);
 
 export function createDbProxy<T extends object>(
@@ -63,6 +63,12 @@ export function createDbProxy<T extends object>(
       if (!writeMethodNames.has(property as string)) {
         return original;
       }
+
+      // If write permissions are enabled, just return the original method.
+      // if (await featureService.isFeatureEnabledPromise('writePermissions')) {
+      //   console.log('Write permissions enabled for', property);
+      //   return original;
+      // }
 
       // It's a "write" method => wrap it so we do the check before the actual DB call.
       return function(...args: any[]): Observable<any> {

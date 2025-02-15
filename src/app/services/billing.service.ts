@@ -103,7 +103,7 @@ export class BillingService {
 
   async cancelSubscription(subscriptionId: string): Promise<any> {
     const userId = (await this.supabaseService.getCurrentUser())?.id;
-    const endpoint = this.envService.getEnvVar('DL_STRIPE_CANCEL_URL', '/api/v1/stripe/cancel-subscription');
+    const endpoint = this.envService.getEnvVar('DL_STRIPE_CANCEL_URL', '/api/stripe/cancel-subscription');
     try {
       const body = { userId, subscriptionId };
       const res = await fetch(endpoint, {
@@ -128,7 +128,7 @@ export class BillingService {
 
   async createCheckoutSession(productId: string): Promise<string> {
     const userId = (await this.supabaseService.getCurrentUser())?.id;
-    const endpoint = this.envService.getEnvVar('DL_STRIPE_CHECKOUT_URL', '/api/v1/stripe/checkout-session');
+    const endpoint = this.envService.getEnvVar('DL_STRIPE_CHECKOUT_URL', '/api/stripe/checkout-session');
     const host = this.envService.getEnvVar('DL_BASE_URL', 'https://domain-locker.com');
     const callbackUrl = host ? `${host}/settings/upgrade` : window.location.href;
     try {
