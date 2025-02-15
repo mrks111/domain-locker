@@ -5,7 +5,7 @@ description: My First Post Description
 coverImage: https://images.unsplash.com/photo-1493612276216-ee3925520721?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=464&q=80
 ---
 
-## Setup
+## App Setup
 
 ### Get the Code
 
@@ -37,23 +37,17 @@ Or to build for a particular platform, use the `build:vercel`, `build:netlify` c
 
 ---
 
-## Database
-
-### Setup
+## Database Setup
 
 You'll need either a Posthres database, or a Supabase instance.
+Follow the instructions below, to deploy an instance with the required schema and config, and then set the environmental variables in your domain locker app.
+
+### Option 1) Postgres
 
 With Postgres, follow the setup instructions in [Postgres Setup](/about/developing/postgres-setup),
 then init the schema and start the DB with `./db/setup-postgres.sh`
-to import the [`schema.sql`](https://github.com/Lissy93/domain-locker/blob/main/db/schema.sql).
-
-### Use
-
-Finally, set the environmental variables, so the app can connect to the database.
-These variables can be set in a `.env` file, or in your systems environment, or in your hosting provider's settings.
-
-
-Postgres:
+(to import the [`schema.sql`](https://github.com/Lissy93/domain-locker/blob/main/db/schema.sql)).
+You'll then just need to pass the following env vars to the app, so it can connect to your Postgres instance.
 
 ```
 DL_PG_HOST='localhost'
@@ -63,7 +57,9 @@ DL_PG_PASSWORD='supersecret'
 DL_PG_NAME='domain_locker'
 ```
 
-Supabase:
+### Option 2) Supabase
+
+Deploy a new Supabase instance, apply the config from [dl-edge-config](https://github.com/Lissy93/dl-edge-config) and set the following environmental variables:
 
 ```
 SUPABASE_URL=xxx
@@ -86,11 +82,35 @@ Below is a high-level class-diagram.
 
 ## Architecture
 
+### Self-Hosted Version
+
 The self-hosted app is very simple, and consists of 3 containers:
-- The app itself
+- The app itself (client, server and optional webhooks for notifications)
 - A Postgres database (to store your data)
 - A cron service (optional, to keep domains up-to-date and trigger notifications)
 
-This differs slightly from the managed instance, which has the same core web app, but is reliant upon some non-free services for extra features and security. Such as notification channels, auth/SSO, billing, attack protection, monitoring, availability, backups, hosting, etc. Below is a high-level architecture diagram to show what I mean.
+<img width="360" src="https://gist.github.com/user-attachments/assets/9d0769f3-a09a-4cb1-94f3-91c83ff9ab75" />
 
-![architecture](https://gist.github.com/user-attachments/assets/00b8b790-ab9d-49f8-ae88-a5dca4120e73)
+### Managed Version
+
+This differs slightly from the managed instance, which has the same core web app, but is reliant upon some non-free services for extra features and security.
+
+Below is a high-level architecture diagram to show what I mean.
+
+<img src="https://gist.github.com/user-attachments/assets/81e19b5a-5a69-4790-9b73-95450fc70904" />
+
+
+Why the difference? Running a SaaS app requires some additional components/layers in order to offer users the best possible experience. For example, the managed app also needs to cover the following areas:
+- Multiple environments, automated CI/CD
+- An ORM between client and server
+- Feature flagging and role-based features
+- Domain name, DNS, Captcha, WAF, cache, SSL
+- Billing and user plan management
+- Authentication, authorization and SSO
+- STMP mailer service, and Twilio SMS
+- Notification channels for WhatsApp, SMS, Signal, etc
+- Backups for database, config, logs, assets
+- Observability for bugs, payments, availability, traces
+- User support for queries, billing, bugs, feedback, etc
+
+<!-- ![architecture](https://gist.github.com/user-attachments/assets/00b8b790-ab9d-49f8-ae88-a5dca4120e73) -->

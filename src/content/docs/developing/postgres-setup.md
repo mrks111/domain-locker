@@ -50,10 +50,16 @@ And finally, set a (secure) password for the postgres user
 sudo -u postgres psql -c "\password postgres"
 ```
 
+### Configuring the Schema
+
+We've got a Bash script in [`./db/setup-postgres.sh`](https://github.com/Lissy93/domain-locker/blob/main/db/setup-postgres.sh) which will take care of creating your database and applying the Domain Locker schema.
 
 ---
 
 ## Schema
+
+The schema can be found in [`db/schema.sql`](https://github.com/Lissy93/domain-locker/blob/main/db/schema.sql).
+
 
 ```mermaid
 classDiagram
