@@ -91,7 +91,6 @@ export default class HomePageComponent implements OnInit {
   setAuthState() {
     if (!this.environmentService.isSupabaseEnabled()) {
       this.isAuthenticated = true;
-      console.log('Supabase is disabled, skipping auth check');
       return;
     }
     this.subscriptions.add(

@@ -21,11 +21,65 @@
   },
   
   "HOME": {
+    "FEATURES": "Features",
+    "DESCRIPTION": "Domain Locker is the ultimate all-in-one platform to manage, monitor, and optimize your domain portfolio effortlessly, with smart alerts, detailed analytics, and powerful tools to keep you organized, secure, and always in control.",
+    "PRICING": "Pricing",
+    "DEMO_TITLE": "Demo",
+    "LOADING_TITLE": "Loading",
+    "LOADING_DESCRIPTION": "Fetching your domains, and calculating stats",
     "SUBHEADINGS": {
       "DASHBOARD": "Dashboard",
       "DOMAINS": "Domains",
       "CATEGORIES": "Categories",
       "ASSETS": "Assets"
+    },
+    "UPCOMING_EXPIRATIONS": "Upcoming Expirations",
+    "DOMAIN_PROVIDERS": "Domain Providers",
+    "SECURITY_PROFILE": "Security Profile",
+    "HOST_GEOGRAPHY": "Host Geography",
+    "TAGS": "Tags",
+    "REGISTRATION_TIMELINE": "Registration Timeline",
+    "SHOW_MORE_INSIGHTS": "Show more insights",
+    "EXPAND_STATS": "Expand Stats",
+    "HIDE_STATS": "Hide Stats",
+    "VIEW_ALL_ASSETS": "View All Assets",
+    "DEMO": {
+      "LIVE_DEMO_TITLE": "Live Demo",
+      "LIVE_DEMO_DESC": "A live demo is deployed to",
+      "DEMO_DOMAIN": "demo.domain-locker.com",
+      "CREDENTIALS": "Credentials",
+      "USERNAME": "Username: demo@domain-locker.com",
+      "PASSWORD": "Password: domainlocker",
+      "VISIT_DEMO": "Visit Demo",
+      "VIDEO_DEMO_TITLE": "Video Demo",
+      "VIDEO_DEMO_DESC": "TODO",
+      "WATCH_VIDEO": "Watch Video"
+    },
+    "HERO": {
+      "BRAND": "Domain Locker:",
+      "HEADLINE": "The Central Hub for all your Domain Names",
+      "SUBHEADLINE": "Smart, simple and secure domain management",
+      "FEATURES": {
+        "TRACK_DOMAINS": "Track all your domains across registrars from one simple dashboard",
+        "DETAILED_METRICS": "Detailed metrics and live data visualizations for each domain",
+        "ALERTS": "Get alerted of upcoming domain expirations or configuration updates",
+        "MONITORING": "Performance, security and configuration monitoring for each domain",
+        "MORE": "And so much more!"
+      },
+      "BUTTON": {
+        "VIEW_GITHUB": "View on GitHub",
+        "GET_STARTED": "Get Started"
+      }
+    },
+    "WELCOME": {
+      "TITLE": "Welcome to Domain Locker",
+      "DESCRIPTION": "Here you'll be able to securely keep track of all your domain names in one place. Whether you've got 1 or 1,000 domains, we've got you covered - with security insights, change and expiry notifications, domain stats and more.",
+      "GET_STARTED_TITLE": "Let's get you started!",
+      "GET_STARTED_DESCRIPTION": "Begin by setting up your first domain name, all you need is the URL.\nYou'll always be able to edit it, as well as add more later.",
+      "BUTTON": {
+        "GET_STARTED": "Get Started"
+      },
+      "TIP": "Tip: You can switch language, theme and display mode by clicking the <i class=\"pi pi-palette text-primary mx-1\"></i> in the top-right."
     }
   },
 
@@ -123,7 +177,7 @@
         "COUNT": "{count} Tags"
       }
     }
-  },
+  },  
 
   "GLOBAL": {
     "COPY": "Copy",
@@ -131,6 +185,16 @@
     "OK": "OK",
     "SAVE": "Save",
     "DELETE": "Delete",
-    "CONFIRM": "Are you sure?"
+    "CONFIRM": "Are you sure?",
+    "LOADING": {
+      "INITIALIZING": "Initializing",
+      "DEFAULT_DESCRIPTION": "We're just getting everything ready for you.\nThis shouldn't take a moment...",
+      "ERROR_SHORT": "It shouldn't be taking this long...",
+      "ERROR_LONG": "Something might have gone wrong",
+      "BUTTON": {
+        "HOME": "Home",
+        "RELOAD": "Reload"
+      }
+    }
   }
 }
