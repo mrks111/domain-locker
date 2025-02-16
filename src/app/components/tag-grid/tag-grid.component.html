@@ -17,7 +17,7 @@
       @if (tag.icon) {
         <div class="tag-icon larger-larger" style="mask-image: url('https://api.iconify.design/{{tag.icon}}.svg');"></div>
       }
-      <div class="flex flex-col flex-1">
+      <div class="flex flex-col flex-1 overflow-hidden">
         <div class="flex items-center justify-between gap-1">
           <h2 class="capitalize text-lg m-0 truncate">{{ tag.name }}</h2>
           <strong>{{ tag.domain_count }}</strong>

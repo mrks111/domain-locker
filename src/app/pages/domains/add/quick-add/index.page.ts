@@ -209,4 +209,12 @@ export default class QuickAddDomain {
       tags: [],
     };
   }
+
+  onDomainNameBlur() {
+    const control = this.domainForm.get('domainName');
+    if (!control) return;
+    let value = (control.value || '').trim();
+    value = value.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+    control.setValue(value);
+  }
 }

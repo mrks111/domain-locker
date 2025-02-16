@@ -216,10 +216,36 @@ export default class MainDatabaseService extends DatabaseService {
     if (!this.featureService.isFeatureEnabled('writePermissions')) {
       return throwError(() => new Error('Write permissions disabled'));
     }
-    return from(this.saveDomainInternal(data)).pipe(
+  
+    // Fetch the current domain list => check plan’s domainLimit => duplicates
+    return this.listDomainNames().pipe(
+      switchMap((existingDomains) => {
+        // Check if domain is already in the list
+        const newDomain = data.domain.domain_name.toLowerCase().trim();
+        if (existingDomains.includes(newDomain)) {
+          return throwError(() => new Error(`Domain "${newDomain}" already exists.`));
+        }
+  
+        // Get domainLimit from featureService
+        return this.featureService.getFeatureValue<number>('domainLimit').pipe(
+          switchMap((limit) => {
+            // If limit is not a number or 0 => fallback to big number
+            const domainLimit = typeof limit === 'number' ? limit : 10000;
+  
+            // If user already has domainLimit or more => throw
+            if (existingDomains.length >= domainLimit) {
+              return throwError(() => new Error(`You have reached your limit of ${domainLimit} domains. Please upgrade.`));
+            }
+  
+            // Save the domain
+            return from(this.saveDomainInternal(data));
+          })
+        );
+      }),
       catchError(error => this.handleError(error))
     );
   }
+  
 
   private async saveDomainInternal(data: SaveDomainData): Promise<DbDomain> {
     const {
