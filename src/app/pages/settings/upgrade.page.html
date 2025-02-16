@@ -49,8 +49,7 @@
       You are currently on the <strong>{{ currentPlan | titlecase }}</strong> plan.
     </p>
     <ng-template #loading>
-      <p>Loading billing details...
-      </p>
+      <p>Loading billing details...</p>
     </ng-template>
       <p *ngIf="billingInfo && billingInfo.next_payment_due" class="opacity-70 my-1 text-sm">
         Renews on {{ billingInfo.next_payment_due | date: 'mediumDate' }}
@@ -65,7 +64,7 @@
         icon="pi pi-star-fill"
         size="small"
       />
-      <a *ngIf="billingInfo && billingInfo.meta.invoice_pdf" [href]="billingInfo.meta.invoice_pdf">
+      <a *ngIf="billingInfo && billingInfo?.meta?.invoice_pdf" [href]="billingInfo.meta.invoice_pdf">
         <p-button
           label="Download Invoice"
           severity="info"
