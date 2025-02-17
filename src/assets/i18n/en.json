@@ -177,7 +177,17 @@
         "COUNT": "{count} Tags"
       }
     }
-  },  
+  },
+
+  "DOMAIN_STATS": {
+    "EXPIRATION_BAR": {
+      "NO_DATA": "No data available",
+      "TIMELINE_SHOW": "Show Timeline",
+      "TIMELINE_HIDE": "Hide Timeline",
+      "NEXT_EXPIRING": "The next domain to expire will be",
+      "NO_DOMAINS": "No domains"
+    }
+  },
 
   "GLOBAL": {
     "COPY": "Copy",
