@@ -186,6 +186,24 @@
       "TIMELINE_HIDE": "Hide Timeline",
       "NEXT_EXPIRING": "The next domain to expire will be",
       "NO_DOMAINS": "No domains"
+    },
+    "PROVIDERS": {
+      "REGISTRARS": "Registrars",
+      "SSL_ISSUERS": "SSL Issuers",
+      "HOSTS": "Hosts",
+      "VIEW_ALL_REGISTRARS": "View all Registrars",
+      "VIEW_ALL_CERT_PROVIDERS": "View all Cert Providers",
+      "VIEW_ALL_HOSTS": "View all Hosts"
+    },
+    "EPP_STATUSES": {
+      "VIEW_ALL_STATUSES": "View all Statuses"
+    },
+    "HOSTS_MAP": {
+      "VIEW_ALL_HOSTS": "View all Hosts"
+    },
+    "TAG_CLOUD": {
+      "VIEW_ALL_TAGS": "View all Tags",
+      "NO_TAGS_FOUND": "No tags found"
     }
   },
 

@@ -7,6 +7,7 @@ import { map, tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { NgIf } from '@angular/common';
 import { PrimeNgModule } from '~/app/prime-ng.module';
+import { TranslateModule } from '@ngx-translate/core';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -24,7 +25,7 @@ export type ChartOptions = {
   templateUrl: './domain-pie.component.html',
   styleUrl: './domain-pie.component.scss',
   standalone: true,
-  imports: [NgApexchartsModule, NgIf, PrimeNgModule]
+  imports: [NgApexchartsModule, NgIf, PrimeNgModule, TranslateModule]
 })
 export class DomainPieChartsComponent implements OnInit, AfterViewInit {
   @ViewChild("registrarChart") registrarChart!: ChartComponent;
