@@ -23,8 +23,9 @@ type EnvVar =
 | 'DL_DEMO_PASS'        // Demo user password (for auto-filling on demo instance)
 | 'DL_DOMAIN_INFO_API'  // API endpoint for /api/domain-info
 | 'DL_DOMAIN_SUBS_API'  // API endpoint for /api/domain-subs
-| 'DL_STRIPE_CHECKOUT_URL'  // Endpoint for creating a Stripe Checkout session
-| 'DL_STRIPE_CANCEL_URL'    // Endpoint for cancelling subscription, + refunding via Stripe
+| 'DL_STRIPE_CHECKOUT_URL'    // Endpoint for creating a Stripe Checkout session
+| 'DL_STRIPE_CANCEL_URL'      // Endpoint for cancelling subscription, + refunding via Stripe
+| 'DL_DISABLE_WRITE_METHODS'  // Disable write methods (only used for demo instance)
 ;
 
 @Injectable({

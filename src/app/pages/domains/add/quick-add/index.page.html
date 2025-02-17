@@ -6,6 +6,7 @@
     <div class="field flex flex-col gap-1 mt-4">
       <p-floatLabel>
         <input pInputText
+          (blur)="onDomainNameBlur()"
           id="domainName"
           type="text"
           formControlName="domainName"
