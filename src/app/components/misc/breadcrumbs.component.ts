@@ -100,7 +100,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
 
   private determineIfBreadcrumbsShouldBeShown(): boolean {
     if (!this.breadcrumbs && !this.pagePath) return false;
-    const hideOnPages = ['/'];
+    const hideOnPages = ['/', '/about'];
     if (this.pagePath && !hideOnPages.includes(this.pagePath.split('?')[0])) return true;
     return false;
   }
@@ -148,6 +148,7 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'edit-events': 'Edit Events',
       'external-tools': 'External Tools',
       'faq': 'Frequently Asked Questions',
+      'about': 'Docs',
     };
     const formatLabel = (str: string) =>
       str.includes('.') ? str
