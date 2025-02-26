@@ -1,7 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '~/app/prime-ng.module';
-
+import { SupabaseService } from '~/app/services/supabase.service';
+import { GlobalMessageService } from '~/app/services/messaging.service';
+import { ErrorHandlerService } from '~/app/services/error-handler.service';
+import { ConfirmationService } from 'primeng/api';
+import { FeatureService } from '~/app/services/features.service';
 
 interface DangerCard {
   title: string;
@@ -22,6 +26,22 @@ interface DangerCard {
   styles: [``]
 })
 export default class DeleteAccountPage {
+  writePermissions: boolean = false;
+  
+  constructor(
+      private supabaseService: SupabaseService,
+      private messageService: GlobalMessageService,
+      private errorHandler: ErrorHandlerService,
+      private confirmationService: ConfirmationService,
+      private featureService: FeatureService,
+    ) {}
+
+    ngOnInit() {
+      (this.featureService.isFeatureEnabled('writePermissions')).subscribe((isEnabled) => {
+        this.writePermissions = isEnabled;
+      });
+    }
+
   dangerCards: DangerCard[] = [
     {
       title: 'Leave Feedback',
@@ -59,7 +79,7 @@ export default class DeleteAccountPage {
       title: 'Delete Account',
       body: 'If you\'re sure you want to delete your account, click the button below. All data will be lost and this action is irreversible.',
       buttonLabel: 'Delete Account',
-      buttonFunction: () => this.deleteAccount(),
+      buttonFunction: () => this.confirmDeleteAccount(),
       buttonIcon: 'pi pi-trash',
       buttonSeverity: 'danger',
     },
@@ -74,12 +94,48 @@ export default class DeleteAccountPage {
   ];
 
   clearData() {
-    // Placeholder function for clearing data
-    console.log('Clearing data...');
+    try {
+      localStorage.clear();
+      this.messageService.showSuccess('Data Cleared', 'Local storage has been cleared. You will be logged out.');
+      window.location.href = '/';
+    } catch (error) {
+      this.errorHandler.handleError(
+        { error,
+          message: 'Failed to clear local storage',
+          location: 'settings/account',
+          showToast: true,
+        });
+    }
   }
 
-  deleteAccount() {
-    // Placeholder function for deleting account
-    console.log('Deleting account...');
+  confirmDeleteAccount() {
+    if (!this.writePermissions) {
+      this.messageService.showWarn('Feature not enabled', 'You do not have permission to delete your account');
+      return;
+    }
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to delete your account and all associated?'
+        +'<br><span class="text-red-400 font-bold">This action cannot be undone.</span>',
+      header: 'Account Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger p-button-sm',
+      rejectButtonStyleClass: 'p-button-secondary p-button-sm',
+      acceptIcon:'pi pi-check-circle mr-2',
+      rejectIcon:'pi pi-times-circle mr-2',
+      accept: () => {
+        this.deleteAccount();
+      }
+    });
+  }
+
+  async deleteAccount() {
+    try {
+      await this.supabaseService.deleteAccount();
+      this.messageService.showSuccess('Account Deleted', 'Your account has been permanently deleted, and all data wiped');
+      this.supabaseService.signOut();
+      window.location.href = '/';
+    } catch (error) {
+      this.errorHandler.handleError({ error, message: 'Failed to delete account', location: 'settings/account', showToast: true });
+    }
   }
 }
