@@ -119,8 +119,9 @@ export default class HomePageComponent implements OnInit {
     });
   }
 
-  newDomainAdded(event: any) {
-    console.log('New domain added:', event);
+  newDomainAdded(newDomainName: string) {
+    // this.domains.push({ domain_name: newDomainName })
+    this.loadDomains();
   }
 
   toggleInsights() {

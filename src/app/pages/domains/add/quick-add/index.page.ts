@@ -210,11 +210,21 @@ export default class QuickAddDomain {
     };
   }
 
+  cleanDomainName(domain: string) {
+    if (!domain || typeof domain !== 'string') return '';
+    return domain.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
+  }
+
   onDomainNameBlur() {
     const control = this.domainForm.get('domainName');
     if (!control) return;
     let value = (control.value || '').trim();
-    value = value.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-    control.setValue(value);
+    const cleanDomain = this.cleanDomainName(value);
+    control.setValue(cleanDomain);
+  }
+
+  navigateToDetailedAdd() {
+    const domain = this.cleanDomainName(this.domainForm.value.domainName || '');
+    this.router.navigate(['/domains/add'], { queryParams: { domain } });
   }
 }
