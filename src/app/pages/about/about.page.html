@@ -7,7 +7,13 @@
   <h1 class="m-0">Documentation</h1>
 </div>
 
-<div class="p-card p-4 mb-4">
+<div class="p-card p-4 mb-4 relative">
+  <dl-icon
+    icon="docs"
+    class="flex w-[4rem] absolute right-2 top-2"
+    classNames="w-full h-full"
+    color="var(--surface-200)"
+  />
   <ul class="p-0 m-0 list-none">
     <li *ngFor="let section of sections" class="">
       <a [routerLink]="makeId(section.title)" class="flex flex-wrap gap-2 items-center no-underline text-default">
