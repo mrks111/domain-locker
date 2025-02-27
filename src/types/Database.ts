@@ -114,6 +114,9 @@ export interface SaveDomainData {
 }
 
 export abstract class DatabaseService {
+
+  serviceType: 'supabase' | 'postgres' | 'none' | 'error' = 'none';
+
   notificationQueries!: SbNotificationQueries | PgNotificationQueries;
   linkQueries!: SbLinkQueries | PgLinkQueries;
   tagQueries!: SbTagQueries | PgTagQueries;
