@@ -29,8 +29,8 @@ export class SupabaseService {
     
     try {
 
-      if (this.envService.getEnvironmentType() === 'selfHosted') {
-        console.warn('Supabase is disabled in selfHosted mode.');
+      if (!this.envService.isSupabaseEnabled()) {
+        console.warn('Supabase is disabled, using Postgres instead.');
         return;
       }
 

@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { environment } from '~/app/environments/environment';
 
 export type EnvironmentType = 'dev' | 'managed' | 'selfHosted' | 'demo';
@@ -33,6 +34,8 @@ type EnvVar =
 })
 export class EnvService {
 
+  constructor(@Inject(PLATFORM_ID) private platformId: Object,){}
+
   private environmentFile = (environment || {}) as Record<string, any>;
 
   mapKeyToVarName(key: EnvVar): string {
@@ -47,12 +50,19 @@ export class EnvService {
    * @param fallback Fallback value
    */
   getEnvVar(key: EnvVar, fallback: string | null = null, throwError: boolean = false): any {
-    const buildtimeValue = import.meta.env[key]; // From .env
-    const runtimeValue = this.environmentFile[this.mapKeyToVarName(key)]; // From environment.ts
-
-    const value = (buildtimeValue || runtimeValue) ?? fallback;
+    // Build-time environmental variable (e.g. from .env)
+    const buildtimeValue = import.meta.env[key];
+    // Runtime variable (e.g. from environment.ts)
+    const runtimeValue = this.environmentFile[this.mapKeyToVarName(key)];
+    // Local value (only if not managed instance)
+    const localStorageValue = import.meta.env['DL_ENV_TYPE'] !== 'managed'
+      ? this.getValueFromLocalStorage(key) : null;
     
-    if (!value && throwError) { // Throw error to be caught by the caller
+    // Pick value, based on priority or use fallback
+    const value = (localStorageValue || buildtimeValue || runtimeValue) ?? fallback;
+    
+    // If nothing, and unexpected, throw error to be caught by the caller
+    if (!value && throwError) {
       throw new Error(`Environment variable ${key} is not set.`);
     }
     return value;
@@ -64,12 +74,15 @@ export class EnvService {
    * @returns
    */
   isSupabaseEnabled(): boolean {
-    if (this.getEnvironmentType() === 'selfHosted') {
-      return false;
-    }
     const supabaseUrl = this.getEnvVar('SUPABASE_URL');
     const supabaseKey = this.getEnvVar('SUPABASE_ANON_KEY');
     return Boolean(supabaseUrl && supabaseKey);
+  }
+
+  isPostgresEnabled(): boolean {
+    if (this.getEnvironmentType() === 'managed') return false;
+    const { host, port, user, password, database } = this.getPostgresConfig();
+    return Boolean(host && port && user && password && database);
   }
 
   /**
@@ -108,11 +121,11 @@ export class EnvService {
   /* Returns config object for Postgres */
   getPostgresConfig(): { host: string, port: number, user: string, password: string, database: string } {
     return {
-      host: this.getEnvVar('DL_PG_HOST', 'localhost'),
-      port: Number(this.getEnvVar('DL_PG_PORT', '5432')),
-      user: this.getEnvVar('DL_PG_USER', 'postgres'),
-      password: this.getEnvVar('DL_PG_PASSWORD', 'dinosaur'),
-      database: this.getEnvVar('DL_PG_NAME', 'domain_locker'),
+      host: this.getEnvVar('DL_PG_HOST'),
+      port: Number(this.getEnvVar('DL_PG_PORT')),
+      user: this.getEnvVar('DL_PG_USER'),
+      password: this.getEnvVar('DL_PG_PASSWORD'),
+      database: this.getEnvVar('DL_PG_NAME'),
     };
   }
 
@@ -127,6 +140,13 @@ export class EnvService {
     const url = this.getEnvVar('DL_PLAUSIBLE_URL', '');
     const isConfigured = Boolean(site && url);
     return { site, url, isConfigured };
+  }
+
+  getValueFromLocalStorage(key: string): string | null {
+    if (isPlatformBrowser(this.platformId) && localStorage) {
+      return localStorage.getItem(key) || null;
+    }
+    return null;
   }
 
 }
