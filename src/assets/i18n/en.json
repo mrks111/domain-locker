@@ -360,7 +360,8 @@
       "ERROR_LONG": "Something might have gone wrong",
       "BUTTON": {
         "HOME": "Home",
-        "RELOAD": "Reload"
+        "RELOAD": "Reload",
+        "DEBUG": "Debug Info"
       }
     }
   }

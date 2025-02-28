@@ -46,7 +46,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       <!-- Error display (appears after a timeout) -->
       <div *ngIf="showError" class="text-center">
         <p class="m-0 text-xs text-surface-400">
-          {{ getTranslatedOrFallback('GLOBAL.LOADING.ERROR_SHORT', 'It shouldn\'t be taking this long...') }}
+          {{ getTranslatedOrFallback('GLOBAL.LOADING.ERROR_SHORT', "It shouldn\'t be taking this long...") }}
         </p>
         <p class="m-0 text-lg text-red-400">
           {{ getTranslatedOrFallback('GLOBAL.LOADING.ERROR_LONG', 'Something might have gone wrong') }}
@@ -62,6 +62,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
             icon="pi pi-home"
           ></p-button>
         </a>
+        <p-button
+          size="small"
+          [label]="getTranslatedOrFallback('GLOBAL.LOADING.BUTTON.DEBUG', 'Debug')"
+          severity="info"
+          icon="pi pi-info-circle"
+          (click)="reloadPage()"
+        ></p-button>
         <p-button
           size="small"
           [label]="getTranslatedOrFallback('GLOBAL.LOADING.BUTTON.RELOAD', 'Reload')"

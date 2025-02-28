@@ -1,3 +1,9 @@
+/**
+ * This file defines which features of the app should be enabled. Based upon:
+ * 1. The environment the app is running in (managed, self-hosted, dev, demo)
+ * 2. The user's billing plan (free, hobby, pro, enterprise)
+ */
+
 import { BillingPlans } from '~/app/services/billing.service';
 
 export type FeatureConfig<T> = {
@@ -20,6 +26,8 @@ export type FeatureDefinitions = {
   disableDocs: FeatureConfig<boolean>;
   disableSignUp: FeatureConfig<boolean>;
   disableSocialLogin: FeatureConfig<boolean>;
+  disableBilling: FeatureConfig<boolean>;
+  allowLocalDbConfig: FeatureConfig<boolean>;
 };
 
 export const features: FeatureDefinitions = {
@@ -81,8 +89,6 @@ export const features: FeatureDefinitions = {
   },
   accountSettings: {
     default: true,
-    managed: true,
-    selfHosted: false,
   },
   writePermissions: {
     default: true,
@@ -100,7 +106,21 @@ export const features: FeatureDefinitions = {
   disableSocialLogin: {
     default: false,
     demo: true,
+    dev: true,
+    selfHosted: true,
   },
+  disableBilling: {
+    default: false,
+    demo: true,
+    selfHosted: true,
+    dev: true,
+  },
+  allowLocalDbConfig: {
+    default: false,
+    demo: true,
+    selfHosted: true,
+    dev: true,
+  }
 };
 
 export const featureDescriptions: Record<keyof FeatureDefinitions, { label: string; description: string }> = {
@@ -147,5 +167,13 @@ export const featureDescriptions: Record<keyof FeatureDefinitions, { label: stri
   disableSocialLogin: {
     label: 'Disable Social Login',
     description: 'Prevent users from signing up or logging in with social accounts',
+  },
+  disableBilling: {
+    label: 'Disable Billing',
+    description: 'Prevent users from upgrading their account or sending payments',
+  },
+  allowLocalDbConfig: {
+    label: 'Allow Local DB Config',
+    description: 'Allow users to configure which database to use, and connect to it through the app',
   },
 };
