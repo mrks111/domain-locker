@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '~/app/prime-ng.module';
 import { SupabaseService } from '~/app/services/supabase.service';
@@ -21,12 +21,14 @@ interface DangerCard {
 
 @Component({
   standalone: true,
+  selector: 'app-delete-account',
   imports: [CommonModule, PrimeNgModule],
   templateUrl: './delete-account.page.html',
   styles: [``]
 })
 export default class DeleteAccountPage {
   writePermissions: boolean = false;
+  @Input() isInPage: boolean = true;
   
   constructor(
       private supabaseService: SupabaseService,

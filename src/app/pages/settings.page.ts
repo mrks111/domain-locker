@@ -8,6 +8,7 @@ import { SupabaseService } from '~/app/services/supabase.service';
 import { ProfilePictureComponent } from '~/app/components/misc/profile-picture.component';
 import { FeatureService } from '../services/features.service';
 import { FeatureNotEnabledComponent } from '~/app/components/misc/feature-not-enabled.component';
+import DatabaseService from '~/app/services/database.service';
 
 @Component({
   standalone: true,
@@ -20,16 +21,19 @@ export default class SettingsIndexPage implements OnInit {
   @ViewChild('sidebarNav', { static: false }) sidebarNav!: ElementRef;
   hideTextLabels = false;
 
+  databaseServiceType = '';
   settingsEnabled$ = this.featureService.isFeatureEnabled('accountSettings');
 
   constructor(
     private router: Router,
     private featureService: FeatureService,
     public supabaseService: SupabaseService,
+    public databaseService: DatabaseService,
   ) {}
 
   ngOnInit() {
     this.items = settingsLinks;
+    this.databaseServiceType = this.databaseService.serviceType;
   }
 
   isActive(link: string): boolean {
