@@ -4,7 +4,7 @@ import { environment } from '~/app/environments/environment';
 
 export type EnvironmentType = 'dev' | 'managed' | 'selfHosted' | 'demo';
 
-type EnvVar =
+export type EnvVar =
 'DL_BASE_URL'           // Hostname/URL or HOST:PORT where domain locker is running
 | 'SUPABASE_URL'        // Supabase URL
 | 'SUPABASE_ANON_KEY'   // Supabase public key
@@ -147,6 +147,13 @@ export class EnvService {
       return localStorage.getItem(key) || null;
     }
     return null;
+  }
+
+  checkAllEnvironmentalVariables(): { envName: EnvVar; hasValue: boolean}[] {
+    return (Object.keys(import.meta.env) as EnvVar[]).map((envName) => ({
+      envName,
+      hasValue: Boolean(this.getEnvVar(envName)),
+    }));
   }
 
 }
