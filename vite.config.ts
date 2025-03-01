@@ -2,6 +2,7 @@
 import analog, { PrerenderContentFile } from '@analogjs/platform';
 import { defineConfig, loadEnv } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import packageJson from './package.json';
 import * as path from 'node:path';
 
 const themeTargets = [
@@ -154,6 +155,8 @@ export default defineConfig( ({ mode }) => {
     envPrefix: ['VITE_', 'SUPABASE_', 'DL_'],
     define: {
       'import.meta.vitest': mode !== 'production',
+      __APP_VERSION__: JSON.stringify(packageJson.version),
+      __APP_NAME__: JSON.stringify(env['APP_NAME'] || 'Domain Locker'),
     },
     server: {
       fs: {
