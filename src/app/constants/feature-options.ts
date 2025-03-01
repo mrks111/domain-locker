@@ -52,6 +52,7 @@ export const features: FeatureDefinitions = {
   },
   changeNotifications: {
     default: false,
+    dev: true,
     managed: {
       free: false,
       hobby: true,

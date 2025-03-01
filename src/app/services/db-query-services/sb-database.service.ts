@@ -735,7 +735,7 @@ export default class MainDatabaseService extends DatabaseService {
             .select(idColName(tableName), { count: 'exact' })
         ).pipe(
           map((resp) => {
-            if (resp.status === 200) {
+            if (resp.status >= 200 && resp.status < 300) {
               const count = resp.count ?? 0;
               return { table: tableName, count, success: '✅' };
             }
