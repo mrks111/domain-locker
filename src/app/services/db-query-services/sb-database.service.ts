@@ -756,4 +756,8 @@ export default class MainDatabaseService extends DatabaseService {
     );
   }
 
+  async deleteAllData(userId: string, tables?: string[]) {
+    this.supabase.deleteAllData(userId, tables);
+  }
+
 }

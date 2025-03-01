@@ -39,6 +39,7 @@ export const features: FeatureDefinitions = {
       pro: 100,
       enterprise: 1000,
     },
+    selfHosted: 100,
   },
   notificationChannels: {
     default: false,

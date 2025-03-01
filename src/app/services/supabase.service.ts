@@ -473,8 +473,6 @@ export class SupabaseService {
         .eq('user_id', userId);
     }
   }
-  
-  
 
   async deleteAccount(): Promise<void> {
 

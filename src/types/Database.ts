@@ -148,4 +148,5 @@ export abstract class DatabaseService {
   abstract getDomain(domainName: string): Observable<DbDomain>;
   abstract updateDomain(domainId: string, domainData: SaveDomainData): Observable<DbDomain>;
   abstract checkAllTables(): Observable<{table: string; count: number | string; success: string;}[]>;
+  abstract deleteAllData(userId: string, tables?: string[]): Promise<void>;
 }
