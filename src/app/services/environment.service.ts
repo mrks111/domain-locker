@@ -51,9 +51,11 @@ export class EnvService {
    */
   getEnvVar(key: EnvVar, fallback: string | null = null, throwError: boolean = false): any {
     // Build-time environmental variable (e.g. from .env)
-    const buildtimeValue = import.meta.env[key];
-    // Runtime variable (e.g. from environment.ts)
-    const runtimeValue = this.environmentFile[this.mapKeyToVarName(key)];
+    const buildtimeValue = import.meta.env[key] || this.environmentFile[this.mapKeyToVarName(key)];
+    // Runtime variable (e.g. passed at runtime, on self-hosted instances)
+    const runtimeValue =
+      (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') ?
+        (window as any).__env?.[key] : null;
     // Local value (only if not managed instance)
     const localStorageValue = import.meta.env['DL_ENV_TYPE'] !== 'managed'
       ? this.getValueFromLocalStorage(key) : null;
