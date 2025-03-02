@@ -3,7 +3,8 @@ import {
   Component,
   Inject,
   OnInit,
-  PLATFORM_ID
+  PLATFORM_ID,
+  APP_ID
 } from '@angular/core';
 import { PrimeNgModule } from '~/app/prime-ng.module';
 import { ErrorHandlerService } from '~/app/services/error-handler.service';
@@ -89,7 +90,8 @@ export default class DebugInfoPage implements OnInit {
     private translationService: TranslationService,
     private databaseService: DatabaseService,
     private featureService: FeatureService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) public platformId: Object,
+    @Inject(APP_ID) public appId: string
   ) {}
 
   ngOnInit(): void {

@@ -23,7 +23,9 @@ APP INFO
 ===================================
 Version:    {{ appVersion }}
 Env Type:   {{ environmentType }}
-Database:   {{ enabledDb.supabase ? 'Supabase' : '' }} {{ enabledDb.postgres ? 'Postgres' : '' }}
+Database:   {{ !enabledDb.postgres && !enabledDb.supabase ? '⚠️ None' : '' }}{{ enabledDb.supabase ? 'Supabase' : '' }} {{ enabledDb.postgres ? 'Postgres' : '' }}
+App ID:     {{ appId }}
+Platform ID {{ platformId }}
 
 ===================================
 HOST INFO
