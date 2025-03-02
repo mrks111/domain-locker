@@ -224,32 +224,32 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-    /* Check if documentation enabled before navigating to any /about page */
-    private async checkIfDocsDisabled(docsPath?: string): Promise<void> {
-      if (await this.featureService.isFeatureEnabledPromise('disableDocs')) {
-        // Docs disabled, show warning and navigate back to home
-        this.globalMessageService.showWarn(
-          'Docs Disabled',
-          'Documentation has not been enabled on this instance, you can view up-to-date content at domain-locker.com',
-        );
-        this.router.navigate(['/']);
+  /* Check if documentation enabled before navigating to any /about page */
+  private async checkIfDocsDisabled(docsPath?: string): Promise<void> {
+    if (await this.featureService.isFeatureEnabledPromise('disableDocs')) {
+      // Docs disabled, show warning and navigate back to home
+      this.globalMessageService.showWarn(
+        'Docs Disabled',
+        'Documentation has not been enabled on this instance, you can view up-to-date content at domain-locker.com',
+      );
+      this.router.navigate(['/']);
 
-        // Give user option to view on domain-locker.com
-        if (docsPath) {
-          this.confirmationService.confirm({
-            header: 'Documentation not Enabled',
-            message: 'Would you want to view this page on the Domain Locker website?',
-            icon: 'pi pi-book',
-            acceptIcon:'pi pi-reply mr-2',
-            rejectIcon:'pi pi-arrow-left mr-2',
-            acceptButtonStyleClass:'p-button-sm p-button-primary p-button-text',
-            rejectButtonStyleClass:'p-button-sm p-button-secondary p-button-text p-button-text',
-            closeOnEscape: true,
-            accept: () => {
-              window.open(`https://domain-locker.com/${docsPath}`, '_blank');
-            },
-          });
-        }
+      // Give user option to view on domain-locker.com
+      if (docsPath) {
+        this.confirmationService.confirm({
+          header: 'Documentation not Enabled',
+          message: 'Would you want to view this page on the Domain Locker website?',
+          icon: 'pi pi-book',
+          acceptIcon:'pi pi-reply mr-2',
+          rejectIcon:'pi pi-arrow-left mr-2',
+          acceptButtonStyleClass:'p-button-sm p-button-primary p-button-text',
+          rejectButtonStyleClass:'p-button-sm p-button-secondary p-button-text p-button-text',
+          closeOnEscape: true,
+          accept: () => {
+            window.open(`https://domain-locker.com/${docsPath}`, '_blank');
+          },
+        });
       }
     }
+  }
 }
