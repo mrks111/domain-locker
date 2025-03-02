@@ -8,7 +8,7 @@
   "scripts": {
     "ng": "ng",
     "dev": "ng serve",
-    "start": "npm run dev",
+    "start": "node dist/analog/server/index.mjs",
     "build": "ng build",
     "build:vercel": "NITRO_PRESET=vercel ng build --configuration production",
     "build:netlify": "NITRO_PRESET=netlify NODE_OPTIONS=--max-old-space-size=8096  ng build --configuration production",
