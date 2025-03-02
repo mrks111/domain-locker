@@ -30,7 +30,6 @@ export class SupabaseService {
     try {
 
       if (!this.envService.isSupabaseEnabled()) {
-        console.warn('Supabase is disabled, using Postgres instead.');
         return;
       }
 
