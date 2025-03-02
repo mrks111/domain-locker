@@ -1,46 +1,35 @@
 ---
 slug: developing
 title: Development Setup
-description: My First Post Description
+description: Get started with developing features on Domain Locker
 coverImage: https://images.unsplash.com/photo-1493612276216-ee3925520721?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=464&q=80
 ---
 
 ## App Setup
 
-### Get the Code
+### Development Environment
 
 ```
 git clone git@github.com:Lissy93/domain-locker.git
 cd domain-locker
 npm install
-```
-
-### Start Development Server
-
-```
+cp .env.example .env
 npm run dev
-```
-
-### Run Tests
-
-```
-npm run test
 ```
 
 ### Build for Production
 
-```
-npm run build
-```
-
+To build for production, use `npm run build`, then `npm start`.
 Or to build for a particular platform, use the `build:vercel`, `build:netlify` commands.
 
 ---
 
 ## Database Setup
 
-You'll need either a Posthres database, or a Supabase instance.
-Follow the instructions below, to deploy an instance with the required schema and config, and then set the environmental variables in your domain locker app.
+While running in dev, you will be automatically connected to our public development Supabase instance.
+But note that data here is wiped frequently, and some features are disabled.
+
+Alternatively, you can deploy your own database, either a Supabase instance or a Postgres database.
 
 ### Option 1) Postgres
 

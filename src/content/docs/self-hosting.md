@@ -42,6 +42,7 @@ You may also need a domain name and a valid SSL certificate for that domain.
     padding: 0.5rem;
     margin: 0.25rem 0 1rem 0;
     font-size: 0.8rem;
+    line-height: 1rem;
     p {
       margin: 0.2rem 0 0 0;
     }

@@ -49,7 +49,7 @@ export default class DeleteAccountPage {
       title: 'Leave Feedback',
       body: 'Considering closing your account, or facing issues with Domain Locker? We\'d love to hear your feedback, so that we can improve.',
       buttonLabel: 'Leave Feedback',
-      buttonLink: '/about/contact',
+      buttonLink: '/about/support/contact',
       buttonIcon: 'pi pi-comment',
       buttonSeverity: 'success',
     },

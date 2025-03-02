@@ -18,7 +18,7 @@ export interface DocAttributes {
   selector: 'app-docs-viewer',
   imports: [CommonModule, NgIf, MarkdownComponent, PrimeNgModule],
   template: `
-  <section class="flex flex-row-reverse items-start gap-4 h-full mx-auto my-4 flex-wrap md:flex-nowrap">
+  <section class="flex flex-row-reverse items-start gap-4 h-full mx-auto my-4 flex-wrap md:flex-nowrap min-h-[105vh]">
     <article *ngIf="doc" class="p-card p-4 flex-1 h-full min-h-64 max-w-[60rem] w-2">
       <h1 class="text-3xl">{{ doc.attributes.title }}</h1>
       <analog-markdown class="block max-w-[59rem]" [content]="doc.content"></analog-markdown>
