@@ -111,6 +111,7 @@ export class ErrorHandlerService {
   }
 
   private saveToLocalStorage(message: string, location: string, error: any): void {
+    if (!isPlatformBrowser(this.platformId) || !localStorage) return;
     const key = 'DL_error_log';
     const lsErrorLog = JSON.parse(localStorage.getItem(key) || '[]');
     lsErrorLog.push({ message, location, error, date: new Date().toISOString() });
