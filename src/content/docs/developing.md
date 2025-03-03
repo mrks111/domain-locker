@@ -71,6 +71,11 @@ Below is a high-level class-diagram.
 
 ## Architecture
 
+<div class="screenshots-wrap">
+<img src="/articles/domain-locker-arch-self-hosted.png" >
+<img src="/articles/domain-locker-arch-managed.png" >
+</div>
+
 ### Self-Hosted Version
 
 The self-hosted app is very simple, and consists of 3 containers:
@@ -78,16 +83,9 @@ The self-hosted app is very simple, and consists of 3 containers:
 - A Postgres database (to store your data)
 - A cron service (optional, to keep domains up-to-date and trigger notifications)
 
-<img width="360" src="https://gist.github.com/user-attachments/assets/9d0769f3-a09a-4cb1-94f3-91c83ff9ab75" />
-
 ### Managed Version
 
 This differs slightly from the managed instance, which has the same core web app, but is reliant upon some non-free services for extra features and security.
-
-Below is a high-level architecture diagram to show what I mean.
-
-<img src="https://gist.github.com/user-attachments/assets/81e19b5a-5a69-4790-9b73-95450fc70904" />
-
 
 Why the difference? Running a SaaS app requires some additional components/layers in order to offer users the best possible experience. For example, the managed app also needs to cover the following areas:
 - Multiple environments, automated CI/CD
@@ -103,3 +101,31 @@ Why the difference? Running a SaaS app requires some additional components/layer
 - User support for queries, billing, bugs, feedback, etc
 
 <!-- ![architecture](https://gist.github.com/user-attachments/assets/00b8b790-ab9d-49f8-ae88-a5dca4120e73) -->
+
+
+<style>
+  .screenshots-wrap {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  img {
+    height: 550px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    margin: 0;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  @media (max-width: 600px) {
+  flex-direction: column;
+  align-items: center;
+    img {
+      height: auto;
+      width: 100%;
+      max-height: 550px;
+    }
+}
+}
+</style>

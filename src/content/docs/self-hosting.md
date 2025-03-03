@@ -12,10 +12,8 @@ I have documented and open sourced Domain Locker for free. You can find the sour
 
 ### ⚠️ Important Disclaimer
 <blockquote class="warning">
-The self-hosted edition comes with no warranty. There are no guarantees for functionality and maintaining and securing the infrastructure will be your responsibility. The developer cannot be held liable for any damages or losses caused by the use of the self-hosted edition.
-
-You will need to take care of securing, managing and updating your instance, as well as maintaining availability, backup schedule and provisioning resources.
-The self-hosted edition is not intended to be publicly exposed. If you're running it outside of your LAN, then ensure you've secured it behind a firewall, and implemented correct access controls.
+The self-hosted edition comes with no warranty. There are no guarantees for functionality and maintaining, securing and managing the infrastructure will be your responsibility. The developer cannot be held liable for any damages or losses caused by the use of the self-hosted edition.
+It is not intended to be publicly exposed, unless secured it behind a firewall, with correct access controls implemented.
 </blockquote>
 
 ---
@@ -35,12 +33,6 @@ You may also need a domain name and a valid SSL certificate for that domain.
 
 ---
 
-## Architecture
-
-<img src="https://i.ibb.co/Kj3Z11D9/self-hosted-setup-bg.png" width="400" text-align="center" alt="Self-Hosted Setup">
-
----
-
 ## Support
 
 See: [Support: Self-Hosted](/about/support/self-hosted-support)
@@ -50,6 +42,25 @@ See: [Support: Self-Hosted](/about/support/self-hosted-support)
 ## Developing
 
 See: [Developing Docs](/about/developing)
+
+---
+
+## Managing the Container
+
+See our [Domain Locker Docker Guide](/about/developing/general-docker-advice)
+
+---
+
+## Architecture
+
+Self-hosted architecture is pretty simple; you have the pre-built app, served with Deno in one container, which then connects to Postgres in another container. The app includes some API endpoints which can be called to keep data updated, monitor domains and trigger notifications (via webhooks), so you might want a third container to manage crons to call these endpoints periodically.
+
+This differs slightly from the managed instance, as self-hosted is designed to be standalone, and run in a Docker stack. Whereas the managed instance has dependencies on external services. You can switch the version at anytime, using the `DL_ENV_TYPE` environmental variable, which is set to `selfHosted` by default. (but note that you will need to configure the third-party platforms and services if you switch to managed). Either way, you can find the docs for all the services used [here](/about/developing/third-party-docs).
+
+<div class="screenshots-wrap">
+<img src="/articles/domain-locker-arch-self-hosted.svg" >
+<img src="/articles/domain-locker-arch-managed.svg" >
+</div>
 
 ---
 
@@ -63,11 +74,12 @@ While you're free to do as you please on private self-hosted instances, if you i
 - ✅ Take responsibility for securing your instance and protecting user data
 - ✅ Make it clear to your users that your version is an independent fork and not affiliated with the original project
 - ✅ Consider contributing back improvements, fixes, or features that could benefit the upstream project
+- ✅ Have fun, and use Domain Locker for something cool!
 
 #### Don't
 - ❌ Don't charge for your service if you have deployed the code as-is (aka without substantial changes)
-- ❌ Don't use our hosted APIs (they may be subject to change, rate limiting and auth)
-- ❌ Don't request unpaid support from the original authors for your own instance
+- ❌ Don't use our hosted APIs (they may be subject to change, rate limiting and auth)- run your own
+- ❌ Don't expect unpaid support from the original authors for your own instance
 - ❌ Don't misrepresent your fork as the official Domain Locker—your branding and domain should reflect that it's an independent instance
 - ❌ Don't modify and redistribute under a more restrictive license—the MIT license ensures continued freedom to modify and share
 - ❌ Don't use any of Domain Locker's code for illegal or unethical purposes
@@ -88,4 +100,30 @@ While you're free to do as you please on private self-hosted instances, if you i
       margin: 0.2rem 0 0 0;
     }
   }
+.screenshots-wrap {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  img {
+    height: 550px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    margin: 0;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  @media (max-width: 600px) {
+  flex-direction: column;
+  align-items: center;
+    img {
+      height: auto;
+      width: 100%;
+      max-height: 550px;
+    }
+}
+}
+
+
 </style>
