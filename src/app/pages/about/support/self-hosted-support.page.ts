@@ -1,23 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '~/app/prime-ng.module';
-import { ActivatedRoute } from '@angular/router';
-import { GlobalMessageService } from '~/app/services/messaging.service';
+import { selfHostedSupport } from '~/app/pages/about/data/support-links';
 
 @Component({
   standalone: true,
   imports: [CommonModule, PrimeNgModule],
-  // templateUrl: './error.page.html',
-  template: '',
+  templateUrl: './index.page.html',
+
   styles: [``],
 })
-export default class SelfHostedSupportPage implements OnInit {
-  errorMessage?: string;
-
-  constructor(
-    private route: ActivatedRoute,
-    private messagingService: GlobalMessageService,
-  ) {}
-
-  ngOnInit(): void {}
+export default class SelfHostedSupportPage {
+  public content = [selfHostedSupport];
+  public hideTitle = true;
 }

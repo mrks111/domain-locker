@@ -64,6 +64,7 @@ export const aboutPages: AboutPage[] = [
       { title: 'How-Tos', description: 'Short guides to help you mae the most of Domain Locker', link: '/about', icon: '' },
       { title: 'FaQ', description: 'Answers to commonly asked questions', link: '/about/support/faq', icon: 'pi pi-question-circle' },
       { title: 'Contact', description: 'Get in touch or raise a support ticket', link: '/about/support/contact', icon: '' },
+      { title: 'Self-Hosted Support', description: 'Resolving issues with a self-hosted instance', link: '/about/support/self-hosted-support', icon: '' },
     ],
   },
   {
