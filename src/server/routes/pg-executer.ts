@@ -3,8 +3,21 @@ import pkg from 'pg';
 const { Client } = pkg;
 
 export default defineEventHandler(async (event) => {
+  // 1) Set CORS headers
+  const res = event.node.res; // raw Node response
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000'); 
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  // If it's a preflight (OPTIONS) request, return early
+  if (event.node.req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    return '';
+  }
+
+  // 2) The normal logic continues if it's not an OPTIONS request
   try {
-    // 1) read request body
+    // read request body
     const body = await readBody(event);
     if (!body?.query) {
       return sendError(
@@ -14,16 +27,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const { query, params, credentials } = body;
-    // credentials may be undefined, if client didn't pass them.
-
-    // 2) If credentials are provided, use them. Otherwise, environment vars
+    // creds may be undefined
     const host = credentials?.host || process.env['DL_PG_HOST'];
     const port = credentials?.port || process.env['DL_PG_PORT'] || '5432';
     const user = credentials?.user || process.env['DL_PG_USER'];
     const password = credentials?.password || process.env['DL_PG_PASSWORD'];
     const database = credentials?.database || process.env['DL_PG_NAME'];
 
-    // 3) Validate we have enough info
     if (!host || !user || !password || !database) {
       return sendError(
         event,
@@ -34,7 +44,6 @@ export default defineEventHandler(async (event) => {
       );
     }
 
-    // 4) connect
     const client = new Client({
       host,
       port: parseInt(port, 10),
@@ -52,7 +61,6 @@ export default defineEventHandler(async (event) => {
     });
 
     try {
-      // 5) Run the query
       const result = await client.query(query, params || []);
       return { data: result.rows };
     } catch (queryError: any) {
