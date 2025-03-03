@@ -23,7 +23,10 @@ export default defineEventHandler((event) => {
     // No key param => return all env vars beginning with DL_ or SUPABASE_
     const envVars: Record<string, string> = {};
     for (const [envKey, envValue] of Object.entries(environmentVariables)) {
-      if (envKey.startsWith('DL_') || envKey.startsWith('SUPABASE_')) {
+      if (
+        (envKey.startsWith('DL_') || envKey.startsWith('SUPABASE_'))
+        && !envKey.includes('_POSTGRES')
+      ) {
         envVars[envKey] = envValue || '';
       }
     }
