@@ -8,7 +8,7 @@ import { CtaComponent } from '~/app/components/home-things/cta/cta.component';
   selector: 'app-demo-page',
   template: `
     <h1 class="my-4 text-2xl">Domain Locker Demos</h1>
-    <app-demo />
+    <app-demo [standAlone]="true" />
     <p-card styleClass="mt-4 mx-2 mb-0">
       <h3>About the Demo</h3>
       <p class="m-0">

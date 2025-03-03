@@ -11,6 +11,7 @@ export interface DocAttributes {
   slug: string;
   description: string;
   coverImage: string;
+  noShowInContents?: boolean;
 }
 
 @Component({
@@ -32,6 +33,7 @@ export interface DocAttributes {
         <ul class="list-none p-0 mx-0 mt-4 flex flex-col">
           <li *ngFor="let file of allDocs; index as index" class="border-x-0 border-b-0 border-t-2 border-solid border-surface-200">
             <a
+              *ngIf="!file.attributes.noShowInContents"
               [routerLink]="['/about', categoryName, file.slug]"
               pTooltip="{{ file.attributes.description }}"
               showDelay="300"

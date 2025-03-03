@@ -147,6 +147,6 @@ export class ErrorHandlerService {
   }
 
   public getRecentErrorLog(): any[] {
-    return JSON.parse(localStorage.getItem('DL_error_log') || '[]');
+    return JSON.parse(localStorage.getItem('DL_error_log') || '[]').reverse();
   }
 }

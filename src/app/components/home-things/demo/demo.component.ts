@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PrimeNgModule } from '~/app/prime-ng.module';
 import { TranslateModule } from '@ngx-translate/core';
@@ -6,7 +6,8 @@ import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-demo',
   template: `
-  <div class="flex flex-wrap md:flex-nowrap w-full px-2 h-full gap-4">
+  <div [ngClass]="standAlone ? 'flex flex-col' : 'flex flex-wrap md:flex-nowrap' " class="w-full px-2 h-full gap-4">
+    <!-- Demo link and credentials -->
     <div class="p-card flex-1 py-4 px-3">
       <h4>{{ 'HOME.DEMO.LIVE_DEMO_TITLE' | translate }}</h4>
       <p>
@@ -22,6 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
         <p-button [label]="'HOME.DEMO.VISIT_DEMO' | translate" class="float-right" icon="pi pi-desktop"></p-button>
       </a>
     </div>
+    <!-- Demo video -->
     <div class="p-card flex-1 py-4 px-3">
       <h4>{{ 'HOME.DEMO.VIDEO_DEMO_TITLE' | translate }}</h4>
       <p>{{ 'HOME.DEMO.VIDEO_DEMO_DESC' | translate }}</p>
@@ -34,4 +36,6 @@ import { TranslateModule } from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, PrimeNgModule, TranslateModule]
 })
-export class DemoComponent  {}
+export class DemoComponent  {
+  @Input() standAlone?: boolean = false;
+}

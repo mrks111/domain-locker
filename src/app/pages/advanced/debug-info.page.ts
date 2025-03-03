@@ -252,5 +252,6 @@ export default class DebugInfoPage implements OnInit {
       location: 'DebugInfoPage',
       showToast: true,
     });
+    this.errorLog = this.errorHandler.getRecentErrorLog();
   }
 }
