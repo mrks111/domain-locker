@@ -70,8 +70,12 @@ import { MetaTagsService } from '~/app/services/meta-tags.service';
     }
     ::ng-deep a {
       color: var(--primary-400);
+
       &:visited {
         color: var(--primary-600);
+      }
+      & * {
+        color: var(--text-color) !important;
       }
     }
     ::ng-deep app-root {
