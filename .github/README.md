@@ -38,7 +38,7 @@ You'll get detailed domain analysis, security insights, change history, recent p
 ### Screenshot
 
 <p align="center">
-<img width="800" src="https://placehold.co/600x400/000000/FFFFFF/png" />
+<img width="800" src="/.github/screenshots/screenshot-grid.png" />
 </p>
 
 ### Features
