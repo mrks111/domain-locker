@@ -57,6 +57,9 @@ You'll get detailed domain analysis, security insights, change history, recent p
 
 ### Demo
 
+Try the live demo to [demo.domain-locker.com](https://demo.domain-locker.com) <br>
+(Username: `demo@domain-locker.com` Password: `domainlocker`)
+
 ---
 
 ## Get Started
@@ -78,8 +81,44 @@ TODO
 ## Developing
 
 #### Project Setup
+
+```bash
+git clone git@github.com:Lissy93/domain-locker.git	# Get the code
+cd domain-locker					# Navigate into directory
+npm install						# Install dependencies
+cp .env.example .env					# Set environmental variables
+npm run dev						# Start the dev server
+```
+
+You'll of course need Git and Node installed on your system.<br>
+The example .env file includes the public credentials for our Supabase dev instance, which you're free to use for development purposes. However, note that data will be periodically wiped, and the instance is quite locked down. So you may instead wish to self-host your own Supabase instance or Postgres database, and then update your env vars accordingly.
+
 #### Architecture
 #### Tech Stack
+
+Domain Locker is made up of an app, database and some API endpoints.
+- **The app** is built with Angular, using Analog+Nitro with PrimeNg components, and Tailwind for styling
+- **The server** is a series of Deno endpoints with Typescript functions
+- **The database** can be either Postgres or Supabase
+
+While the self-hosted instance is intended to be deployed stand-alone, the managed version however depends on a few additional third-party services, which you can see below
+
+<p align="center">
+<img width="800" src="/.github/screenshots/architecture.png" />
+<br>
+<span>You can view docs for the technologies and services used <a href="https://domain-locker.com/about/developing/third-party-docs">here</a></span>
+</p>
+
+#### Database
+
+A database is needed to store all your domains and associated info. Domain Locker supports both Supabase and standard Postgres for storing data. The db used will depend on which env vars are set.
+
+- **Supabase**: Follow the Supabase [self-hosting docs](https://supabase.com/docs/guides/self-hosting), then use [dl-sb-iac](https://github.com/lissy93/dl-sb-iac) to import the schema and configure auth, edge functions, emails, etc.
+	- Then set: `SUPABASE_URL` and `SUPABASE_ANON_KEY` environmental variables
+- **Postgres**: Deploy a Postgres instance, then use our [`setup-postgres.sh`](https://github.com/Lissy93/domain-locker/blob/main/db/setup-postgres.sh) script to init your DB with our[`schema.sql`](https://github.com/Lissy93/domain-locker/blob/main/db/schema.sql)
+	- Then set: `DL_PG_HOST`, `DL_PG_PORT`, `DL_PG_USER`, `DL_PG_PASSWORD`, `DL_PG_NAME`
+
+
 #### Contributing
 
 ---
@@ -88,7 +127,11 @@ TODO
 
 ##### Contributors
 
+![contributors](https://readme-contribs.as93.net/contributors/lissy93/domain-locker)
+
 ##### Sponsors
+
+![sponsors](https://readme-contribs.as93.net/sponsors/lissy93)
 
 ---
 
