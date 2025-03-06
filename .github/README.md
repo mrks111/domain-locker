@@ -76,6 +76,8 @@ To use Domain Locker, you have two options:
 TODO
 ```
 
+<sup>See the [Self-Hosting Docs](https://domain-locker.com/about/self-hosting) for more info</sup>
+
 ---
 
 ## Developing
@@ -93,7 +95,6 @@ npm run dev						# Start the dev server
 You'll of course need Git and Node installed on your system.<br>
 The example .env file includes the public credentials for our Supabase dev instance, which you're free to use for development purposes. However, note that data will be periodically wiped, and the instance is quite locked down. So you may instead wish to self-host your own Supabase instance or Postgres database, and then update your env vars accordingly.
 
-#### Architecture
 #### Tech Stack
 
 Domain Locker is made up of an app, database and some API endpoints.
@@ -109,6 +110,40 @@ While the self-hosted instance is intended to be deployed stand-alone, the manag
 <span>You can view docs for the technologies and services used <a href="https://domain-locker.com/about/developing/third-party-docs">here</a></span>
 </p>
 
+
+#### Architecture
+
+The architecture is pretty simple.
+We have an app (consisting of a frontend and API endpoints), where the user can read and write to the database (through adapters). Then a cron service will periodically call API endpoints to keep domain data up-to-date, track changes, monitor health, and trigger notifications on certain changes (according to user preference) or before an upcoming expiration.
+
+```mermaid
+graph TD;
+    subgraph User Interactions
+        User[👤 User] -->|Enter domain| WebApp[🌐 Frontend];
+        WebApp -->|Send API request| API[⚙️ Nitro API];
+        API -->|Auth Check| Auth[🔐 Auth Service];
+        API -->|Store domain info| Database[🗄️ PostgreSQL / Supabase];
+    end
+
+    subgraph Automated Cron Jobs
+        CronService[⏳ Cron Service] -->|Trigger Updates| EdgeFunctions[⚡ Edge Functions];
+        EdgeFunctions -->|Fetch WHOIS, DNS, SSL| ExternalAPIs[🌎 Analysis Services];
+        EdgeFunctions -->|Store Data| Database;
+        
+        CronService -->|Monitor Uptime| WebsiteMonitor[📡 Uptime Monitor];
+        WebsiteMonitor -->|Store Metrics| Database;
+
+        CronService -->|Check Expirations| ExpiryChecker[📆 Expiration Check];
+        ExpiryChecker -->|Update Status| Database;
+        
+        CronService -->|Send Notifications| NotificationService[🔔 Notification System];
+        NotificationService -->|Email| Resend[📧 Resend];
+        NotificationService -->|SMS| Twilio[📱 Twilio];
+    end
+
+    Database -->|Serve Data| WebApp;
+```
+
 #### Database
 
 A database is needed to store all your domains and associated info. Domain Locker supports both Supabase and standard Postgres for storing data. The db used will depend on which env vars are set.
@@ -118,8 +153,254 @@ A database is needed to store all your domains and associated info. Domain Locke
 - **Postgres**: Deploy a Postgres instance, then use our [`setup-postgres.sh`](https://github.com/Lissy93/domain-locker/blob/main/db/setup-postgres.sh) script to init your DB with our[`schema.sql`](https://github.com/Lissy93/domain-locker/blob/main/db/schema.sql)
 	- Then set: `DL_PG_HOST`, `DL_PG_PORT`, `DL_PG_USER`, `DL_PG_PASSWORD`, `DL_PG_NAME`
 
+```mermaid
+classDiagram
+  class users {
+    uuid id
+    text email
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  class domains {
+    uuid id
+    uuid user_id
+    text domain_name
+    date expiry_date
+    text notes
+    timestamp created_at
+    timestamp updated_at
+    uuid registrar_id
+    timestamp registration_date
+    timestamp updated_date
+  }
+
+  class registrars {
+    uuid id
+    text name
+    text url
+    uuid user_id
+  }
+
+  class tags {
+    uuid id
+    text name
+    text color
+    text description
+    text icon
+    uuid user_id
+  }
+
+  class domain_tags {
+    uuid domain_id
+    uuid tag_id
+  }
+
+  class notifications {
+    uuid id
+    uuid user_id
+    uuid domain_id
+    text change_type
+    text message
+    boolean sent
+    boolean read
+    timestamp created_at
+  }
+
+  class billing {
+    uuid id
+    uuid user_id
+    text current_plan
+    timestamp next_payment_due
+    text billing_method
+    timestamp created_at
+    timestamp updated_at
+    jsonb meta
+  }
+
+  class dns_records {
+    uuid id
+    uuid domain_id
+    text record_type
+    text record_value
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  class domain_costings {
+    uuid id
+    uuid domain_id
+    numeric purchase_price
+    numeric current_value
+    numeric renewal_cost
+    boolean auto_renew
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  class domain_hosts {
+    uuid domain_id
+    uuid host_id
+  }
+
+  class domain_links {
+    uuid id
+    uuid domain_id
+    text link_name
+    text link_url
+    timestamp created_at
+    timestamp updated_at
+    text link_description
+  }
+
+  class domain_statuses {
+    uuid id
+    uuid domain_id
+    text status_code
+    timestamp created_at
+  }
+
+  class domain_updates {
+    uuid id
+    uuid domain_id
+    uuid user_id
+    text change
+    text change_type
+    text old_value
+    text new_value
+    timestamp date
+  }
+
+  class uptime {
+    uuid id
+    uuid domain_id
+    timestamp checked_at
+    boolean is_up
+    integer response_code
+    numeric response_time_ms
+    numeric dns_lookup_time_ms
+    numeric ssl_handshake_time_ms
+    timestamp created_at
+  }
+
+  class ssl_certificates {
+    uuid id
+    uuid domain_id
+    text issuer
+    text issuer_country
+    text subject
+    date valid_from
+    date valid_to
+    text fingerprint
+    integer key_size
+    text signature_algorithm
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  class whois_info {
+    uuid id
+    uuid domain_id
+    text country
+    text state
+    text name
+    text organization
+    text street
+    text city
+    text postal_code
+  }
+
+  class user_info {
+    uuid id
+    uuid user_id
+    jsonb notification_channels
+    timestamp created_at
+    timestamp updated_at
+    text current_plan
+  }
+
+  class hosts {
+    uuid id
+    inet ip
+    numeric lat
+    numeric lon
+    text isp
+    text org
+    text as_number
+    text city
+    text region
+    text country
+    uuid user_id
+  }
+
+  class ip_addresses {
+    uuid id
+    uuid domain_id
+    inet ip_address
+    boolean is_ipv6
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  class notification_preferences {
+    uuid id
+    uuid domain_id
+    text notification_type
+    boolean is_enabled
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  class sub_domains {
+    uuid id
+    uuid domain_id
+    text name
+    timestamp created_at
+    timestamp updated_at
+    jsonb sd_info
+  }
+
+  users --> domains : user_id
+  registrars --> domains : registrar_id
+  users --> registrars : user_id
+  users --> tags : user_id
+  domains --> domain_tags : domain_id
+  tags --> domain_tags : tag_id
+  users --> notifications : user_id
+  domains --> notifications : domain_id
+  users --> billing : user_id
+  domains --> dns_records : domain_id
+  domains --> domain_costings : domain_id
+  domains --> domain_hosts : domain_id
+  hosts --> domain_hosts : host_id
+  domains --> domain_links : domain_id
+  domains --> domain_statuses : domain_id
+  domains --> domain_updates : domain_id
+  users --> domain_updates : user_id
+  domains --> uptime : domain_id
+  domains --> ssl_certificates : domain_id
+  domains --> whois_info : domain_id
+  users --> user_info : user_id
+  users --> hosts : user_id
+  domains --> ip_addresses : domain_id
+  domains --> notification_preferences : domain_id
+  domains --> sub_domains : domain_id
+```
+
+<p align="center"><sub>You can download the schema from <a href="https://github.com/Lissy93/domain-locker/blob/main/db/schema.sql"<code>db/schema.sql</code></a></sub></p>
 
 #### Contributing
+
+Contributions, of any kind are always welcome, and very much appreciated! 💗
+
+The general flow of contributing to a GitHub project, is as follows:
+- Fork the repo, by [clicking here](https://github.com/lissy93/domain-locker/fork)
+- Clone your fork (with `git clone git@github.com:[your_username]/domain-locker.git`)
+- Follow the [Project Setup](#project-setup) above, to get the project running in development mode
+- Implement your awesome new feature or amazing bug fix...
+- Checkout a branch, with `git checkout -b feature-branch`, then `git add` your changes and `git commit` using conventional commits, before `git push`ing to your branch
+- Head back to GitHub, and you can then open up a PR against our `main` branch. Don't forget to include what you changed, why and link to any associated issues.
+- We'll then review, feedback, and merge, and once released your changes will go live to prod, as well as be available in the latest Docker image.
 
 ---
 
