@@ -37,7 +37,10 @@ You'll get detailed domain analysis, security insights, change history, recent p
 
 ### Screenshot
 
+<sup>(Sorry about the 5fps, I wanted to keep file size down!)</sup>
+
 <p align="center">
+<img width="800" src="/.github/screenshots/quick-demo.gif" /><br>
 <img width="800" src="/.github/screenshots/screenshot-grid.png" />
 </p>
 
