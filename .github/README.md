@@ -41,6 +41,15 @@ You'll get detailed domain analysis, security insights, change history, recent p
 <img width="800" src="/.github/screenshots/screenshot-grid.png" />
 </p>
 
+<details>
+<summary>More...</summary>
+<p align="center">
+<img width="800" src="/.github/screenshots/domain-locker-viz-screenshots.png" />
+<img width="800" src="/.github/screenshots/domain-locker-settings-screenshots.png" />
+</p>
+</details>
+
+
 ### Features
 
 - 📡 Auto-fetched assets: SSL certs, hosts, registrars, IPs, subdomains, DNS, etc
@@ -393,7 +402,7 @@ classDiagram
 
 Contributions, of any kind are always welcome, and very much appreciated! 💗
 
-The general flow of contributing to a GitHub project, is as follows:
+If you're new to Git, the general flow of contributing, is as follows:
 - Fork the repo, by [clicking here](https://github.com/lissy93/domain-locker/fork)
 - Clone your fork (with `git clone git@github.com:[your_username]/domain-locker.git`)
 - Follow the [Project Setup](#project-setup) above, to get the project running in development mode
