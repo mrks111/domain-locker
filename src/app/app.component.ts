@@ -46,21 +46,23 @@ import { MetaTagsService } from '~/app/services/meta-tags.service';
   template: `
     <!-- Navbar -->
     <app-navbar />
-    <!-- Main content container -->
-    <div class="content-container" [ngClass]="{ 'full': isFullWidth }">
-      <!-- While initializing, show loading spinner -->
-      <loading *ngIf="loading" />
-      <!-- Create router outlet -->
-      <breadcrumbs *ngIf="!loading && pagePath" [pagePath]="pagePath" />
-      <!-- Router outlet for main content -->
-      <router-outlet *ngIf="!loading" />
-      <!-- Global components -->
-      <p-scrollTop />
-      <p-toast />
-      <p-confirmDialog />
+    <div class="main-container">
+      <!-- Main content container -->
+      <div class="content-container" [ngClass]="{ 'full': isFullWidth }">
+        <!-- While initializing, show loading spinner -->
+        <loading *ngIf="loading" />
+        <!-- Create router outlet -->
+        <breadcrumbs *ngIf="!loading && pagePath" [pagePath]="pagePath" />
+        <!-- Router outlet for main content -->
+        <router-outlet *ngIf="!loading" />
+        <!-- Global components -->
+        <p-scrollTop />
+        <p-toast />
+        <p-confirmDialog />
+      </div>
+      <!-- Footer -->
+      <app-footer [big]="isBigFooter" />
     </div>
-    <!-- Footer -->
-    <app-footer [big]="isBigFooter" />
   `,
   styles: [`
     :host {
@@ -75,13 +77,8 @@ import { MetaTagsService } from '~/app/services/meta-tags.service';
         color: var(--primary-600);
       }
       & * {
-        color: var(--text-color) !important;
+        // color: var(--text-default);
       }
-    }
-    ::ng-deep app-root {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
   `],
 })
@@ -105,7 +102,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private errorHandler: ErrorHandlerService,
     public _themeService: ThemeService,
     public _hitCountingService: HitCountingService,
-    private _translationService: TranslationService,
     private accessibilityService: AccessibilityService,
     private environmentService: EnvService,
     private featureService: FeatureService,
