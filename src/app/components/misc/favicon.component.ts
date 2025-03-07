@@ -39,14 +39,20 @@ export class DomainFaviconComponent implements OnInit, OnDestroy {
   @Input() domainIcon: string = '';
   // apiBaseUrl = 'https://favicon.twenty.com/';
   // apiBaseUrl = 'https://favicone.com/';
-  apiBaseUrl = 'https://icon.horse/icon/';
+  // apiBaseUrl = 'https://icon.horse/icon/';
   // apiBaseUrl = 'http://strong-turquoise-minnow.faviconkit.com/';
-  // apiBaseUrl = 'http://f1.allesedv.com/32/';
+  apiBaseUrl = 'http://f1.allesedv.com/32/';
   // apiBaseUrl = 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&size=32&url=http://';
 
   // https://icons.duckduckgo.com/ip4/gov.uk.ico
 
-  sanitizedDomain: string = '';
+  private _sanitizedDomain: string = '';
+  public get sanitizedDomain(): string {
+    return this._sanitizedDomain;
+  }
+  public set sanitizedDomain(value: string) {
+    this._sanitizedDomain = value;
+  }
   faviconLoaded: boolean | undefined;
   isSpinning: boolean = true;
   private timeoutId: any;
