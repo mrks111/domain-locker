@@ -46,13 +46,13 @@ export const hostedSupport: SupportInfo = {
 export const selfHostedSupport: SupportInfo = {
   title: 'Support for Self-Hosted Instances',
   intro: [
-    'Please note, that we are unable to support those running a self-hosted'
-    + 'instance of Domain Locker on their own infrastructure. But we have got'
-    + 'comprehensive docs and resources which should cover any issues you might'
-    + 'be facing.',
-    'If that fails, enable debug mode to determine where and why the issue occurs.'
-    + 'You will then be able to locate the source of the problem in the code,'
-    + 'and apply any fixes or mitigations to resolve your bug.',
+    'Please note, that we are unable to support those running a self-hosted '
+    + 'instance of Domain Locker on their own infrastructure at this time. '
+    + 'But we have got comprehensive docs and resources which should cover '
+    + 'any issues you might be facing. ',
+    'If that fails, enable debug mode to determine where and why the issue occurs. '
+    + 'You will then be able to locate the source of the problem in the code, '
+    + 'and apply any fixes or mitigations to resolve your bug.' ,
   ],
   links: [
     {

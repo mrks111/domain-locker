@@ -278,43 +278,43 @@ export const unauthenticatedNavLinks = [
     label: 'Docs',
     icon: 'pi pi-fw pi-book',
     routerLink: '/about',
-    items: [
-      {
-        label: 'Helpful Articles',
-        routerLink: '/about/articles',
-        icon: 'pi pi-folder-open',
-      },
-      {
-        label: 'External Links',
-        routerLink: '/about/external-links',
-        icon: 'pi pi-paperclip',
-      },
-      {
-        label: 'Support',
-        routerLink: '/about/support',
-        icon: 'pi pi-question-circle',
-      },
-      {
-        label: 'Legal Documents',
-        routerLink: '/about/legal',
-        icon: 'pi pi-hammer',
-      },
-      {
-        label: 'Self-Hosting',
-        routerLink: '/about/self-hosting',
-        icon: 'pi pi-server',
-      },
-      {
-        label: 'Community',
-        routerLink: '/about/community',
-        icon: 'pi pi-users',
-      },
-      {
-        label: 'Developer Guides',
-        routerLink: '/about/developing',
-        icon: 'pi pi-code',
-      },
-    ],
+    // items: [
+    //   {
+    //     label: 'Helpful Articles',
+    //     routerLink: '/about/articles',
+    //     icon: 'pi pi-folder-open',
+    //   },
+    //   {
+    //     label: 'External Links',
+    //     routerLink: '/about/external-links',
+    //     icon: 'pi pi-paperclip',
+    //   },
+    //   {
+    //     label: 'Support',
+    //     routerLink: '/about/support',
+    //     icon: 'pi pi-question-circle',
+    //   },
+    //   {
+    //     label: 'Legal Documents',
+    //     routerLink: '/about/legal',
+    //     icon: 'pi pi-hammer',
+    //   },
+    //   {
+    //     label: 'Self-Hosting',
+    //     routerLink: '/about/self-hosting',
+    //     icon: 'pi pi-server',
+    //   },
+    //   {
+    //     label: 'Community',
+    //     routerLink: '/about/community',
+    //     icon: 'pi pi-users',
+    //   },
+    //   {
+    //     label: 'Developer Guides',
+    //     routerLink: '/about/developing',
+    //     icon: 'pi pi-code',
+    //   },
+    // ],
   },
   {
     label: 'Features',
