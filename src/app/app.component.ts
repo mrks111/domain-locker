@@ -76,9 +76,6 @@ import { MetaTagsService } from '~/app/services/meta-tags.service';
       &:visited {
         color: var(--primary-600);
       }
-      & * {
-        // color: var(--text-default);
-      }
     }
   `],
 })
