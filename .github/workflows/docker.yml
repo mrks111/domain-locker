@@ -40,7 +40,7 @@ jobs:
         id: docker_tags
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            RAW_VERSION="${GITHUB_REF#refs/tags/v}"    # e.g. "4.2.0" if tag is "v4.2.0"
+            RAW_VERSION="${GITHUB_REF#refs/tags/v}"
             echo "tags=lissy93/domain-locker:${RAW_VERSION},ghcr.io/lissy93/domain-locker:${RAW_VERSION}" >> $GITHUB_OUTPUT
           else
             # On main branch
