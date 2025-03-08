@@ -1,0 +1,24 @@
+name: 🏷️ Tag new versions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+
+jobs:
+  tag-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: package_version
+        run: echo "::set-output name=version::$(jq -r .version package.json)"
+
+      - name: Create Git Tag
+        run: |
+          git tag v${{ steps.package_version.outputs.version }}
+          git push origin v${{ steps.package_version.outputs.version }}
