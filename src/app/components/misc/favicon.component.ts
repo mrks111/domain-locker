@@ -24,7 +24,8 @@ import { CommonModule, NgOptimizedImage } from '@angular/common';
     :host {
       display: inline-block;
       width: var(--favicon-size, 24px);
-      height: var(--favicon-size, 24px);
+      height: auto;
+      max-height: var(--favicon-size, 24px);
       line-height: 0;
     }
     i, img {

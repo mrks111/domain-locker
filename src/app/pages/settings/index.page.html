@@ -16,7 +16,7 @@
               [pTooltip]="item['description']"
               showDelay="350"  
             >
-              <a routerLink="{{ item['routerLink'] }}" class="flex gap-2 align-items-center no-underline text-inherit text-md">
+              <a routerLink="{{ item['routerLink'] }}" class="flex gap-2 align-items-center no-underline text-inherit text-md text-default">
                 <i class="{{ item.icon }} opacity-70"></i>
                 <span *ngIf="!hideTextLabels">{{ item.label }}</span>
               </a>

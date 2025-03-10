@@ -134,7 +134,9 @@ export class DomainCollectionComponent implements OnInit {
   }
 
   reloadDomains(event: any) {
-    this.$triggerReload.emit(event);
+    setTimeout(() => {
+      this.$triggerReload.emit(event);
+    }, 1500);
   }
 
   initializeFuse() {

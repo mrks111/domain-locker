@@ -70,13 +70,7 @@ import { MetaTagsService } from '~/app/services/meta-tags.service';
       flex-direction: column;
       min-height: 100vh;
     }
-    ::ng-deep a {
-      color: var(--primary-400);
 
-      &:visited {
-        color: var(--primary-600);
-      }
-    }
   `],
 })
 export class AppComponent implements OnInit, OnDestroy {

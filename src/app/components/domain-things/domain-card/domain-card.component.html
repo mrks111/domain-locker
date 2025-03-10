@@ -31,7 +31,7 @@
   <div class="flex justify-between align-items-center {{ (domain.expiry_date && !domain.registrar) ? '!justify-end' : ''}}">
     <ng-container *ngIf="domain.registrar && isVisible('registrar')">
       <a [routerLink]="'/assets/registrars/'+domain.registrar.name" class="text-default no-underline hover:underline flex-1 overflow-hidden">
-        <p class="m-0 truncate" 
+        <p class="m-0 truncate text-default" 
           [pTooltip]="('DOMAINS.DOMAIN_COLLECTION.GRID.CLICK_VIEW_REGISTRAR' | translate:{registrar: domain.registrar.name})">
           {{ domain.registrar.name }}
         </p>
