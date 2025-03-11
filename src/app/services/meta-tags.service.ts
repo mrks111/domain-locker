@@ -12,7 +12,7 @@ export class MetaTagsService {
 
   // Local fields which can override defaults if set
   private pageTitle?: string;
-  private pageDescription?: string;
+  private pageDescription?: string; 
   private pageKeywords?: string;
 
   constructor(private title: Title, private meta: Meta) {}
@@ -20,17 +20,44 @@ export class MetaTagsService {
   public setRouteMeta(routeName: string) {
     // Set to defaults
     this.reset(false);
+    let baseRoute = (routeName || '').split('/')[1];
 
-    // If page has some pre-defined meta tags, set them
-    switch (routeName) {
-      case '/about':
-        this.pageTitle = 'About';
+    // If page has some pre-defined top-level meta tags, set them
+    switch (baseRoute) {
+      case 'about':
+        this.pageTitle = 'Documentation & Helpful Resources';
+        this.pageDescription = 'Tips for managing your domains, getting the most out of Domain Locker, and helpful guides and articles';
         break;
-      case '/login':
+      case 'login':
         this.pageTitle = 'Login';
         this.pageDescription = 'Log in or sign up to Domain Locker - the all-in-one domain management tool.';
         break;
+      case 'domains':
+        this.pageTitle = 'Domains';
+        break;
+      case 'assets':
+        this.pageTitle = 'Assets';
+        break;
+      case 'stats':
+        this.pageTitle = 'Stats';
+        break;
+      case 'value':
+        this.pageTitle = 'Valuation Tracking';
+        break;
+      case 'monitor':
+        this.pageTitle = 'Website Monitor';
+        break;
+      case 'settings':
+        this.pageTitle = 'Settings';
+        break;
       default:
+        break;
+    }
+
+    // If a specific route has custom meta tags, set them
+    switch (routeName) {
+      case '/settings/account':
+        this.pageTitle = 'Account Settings';
         break;
     }
     // Apply meta tags
