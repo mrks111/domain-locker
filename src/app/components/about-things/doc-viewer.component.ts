@@ -10,7 +10,11 @@ export interface DocAttributes {
   title: string;
   slug: string;
   description: string;
-  coverImage: string;
+  coverImage?: string;
+  author?: string;
+  publishedDate?: string;
+  modifiedDate?: string;
+  category?: string;
   noShowInContents?: boolean;
 }
 
@@ -21,7 +25,7 @@ export interface DocAttributes {
   template: `
   <section class="flex flex-row-reverse items-start gap-4 h-full mx-auto my-4 flex-wrap md:flex-nowrap min-h-[105vh]">
     <article *ngIf="doc" class="p-card p-4 flex-1 h-full min-h-64 max-w-[60rem] w-2">
-      <h1 class="text-3xl">{{ doc.attributes.title }}</h1>
+      <h2 class="text-3xl text-default opacity-100">{{ doc.attributes.title }}</h2>
       <analog-markdown class="block max-w-[59rem]" [content]="doc.content"></analog-markdown>
     </article>
 
@@ -92,11 +96,24 @@ export class DocsViewerComponent {
     this.doc$.subscribe(doc => {
       // Set current doc when it resolves
       this.doc = doc;
-
-      // Then set meta tags, from doc attributes
+      // If doc has attributes, then get them for meta and JSON-LD content
       if (doc?.attributes) {
-        const { title, description } = doc.attributes;
+        const { title, description, coverImage, author, publishedDate, modifiedDate, slug } = doc.attributes;
+
+        // Set meta tags
         this.metaTagsService.setCustomMeta(title, description);
+        
+        // Set JSON-LD structured data
+        this.metaTagsService.addStructuredData('article', {
+          title: title,
+          description: description,
+          coverImage: coverImage || 'https://domain-locker.com/og.png',
+          author: author || 'Domain Locker Team',
+          publishedDate: publishedDate || new Date().toISOString(),
+          modifiedDate: modifiedDate || publishedDate || new Date().toISOString(),
+          slug: slug,
+          category: this.categoryName,
+        });
       }
     });
   }
