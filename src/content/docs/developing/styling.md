@@ -7,6 +7,14 @@ coverImage:
 
 We try and keep styling to a minimum. We use components from PrimeNG, which are pre-styled and themable. Then Tailwind wherever a specific style is needed. Very occasionally, we use custom CSS.
 
+This still gives the user plenty of choice as to how they'd like the app to look and feel.
+
+<img loading="lazy"
+  src="https://i.postimg.cc/qRJCTdkr/domain-locker-themes.gif"
+  alt="Domain Locker themes"
+  title="Domain Locker themes showcasing different styles, fonts and CSS options"
+/>
+
 ---
 
 ### Tailwind
