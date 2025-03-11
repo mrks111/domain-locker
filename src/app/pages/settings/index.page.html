@@ -1,5 +1,5 @@
 <p-splitter 
-  [panelSizes]="[25, 75]"
+  [panelSizes]="hideSideBar ? [1,99] : [25, 75]"
   styleClass="h-full min-h-[85vh] px-1 py-2 bg-transparent border-none">
     <ng-template pTemplate>
       <nav #sidebarNav class="border-surface-50 border-2 w-full rounded-l p-1 !border-r-0 bg-surface-25 relative">

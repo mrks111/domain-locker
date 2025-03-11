@@ -20,7 +20,8 @@
 
 @if (isAuthenticated) {
 
-  <app-demo-welcome *ngIf="isDemoInstance" />
+  <app-demo-welcome *ngIf="isDemoInstance" [isDemoInstance]="true" />
+  <app-demo-welcome *ngIf="isDevInstance" [isDevInstance]="true" />
   
   <loading *ngIf="loading" [loadingTitle]="'HOME.LOADING_TITLE' | translate" [loadingDescription]="'HOME.LOADING_DESCRIPTION' | translate" />
   

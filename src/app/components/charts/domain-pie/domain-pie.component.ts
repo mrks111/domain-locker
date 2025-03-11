@@ -128,7 +128,7 @@ export class DomainPieChartsComponent implements OnInit, AfterViewInit {
   initChartOptions(chartType: 'registrar' | 'sslIssuer' | 'host', data: {name: string, count: number}[]) {
     const baseOptions: Partial<ChartOptions> = {
       series: data.map(item => item.count),
-      labels: data.map(item => item.name),
+      labels: data.map(item => item.name || 'No Data'),
       chart: {
         type: "pie",
         background: 'transparent',
