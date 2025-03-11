@@ -26,10 +26,10 @@ Or to build for a particular platform, use the `build:vercel`, `build:netlify` c
 
 ## Database Setup
 
-While running in dev, you will be automatically connected to our public development Supabase instance.
-But note that data here is wiped frequently, and some features are disabled.
+While running in dev, you will be automatically connected to our public development Supabase instance,
+so there is no need to setup or configure a database. (Note that the dev database is frequently wiped).
 
-Alternatively, you can deploy your own database, either a Supabase instance or a Postgres database.
+Alternatively, you can deploy your own database, either a (self-hosted or Pro) Supabase instance or a Postgres database.
 
 ### Option 1) Postgres
 
