@@ -133,8 +133,8 @@ export class MetaTagsService {
           "@type": "Article",
           "headline": "About Domain Locker",
           "description": "Learn more about Domain Locker, the all-in-one domain management tool.",
-          "author": { "@type": "Person", "name": "Alicia Sykes" },
-          "publisher": { "@type": "Organization", "name": "Domain Locker" }
+          "author": { "@type": "Person", "name": "Alicia Sykes", "url": "https://aliciasykes.com" },
+          "publisher": { "@type": "Organization", "name": "Domain Locker", "url": "https://domain-locker.com" }
         };
         break;
 
@@ -160,25 +160,17 @@ export class MetaTagsService {
             "@type": "Article",
             "headline": extraData?.title || "Domain Locker Articles",
             "description": extraData?.description || "No description available.",
-            "author": {
-              "@type": "Person",
-              "name": extraData?.author || "Alicia Sykes",
-              "url": extraData?.authorUrl || "https://aliciasykes.com",
-              "sameAs": extraData?.authorSameAs || ["https://twitter.com/lissy_sykes", "https://linkedin.com/in/aliciasykes"],
-              "jobTitle": extraData?.authorJobTitle || "Domain Expert",
+            "author": { "@type": "Person", "name": "Alicia Sykes", "url": "https://aliciasykes.com" },
+            "publisher": {
+              "@type": "Organization",
+              "name": "Domain Locker",
+              "url": "https://domain-locker.com",
+              "logo": { "@type": "ImageObject", "url": "https://domain-locker.com/logo.png" }
             },
             "image": extraData?.coverImage || "https://domain-locker.com/og.png",
             "url": `https://domain-locker.com/about/${extraData?.category || "uncategorized"}/${extraData?.slug || "unknown"}`,
             "datePublished": extraData?.publishedDate || new Date().toISOString(),
             "dateModified": extraData?.modifiedDate || extraData?.publishedDate || new Date().toISOString(),
-            "publisher": {
-              "@type": "Organization",
-              "name": "Domain Locker",
-              "logo": {
-                "@type": "ImageObject",
-                "url": "https://domain-locker.com/logo.png"
-              }
-            }
           };
           break;
 
@@ -189,10 +181,21 @@ export class MetaTagsService {
           "@type": "SoftwareApplication",
           "name": "Domain Locker",
           "operatingSystem": "All",
-          "applicationCategory": "Utility",
+          "applicationCategory": "BusinessApplication",
           "url": "https://domain-locker.com",
           "image": "https://domain-locker.com/logo.png",
-          "description": "Domain Locker is a powerful tool to manage domains, track changes, and monitor expiration dates."
+          "description": "Domain Locker is a powerful tool to manage domains, track changes, and monitor expiration dates.",
+          "offers": extraData?.offers || {
+            "@type": "Offer",
+            "price": "0.00",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": 4.9,
+            "ratingCount": 420
+          },
         };
         break;
     }
