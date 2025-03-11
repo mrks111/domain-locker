@@ -69,6 +69,13 @@ export default defineConfig( ({ mode }) => {
       case 'netlify':
         console.log('🪁 Building for Netlify');
         return 'netlify';
+      case 'deno':
+      case 'deno_server':
+        console.log('🦕 Building for Deno');
+        return 'deno_server';
+      case 'bun':
+        console.log('🐰 Building for Bun');
+        return 'bun';
       default:
         console.log('🚀 Building for Node.js');
         return 'node-server';
