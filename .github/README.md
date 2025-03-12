@@ -33,7 +33,8 @@ The aim of Domain Locker, is to give you complete visibility of your domain name
 
 For each domain you add, we analyse it and fetch all associated data. We then continuously monitor your domains, and notify you (according to your preferences) when something important changes or when it's soon to expire. 
 
-You'll get detailed domain analysis, security insights, change history, recent performance, valuation data and much more. Never loose track of your domains, miss an expiration, or forget which registrar and providers each domain uses.
+You'll get detailed domain analysis, security insights, change history, recent performance, valuation data and much more.
+You'll never again loose track of your domains, miss an expiration, or forget which registrar and providers each domain uses.
 
 ### Screenshot
 
@@ -97,11 +98,11 @@ TODO
 #### Project Setup
 
 ```bash
-git clone git@github.com:Lissy93/domain-locker.git	# Get the code
-cd domain-locker					# Navigate into directory
-npm install						# Install dependencies
-cp .env.example .env					# Set environmental variables
-npm run dev						# Start the dev server
+git clone git@github.com:Lissy93/domain-locker.git    # Get the code
+cd domain-locker                                      # Navigate into directory
+npm install --legacy-peer-deps                        # Install dependencies
+cp .env.example .env                                  # Set environmental variables
+npm run dev                                           # Start the dev server
 ```
 
 You'll of course need Git and Node installed on your system.<br>
