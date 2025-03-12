@@ -1,0 +1,52 @@
+# When a new tag is created, this workflow will open a PR
+# to update the demo branch with the latest code from the main branch
+
+name: "🎈 Update Demo"
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  create-demo-PR:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Get tag name
+        id: get_tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Create pull request from main to demo
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          base: demo
+          title: "Update Demo Branch from Main"
+          branch: "bot/update-demo"
+          body: |
+            A new tag **${{ env.TAG }}** was just pushed!
+
+            🤖 Let's merge the latest changes **`main`** → **`demo`**,
+            so that the demo environment is updated to version ${{ env.TAG }}.
+
+            <details>
+            <summary>🔍 View Context</summary>
+
+            - Repository: ${{ github.repository }}
+            - Tag Reference: ${{ github.ref }}
+            - Tag Name: ${{ env.TAG }}
+            - Workflow Run: ${{ github.run_id }}
+            - Commit SHA: ${{ github.sha }}
+
+            </details>
+
+            > [!NOTE]
+            > Merging this PR will incorporate the latest changes from the main branch
+            > into the demo branch, which will promote the latest updates to the demo environment.
+
