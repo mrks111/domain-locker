@@ -4,6 +4,7 @@
 name: "🎈 Update Demo"
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*"
