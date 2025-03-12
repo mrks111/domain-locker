@@ -28,7 +28,15 @@ jobs:
           VERSION=$(jq -r .version package.json)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Create Git Tag
+      - name: Create Git Tag (skip if exists)
         run: |
-          git tag v${{ steps.get_version.outputs.version }}
-          git push origin v${{ steps.get_version.outputs.version }}
+          VERSION="${{ steps.get_version.outputs.version }}"
+
+          # Check if the tag already exists remotely
+          if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}"; then
+            echo "Tag v${VERSION} already exists. Skipping."
+          else
+            echo "Tag v${VERSION} does not exist. Creating now..."
+            git tag "v${VERSION}"
+            git push origin "v${VERSION}"
+          fi
