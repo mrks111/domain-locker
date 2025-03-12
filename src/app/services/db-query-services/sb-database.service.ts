@@ -199,14 +199,10 @@ export default class MainDatabaseService extends DatabaseService {
   }
 
   saveDomain(data: SaveDomainData): Observable<DbDomain> {
-    if (!this.featureService.isFeatureEnabled('writePermissions')) {
-      return throwError(() => new Error('Write permissions disabled'));
-    }
     return from(this.saveDomainInternal(data)).pipe(
       catchError(error => this.handleError(error))
     );
   }
-
   
   // saveDomain(data: SaveDomainData): Observable<DbDomain> {
   //   if (!this.featureService.isFeatureEnabled('writePermissions')) {
@@ -244,6 +240,12 @@ export default class MainDatabaseService extends DatabaseService {
   
 
   private async saveDomainInternal(data: SaveDomainData): Promise<DbDomain> {
+
+    const isWriteEnabled = await this.featureService.isFeatureEnabledPromise('writePermissions');
+    if (!isWriteEnabled) {
+      throw new Error('Write permissions disabled');
+    }
+
     const {
       domain,
       ipAddresses,
