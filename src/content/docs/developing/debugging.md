@@ -34,3 +34,10 @@ Please include the following information in your report:
 
 **Important**: In your report, you must also include the output of the environment details, error log and diagnostic report which you can find on the
  [`/advanced/debug-info`](https://domain-locker.com/advanced/debug-info) page.
+
+---
+
+<a href="/advanced/debug-info" style="text-align:center; display:block; font-size: 0.8rem; max-width: 500px; margin: 0 auto;">
+<img src="https://i.postimg.cc/sx9j7ZJ7/Screenshot-2025-03-12-021627.png" alt="Domain Locker Debug Tool" title="Domain Locker Debug Tool" />
+<span>Screenshot of Debug Tool</span>
+</a>

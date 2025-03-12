@@ -2,13 +2,18 @@
   <h1>Debug Data for {{appName}} V.{{appVersion}}</h1>
   <p-messages severity="info">
     <ng-template pTemplate>
-      <div>
-        <i class="pi pi-info-circle mr-2"></i>
-        <b>This page is for debugging purposes only.</b><br>
-        If you're facing technical issues with Domain Locker, please include the below data in your bug report.
-        This data will never be seen by anyone unless you share it yourself.
-        Be sure to redact any sensitive information before sending.<br>
-        <b>Need help?</b> View our <a class="text-primary" routerLink="/about/support">Support Pages</a>
+      <div class="flex flex-col gap-2">
+        <div>
+          <i class="pi pi-info-circle mr-2"></i>
+          <b>This page is for debugging purposes only.</b><br>
+          If you're facing technical issues with Domain Locker, please include the below data in your bug report.
+          This data will never be seen by anyone unless you share it yourself.
+          Be sure to redact any sensitive information before sending.<br>
+          <b>Need help?</b> View our <a class="text-primary" routerLink="/about/support">Support Pages</a>
+        </div>
+        <div class="flex w-full justify-end">
+          <p-button severity="info" label="Copy all to Clipboard" icon="pi pi-copy" (click)="copyAllToClipboard()" />
+        </div>
       </div>
     </ng-template>
   </p-messages>
@@ -17,7 +22,7 @@
 <div class="p-card p-4 max-w-4xl mx-auto">
   <h2>Environment Info</h2>
 
-<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-x-hidden">
+<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-x-hidden" id="debug_environmentInfo">
 ===================================
 APP INFO
 ===================================
@@ -63,7 +68,7 @@ Orientat:   {{ orientation }}
 
   <div class="p-card p-4 max-w-4xl mx-auto max-h-96"> 
   <h2>Error Log</h2>
-<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto min-h-28 ">
+<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto min-h-28"  id="debug_errorLogs">
 ===================================
 ERROR LOGS
 ===================================@for (error of errorLog; track error.date) {
@@ -76,7 +81,7 @@ ERROR LOGS
 <div class="p-card p-4 max-w-4xl mx-auto">
     <h2>Diagnostics</h2>
 
-<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto ">
+<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto" id="debug_diagnostics">
 ===================================
 DATABASE TABLE CHECKS
 ===================================
@@ -98,7 +103,7 @@ ENVIRONMENT VARIABLES
 <div class="p-card p-4 max-w-4xl mx-auto">
     <h2>User Info</h2>
 
-<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto ">
+<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto" id="debug_userInfo">
 ===================================
 APP PREFERENCES
 ===================================

@@ -18,6 +18,7 @@ import { TranslationService } from '~/app/services/translation.service';
 import DatabaseService from '~/app/services/database.service';
 import { FeatureService } from '~/app/services/features.service';
 import { AccessibilityOptions, AccessibilityService } from '~/app/services/accessibility-options.service';
+import { GlobalMessageService } from '~/app/services/messaging.service';
 
 
 // @ts-ignore
@@ -96,6 +97,7 @@ export default class DebugInfoPage implements OnInit {
     private databaseService: DatabaseService,
     private featureService: FeatureService,
     private accessibilityService: AccessibilityService,
+    private messagingService: GlobalMessageService,
     @Inject(PLATFORM_ID) public platformId: Object,
     @Inject(APP_ID) public appId: string
   ) {}
@@ -272,4 +274,40 @@ export default class DebugInfoPage implements OnInit {
     });
     this.errorLog = this.errorHandler.getRecentErrorLog();
   }
+
+  copyAllToClipboard(): void {
+    // 1) Safely get each pre element by ID
+    const envPre = document.getElementById('debug_environmentInfo') as HTMLPreElement | null;
+    const errPre = document.getElementById('debug_errorLogs') as HTMLPreElement | null;
+    const diagPre = document.getElementById('debug_diagnostics') as HTMLPreElement | null;
+    const userPre = document.getElementById('debug_userInfo') as HTMLPreElement | null;
+  
+    // 2) Extract text content, fallback to empty string if not found
+    const envText = envPre?.innerText ?? '';
+    const errText = errPre?.innerText ?? '';
+    const diagText = diagPre?.innerText ?? '';
+    const userText = userPre?.innerText ?? '';
+  
+    // 3) Concatenate them with blank lines separating each
+    const combinedText = [
+      envText.trim(),
+      errText.trim(),
+      diagText.trim(),
+      userText.trim()
+    ].filter(section => section.length > 0).join('\n\n');
+  
+    // 4) Copy to clipboard, if available
+    if (navigator?.clipboard && combinedText) {
+      navigator.clipboard.writeText(combinedText)
+        .then(() => {
+          this.messagingService.showSuccess('Copied', 'All debug data has been copied to your clipboard.');
+        })
+        .catch(err => {
+          this.errorHandler.handleError({ error: err, message: 'Failed to copy debug data to clipboard', showToast: true });
+        });
+    } else {
+      this.errorHandler.handleError({ message: 'Browser does not support clipboard.', showToast: true });
+    }
+  }
+  
 }
