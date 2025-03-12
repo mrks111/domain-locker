@@ -46,7 +46,7 @@ export const hostedSupport: SupportInfo = {
 export const selfHostedSupport: SupportInfo = {
   title: 'Support for Self-Hosted Instances',
   intro: [
-    'Please note, that we are unable to support those running a self-hosted '
+    'Please note, that we are unable to guarantee support for those running a self-hosted '
     + 'instance of Domain Locker on their own infrastructure at this time. '
     + 'But we have got comprehensive docs and resources which should cover '
     + 'any issues you might be facing. ',

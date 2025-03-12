@@ -37,8 +37,12 @@ export default class ContactPageComponent implements OnInit {
       info: 'We welcome feedback from our users. Please share your thoughts!',
     },
     'Bug/Issue': {
-      allow: false,
-      info: 'Please report bugs/issues if you are on a paid plan.',
+      allow: true,
+      info: 'Please include diagnostic debug info in your bug report. '
+        + 'Then describe the issue, expected results, actual results and steps to reproduce.',
+      links: [
+        { location: '/advanced/debug-info', title: 'Debug Info', icon: 'info-circle', body: 'Get diagnostic data' },
+      ],
     },
     Security: {
       allow: true,
