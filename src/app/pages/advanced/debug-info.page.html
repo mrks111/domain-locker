@@ -17,7 +17,7 @@
 <div class="p-card p-4 max-w-4xl mx-auto">
   <h2>Environment Info</h2>
 
-<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto max-h-96">
+<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-x-hidden">
 ===================================
 APP INFO
 ===================================
@@ -44,7 +44,6 @@ JavaScript: Enabled
 UserAgent:  {{ userAgent }}
 UA Data:    {{ userAgentData || 'Unset' }}
 
-
 ===================================
 SYSTEM INFO
 ===================================
@@ -56,23 +55,18 @@ Online:     {{ isOnline ? 'Yes' : 'No' }}
 Timezone:   {{ timeZone }}
 Orientat:   {{ orientation }}
 
-===================================
-APP PREFERENCES
-===================================
-Language:   {{ language || 'en' }}
-Theme:      {{ displayOptions?.theme || 'Unset' }}
-Dark:       {{ displayOptions?.darkMode ? 'Enabled' : 'Disabled' }}
-Font:       {{ displayOptions?.font || 'Unset' }}
-Scale:      {{ displayOptions?.scale || 'Unset' }}
 </pre>
 
 </div>
 
 <p-divider class="max-w-4xl mx-auto flex my-2" />
 
-  <div class="p-card p-4 max-w-4xl mx-auto"> 
+  <div class="p-card p-4 max-w-4xl mx-auto max-h-96"> 
   <h2>Error Log</h2>
-<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto min-h-28 max-h-96"> @for (error of errorLog; track error.date) {
+<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto min-h-28 ">
+===================================
+ERROR LOGS
+===================================@for (error of errorLog; track error.date) {
 [{{error.date | date: 'short'}}] {{error.message}} ({{error.location}}) } </pre>
 <a class="text-sm opacity-70 underline m-0 float-right cursor-pointer" (click)="triggerDummyError()">Trigger Test Error</a>
 </div>
@@ -82,7 +76,7 @@ Scale:      {{ displayOptions?.scale || 'Unset' }}
 <div class="p-card p-4 max-w-4xl mx-auto">
     <h2>Diagnostics</h2>
 
-<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto max-h-96">
+<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto ">
 ===================================
 DATABASE TABLE CHECKS
 ===================================
@@ -96,5 +90,53 @@ FEATURE AVAILABILITY
 ENVIRONMENT VARIABLES
 =================================== @for (env of setEnvVars; track env.envName) {
 {{env.hasValue ? '✅' : '❌'}} {{env.envName}} }
+</pre>
+</div>
+
+<p-divider class="max-w-4xl mx-auto flex my-2" />
+
+<div class="p-card p-4 max-w-4xl mx-auto">
+    <h2>User Info</h2>
+
+<pre class="p-2 bg-bluegray-900 text-bluegray-100 rounded-sm text-xs overflow-auto ">
+===================================
+APP PREFERENCES
+===================================
+Language:   {{ language || 'en' }}
+Theme:      {{ displayOptions?.theme || 'Unset' }}
+Dark:       {{ displayOptions?.darkMode ? 'Enabled' : 'Disabled' }}
+Font:       {{ displayOptions?.font || 'Unset' }}
+Scale:      {{ displayOptions?.scale || 'Unset' }}
+
+===================================
+ACCESSIBILITY SETTINGS
+===================================
+Reduced Motion  {{ accessibilityOptions?.reducedMotion ? '✔️ Yes' : '✖️ No' }}
+Touch Targets   {{ accessibilityOptions?.touchTargetExpand ? '✔️ Yes' : '✖️ No' }}
+High Contrast   {{ accessibilityOptions?.highContrast ? '✔️ Yes' : '✖️ No' }}
+Large Text      {{ accessibilityOptions?.largeText ? '✔️ Yes' : '✖️ No' }}
+Icon Removal    {{ accessibilityOptions?.removeIcons ? '✔️ Yes' : '✖️ No' }}
+Grayscale       {{ accessibilityOptions?.grayscale ? '✔️ Yes' : '✖️ No' }}
+Night Shift     {{ accessibilityOptions?.nightShift ? '✔️ Yes' : '✖️ No' }}
+
+===================================
+LOCAL STORAGE
+===================================
+{{ localStorageKeys || 'No data stored' }}
+
+===================================
+COOKIES
+===================================
+{{ cookies || 'No cookies stored' }}
+
+===================================
+USER INFO
+===================================
+ID        {{ userInfo?.id || 'N/A'}}
+Role      {{ userInfo?.role || 'N/A' }}
+Email     {{ userInfo?.email || 'N/A' }}
+Created   {{ userInfo?.created_at || 'N/A' }}
+Last Seen {{ userInfo?.last_sign_in_at || 'N/A' }}
+
 </pre>
 </div>

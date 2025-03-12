@@ -15,6 +15,7 @@ export class MetaTagsService {
   private pageTitle?: string;
   private pageDescription?: string; 
   private pageKeywords?: string;
+  private pageCoverImage?: string;
   private jsonLdSchemas: Map<string, any> = new Map();
 
   constructor(
@@ -75,11 +76,13 @@ export class MetaTagsService {
   private applyTags() {
     const title = this.pageTitle ? `${this.pageTitle} | ${this.defaultTitle}` : this.defaultTitle;
     const description = this.pageDescription || this.defaultDescription;
-    const keywords = this.pageKeywords || this.defaultKeywords
+    const keywords = this.pageKeywords || this.defaultKeywords;
+    const ogImage = this.pageCoverImage || 'https://domain-locker.com/og.png';
 
     this.title.setTitle(title);
     this.meta.updateTag({ name: 'description', content: description });
     this.meta.updateTag({ name: 'keywords', content: keywords });
+    this.meta.updateTag({ property: 'og:image', content: ogImage });
   }
 
   /** Reset to global defaults */
@@ -93,10 +96,17 @@ export class MetaTagsService {
   }
 
   /** Can be called within a page, to dynamically set meta tags */
-  public setCustomMeta(customTitle?: string, customDesc?: string, customKeywords?: string) {
+  public setCustomMeta(
+    customTitle?: string,
+    customDesc?: string,
+    customKeywords?: string,
+    customOgImage?: string,
+  ) {
     this.pageTitle = customTitle || this.defaultTitle;
     this.pageDescription = customDesc || this.defaultDescription;
     this.pageKeywords = customKeywords || this.defaultKeywords;
+    this.pageCoverImage = customOgImage || 'https://domain-locker.com/og.png';
+
     this.applyTags();
   }
 

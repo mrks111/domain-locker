@@ -51,8 +51,7 @@ import { PrimeNgModule } from '~/app/prime-ng.module';
         <p class="mt-2">
           It's recommended to create your own user account here for testing- no email verification is needed 🙂
           <br>
-          (please avoid adding/editing/deleting data on the primary
-            <code>dev&#64;domain-locker.com</code> account)
+          (If you're using the public <code>dev&#64;domain-locker.com</code> account, please avoid adding/editing/deleting data)
         </p>
         <p class="m-0 mt-2">
           If you need any help, check out our <a href="https://domain-locker.com/about/developing">Dev Docs</a>

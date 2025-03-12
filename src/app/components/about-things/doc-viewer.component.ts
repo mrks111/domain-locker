@@ -101,13 +101,13 @@ export class DocsViewerComponent {
         const { title, description, coverImage, author, publishedDate, modifiedDate, slug } = doc.attributes;
 
         // Set meta tags
-        this.metaTagsService.setCustomMeta(title, description);
+        this.metaTagsService.setCustomMeta(title, description, undefined, coverImage || this.getFallbackImage(title));
         
         // Set JSON-LD structured data
         this.metaTagsService.addStructuredData('article', {
           title: title,
           description: description,
-          coverImage: coverImage || 'https://domain-locker.com/og.png',
+          coverImage: coverImage || this.getFallbackImage(title),
           author: author || 'Domain Locker Team',
           publishedDate: publishedDate || new Date().toISOString(),
           modifiedDate: modifiedDate || publishedDate || new Date().toISOString(),
@@ -124,5 +124,12 @@ export class DocsViewerComponent {
     const scrollY = window.scrollY;
     const sevenRemInPx = 112; // approx 7rem if root font-size = 16px
     this.navTop = scrollY > sevenRemInPx ? '1rem' : '9rem';
+  }
+
+  getFallbackImage(title: string) {
+    const encodedTitle = encodeURIComponent(title);
+    return `https://dynamic-og-image-generator.vercel.app/api/generate?title=${encodedTitle}`
+    + ' &author=Domain+Locker&websiteUrl=domain-locker.com&avatar=https%3A%2F%2Fdomain-locker'
+    + '.com%2Ficons%2Fandroid-chrome-maskable-192x192.png&theme=dracula';
   }
 }

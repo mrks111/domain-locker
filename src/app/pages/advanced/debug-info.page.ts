@@ -17,6 +17,7 @@ import { SupabaseService } from '~/app/services/supabase.service';
 import { TranslationService } from '~/app/services/translation.service';
 import DatabaseService from '~/app/services/database.service';
 import { FeatureService } from '~/app/services/features.service';
+import { AccessibilityOptions, AccessibilityService } from '~/app/services/accessibility-options.service';
 
 
 // @ts-ignore
@@ -56,7 +57,11 @@ export default class DebugInfoPage implements OnInit {
   currentPlan$?: Observable<string | null>;
   user$?: Observable<User | null>;
   displayOptions?: { theme: string; darkMode: boolean; font: string; scale: string };
+  accessibilityOptions?: AccessibilityOptions;
   language: string = 'English';
+  localStorageKeys: string = '';
+  cookies: string = '';
+  userInfo: any = {};
 
   // Domain / Browser Info (client side)
   public domainInfo?: DomainInfo;
@@ -90,6 +95,7 @@ export default class DebugInfoPage implements OnInit {
     private translationService: TranslationService,
     private databaseService: DatabaseService,
     private featureService: FeatureService,
+    private accessibilityService: AccessibilityService,
     @Inject(PLATFORM_ID) public platformId: Object,
     @Inject(APP_ID) public appId: string
   ) {}
@@ -110,9 +116,14 @@ export default class DebugInfoPage implements OnInit {
     }
     this.displayOptions = this.themeService.getUserPreferences();
     this.language = this.translationService.getLanguageToUse();
+    this.accessibilityOptions = this.accessibilityService.getAccessibilityOptions() || {};
 
     // 3) Only gather certain data in browser
     if (isPlatformBrowser(this.platformId)) {
+      this.localStorageKeys = Object.keys(window.localStorage).join('\n');
+      const authTokenKey = Object.keys(window.localStorage).find(key => key.includes('sb-') && key.includes('-auth-token'));
+      this.userInfo = authTokenKey ? (JSON.parse(window.localStorage.getItem(authTokenKey) || '{}'))?.user || {} : {};
+      this.cookies = document.cookie || 'No cookies found';
       this.gatherDomainAndBrowserInfo();
       this.gatherExtendedNavigatorInfo();
       this.fetchUserIpAddress();
@@ -165,7 +176,7 @@ export default class DebugInfoPage implements OnInit {
       this.screenInfo = {
         width: window.screen.width,
         height: window.screen.height,
-        devicePixelRatio: window.devicePixelRatio || 1,
+        devicePixelRatio: window.devicePixelRatio ? parseFloat(window.devicePixelRatio.toFixed(4)) : 1,
       };
 
       // cookies
@@ -184,20 +195,7 @@ export default class DebugInfoPage implements OnInit {
    */
   private async gatherExtendedNavigatorInfo(): Promise<void> {
     try {
-      if ((navigator as any).userAgentData) {
-        const uaData = (navigator as any).userAgentData;
-        if (uaData.getHighEntropyValues) {
-          const highEntropy = await uaData.getHighEntropyValues([
-            'platform',
-            'model',
-            'uaFullVersion',
-          ]);
-          this.userAgentData = JSON.stringify(highEntropy);
-        } else {
-          this.userAgentData = JSON.stringify(uaData);
-        }
-      }
-
+      this.userAgentData = await this.getUserAgentData();
       this.doNotTrack = navigator.doNotTrack;
       this.isOnline = navigator.onLine;
       this.hardwareConcurrency = navigator.hardwareConcurrency || 1;
@@ -208,6 +206,26 @@ export default class DebugInfoPage implements OnInit {
     } catch (err) {
       console.warn('Extended navigator info fetch failed:', err);
     }
+  }
+
+  private async getUserAgentData() {
+    const nav = navigator as any;
+    
+    if (nav.userAgentData) {
+      const { brands, mobile, platform, uaFullVersion } = nav.userAgentData;
+      
+      if (nav.userAgentData.getHighEntropyValues) {
+        const highEntropy = await nav.userAgentData.getHighEntropyValues([
+          'platform',
+          'model',
+          'uaFullVersion',
+        ]);
+        return `Using ${brands.map((b: { brand: any; version: any; }) => `${b.brand} (V${b.version})`).join(' → ')}, on ${highEntropy.platform} (${mobile ? 'mobile' : 'not mobile'}) with UA Version: ${highEntropy.uaFullVersion}`;
+      }
+      return `Using ${brands.map((b: { brand: any; version: any; }) => `${b.brand} (V${b.version})`).join(' → ')}, on ${platform} (${mobile ? 'mobile' : 'not mobile'}) with UA Version: ${uaFullVersion}`;
+    }
+    const { appName, appVersion, platform, userAgent } = navigator;
+    return `${appName} V${appVersion} on ${platform}. User-Agent: ${userAgent}`;
   }
 
   /**
