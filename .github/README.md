@@ -89,7 +89,17 @@ To use Domain Locker, you have two options:
 TODO
 ```
 
-<sup>See the [Self-Hosting Docs](https://domain-locker.com/about/self-hosting) for more info</sup>
+- **Prerequisites**:
+  - Domain Locker is intended to be run in a container, so you'll need Docker [installed](https://docs.docker.com/engine/install/) on your host system.
+- **Containers**:
+  - We have a Docker image published to [`lissy93/domain-locker`](https://hub.docker.com/r/lissy93/domain-locker).
+  - You'll also need a Postgres database, such as the [`postgres:15-alpine`](https://hub.docker.com/_/postgres?tab=tags&name=15-alpine) container.
+- **Environment**:
+  - When starting the container, bind `PORT` to `3000`.
+  - Then specify the Postgres environmental variables: `DL_PG_HOST`, `DL_PG_PORT`, `DL_PG_USER`, `DL_PG_PASSWORD` and `DL_PG_NAME`.
+- **Example**:
+  - Putting it all together, you can use our [`docker-compose.yml`](https://github.com/Lissy93/domain-locker/blob/main/docker-compose.yml) file.
+  - For more details, view the [Self-Hosting Docs](https://domain-locker.com/about/self-hosting)
 
 ---
 
@@ -106,7 +116,7 @@ npm run dev                                           # Start the dev server
 ```
 
 You'll of course need Git and Node installed on your system.<br>
-The example .env file includes the public credentials for our Supabase dev instance, which you're free to use for development purposes. However, note that data will be periodically wiped, and the instance is quite locked down. So you may instead wish to self-host your own Supabase instance or Postgres database, and then update your env vars accordingly.
+The example .env file includes the public credentials for our Supabase dev instance, which you're free to use for development purposes.
 
 #### Tech Stack
 
