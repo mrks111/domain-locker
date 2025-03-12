@@ -147,6 +147,8 @@ export class BreadcrumbsComponent implements OnInit, OnChanges {
       'error': 'exclamation-circle',
       'delete-data': 'trash',
       'demo': 'desktop',
+      'support': 'headphones',
+      'self-hosted-support': 'server',
     };
     const iconName = icons[path];
     if (!iconName) return;

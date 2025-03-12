@@ -269,7 +269,7 @@ export const authenticatedNavLinks = [
     label: 'Statistics',
     icon: 'pi pi-fw pi-sparkles',
     routerLink: '/stats',
-    items: statsLinks,
+    // items: statsLinks,
   },
 ];
 
