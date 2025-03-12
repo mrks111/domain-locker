@@ -13,22 +13,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout demo branch
         uses: actions/checkout@v3
         with:
-          ref: main
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+          ref: demo
 
-      - name: Get tag name
-        id: get_tag
-        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Merge main into demo
+        run: |
+          # Configure Git to commit as your bot
+          git config user.name "liss-bot"
+          git config user.email "alicia-gh-bot@mail.as93.net"
 
-      - name: Create pull request from main to demo
+          # Fetch main and merge it into local demo
+          git fetch origin main
+          git merge origin/main --no-edit
+          # If there's a merge conflict, the job will fail unless you handle it
+
+      - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.BOT_TOKEN }}
           base: demo
-          title: "Update Demo Branch from Main"
           branch: "bot/update-demo"
+          title: "Update Demo Branch from Main"
           body: |
             A new tag **${{ env.TAG }}** was just pushed!
 
