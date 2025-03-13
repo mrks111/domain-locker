@@ -70,6 +70,25 @@ function normalizeDate(val: string | null | undefined): string {
   }
 }
 
+function datesDifferBeyondThreshold(
+  oldDateStr: string | null | undefined,
+  newDateStr: string | null | undefined,
+  thresholdDays = 1
+): boolean {
+  if (!oldDateStr || !newDateStr) return false; // or true, depending on your logic
+
+  const oldDate = new Date(oldDateStr);
+  const newDate = new Date(newDateStr);
+  if (isNaN(oldDate.getTime()) || isNaN(newDate.getTime())) {
+    // If either is invalid, we can treat them as different, or skip
+    return true;
+  }
+
+  const diffMs = Math.abs(newDate.getTime() - oldDate.getTime());
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  return diffDays > thresholdDays;
+}
+
 
 /**
  *  5. Notifier
@@ -84,13 +103,11 @@ async function handleNotifications(pgExecutorEndpoint: string, domainId: string,
     `
     SELECT is_enabled
     FROM notification_preferences
-    WHERE domain_id = $1
-      AND notification_type = $2
+    WHERE domain_id = $1::uuid
+    AND notification_type = $2::text
     `,
     [domainId, changeType]
   );
-
-  console.log('Notification prefs:', prefs);
 
   if (!prefs.length || !prefs[0].is_enabled) {
     return;
@@ -106,12 +123,11 @@ async function handleNotifications(pgExecutorEndpoint: string, domainId: string,
   );
 
   // 3) Potentially call a webhook
-  //    For brevity, we skip real call or just do something like:
   // try {
   //   await fetch(WEBHOOK_URL, { method: 'POST', body: JSON.stringify({ domainId, changeType, message }) });
   // } catch (err) {
   //   // log error but don’t fail
-  // }
+  // }  
 }
 
 /**
@@ -131,7 +147,7 @@ async function recordDomainUpdate(
   await callPgExecutor(pgExecutorEndpoint,
     `
     INSERT INTO domain_updates (domain_id, user_id, change, change_type, old_value, new_value)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    VALUES ($1::uuid, $2, $3, $4, $5, $6)
     `,
     [domainId, userId, changeDescription, changeType, oldValue, newValue]
   );
@@ -163,19 +179,43 @@ async function updateExpiryDate(
       pgExec,
       domainRow.id,
       'Expiry date changed',
-      'expiry_date',
+      'expiry_domain',
       oldExpiryRaw.toString(),
       freshInfo.dates?.expiry_date
     );
     // Update domains table
     await callPgExecutor(pgExec,
-      `UPDATE domains SET expiry_date = $1 WHERE id = $2`,
+      `UPDATE domains SET expiry_date = $1::uuid WHERE id = $2::uuid`,
       [newExpiry, domainRow.id]
     );
     changes.push('Expiry Date');
   }
 }
 
+/**
+ * Upsert or reuse a registrar, returning its ID.
+ */
+async function upsertRegistrar(pgExec: string, registrarName: string): Promise<string> {
+  // If the DB sets user_id via trigger, we only need to supply 'name'
+  const insertQuery = `
+    INSERT INTO registrars (name)
+    VALUES ($1)
+    ON CONFLICT (user_id, name) 
+    DO UPDATE SET name = EXCLUDED.name
+    RETURNING id
+  `;
+
+  const rows = await callPgExecutor<{ id: string }>(pgExec, insertQuery, [registrarName]);
+  if (!rows.length) {
+    throw new Error(`Upsert registrar failed for "${registrarName}"`);
+  }
+  return rows[0].id;
+}
+
+/**
+ * Compare old vs new registrar name. If changed, upsert in 'registrars' table,
+ * then set domain's registrar_id to that ID.
+ */
 async function updateRegistrar(
   pgExec: string,
   domainRow: any,
@@ -184,23 +224,36 @@ async function updateRegistrar(
 ) {
   const oldRegistrar = normalizeStr(domainRow.registrar?.name || '');
   const newRegistrar = normalizeStr(freshInfo.registrar?.name || '');
-  if (newRegistrar && oldRegistrar !== newRegistrar) {
-    await recordDomainUpdate(
-      pgExec,
-      domainRow.id,
-      'Registrar changed',
-      'registrar_change',
-      oldRegistrar,
-      newRegistrar
-    );
-    // You might do a real upsert to registrars table. For brevity, we just attach it to notes:
-    await callPgExecutor(pgExec,
-      `UPDATE domains SET notes = CONCAT(COALESCE(notes, ''), ' | Registrar: ', $1) WHERE id = $2`,
-      [newRegistrar, domainRow.id]
-    );
-    changes.push('Registrar');
+  
+  // if no new name or if they match, do nothing
+  if (!newRegistrar || oldRegistrar === newRegistrar) {
+    return;
   }
+
+  // 1) Upsert the new registrar record
+  const registrarId = await upsertRegistrar(pgExec, freshInfo.registrar.name);
+  
+  // 2) Insert domain_updates
+  await recordDomainUpdate(
+    pgExec,
+    domainRow.id,
+    'Registrar changed',
+    'registrar',
+    oldRegistrar,
+    newRegistrar
+  );
+
+  // 3) Update domain's registrar_id
+  await callPgExecutor(pgExec,
+    `UPDATE domains 
+     SET registrar_id = $1::uuid
+     WHERE id = $2::uuid`,
+    [registrarId, domainRow.id]
+  );
+
+  changes.push('Registrar');
 }
+
 
 async function updateDomainStatuses(
   pgExec: string,
@@ -215,7 +268,7 @@ async function updateDomainStatuses(
     `
     SELECT id, status_code
     FROM domain_statuses
-    WHERE domain_id = $1
+    WHERE domain_id = $1::uuid
     `,
     [domainRow.id]
   );
@@ -231,13 +284,13 @@ async function updateDomainStatuses(
         pgExec,
         domainRow.id,
         `Status added: ${status}`,
-        'domain_status',
+        'status',
         '',
         status as FuckIt
       );
       // Insert into domain_statuses
       await callPgExecutor(pgExec,
-        `INSERT INTO domain_statuses (domain_id, status_code) VALUES ($1, $2)`,
+        `INSERT INTO domain_statuses (domain_id, status_code) VALUES ($1::uuid, $2::text)`,
         [domainRow.id, status]
       );
       changes.push(`Status+:${status}`);
@@ -251,13 +304,13 @@ async function updateDomainStatuses(
         pgExec,
         domainRow.id,
         `Status removed: ${dbStatus}`,
-        'domain_status',
+        'status',
         dbStatus,
         ''
       );
       // Delete from domain_statuses
       await callPgExecutor(pgExec,
-        `DELETE FROM domain_statuses WHERE domain_id = $1 AND status_code ILIKE $2`,
+        `DELETE FROM domain_statuses WHERE domain_id = $1::uuid AND status_code ILIKE $2`,
         [domainRow.id, dbStatus]
       );
       changes.push(`Status-:${dbStatus}`);
@@ -286,7 +339,7 @@ async function updateWhois(
     pgExec,
     `SELECT id, country, state, name, organization, street, city, postal_code
      FROM whois_info
-     WHERE domain_id = $1`,
+     WHERE domain_id = $1::uuid`,
     [domainRow.id]
   );
 
@@ -313,7 +366,7 @@ async function updateWhois(
         pgExec,
         domainRow.id,
         'WHOIS record created',
-        'whois_change',
+        'whois_',
         '',
         JSON.stringify(freshInfo.whois)
       );
@@ -408,83 +461,134 @@ async function updateWhois(
           return fragment;
         })
         .join(', ') }
-      WHERE id = $1
+      WHERE id = $1::uuid
     `;
     await callPgExecutor(pgExec, finalQuery, [whoisRow.id, ...updateParams]);
   }
 }
+/**
+ * Helper to strip time and return only YYYY-MM-DD.
+ * If invalid date, returns ''.
+ */
+function toDateOnly(val: string | number | null | undefined): string {
+  if (!val) return '';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return '';
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`; // e.g. "2025-06-10"
+}
 
+/**
+ * Update or create the SSL certificate row for a domain, ignoring minor time offsets 
+ * by storing only the date in valid_from / valid_to columns.
+ */
 async function updateSSL(
   pgExec: string,
   domainRow: any,
   freshInfo: any,
   changes: string[]
 ) {
-  // We'll assume we only track the "current" SSL cert in ssl_certificates table
-  // and we want to update it or create it if needed.
+  // 1. Fetch the current ssl_certificates row for this domain (if any).
+  //    We cast domain_id to ::uuid to avoid "could not determine data type" errors.
   type SSLRow = {
     id: string;
-    issuer: string;
-    issuer_country: string;
-    subject: string;
-    valid_from: string;
-    valid_to: string;
-    fingerprint: string;
-    key_size: number;
-    signature_algorithm: string;
+    issuer: string | null;
+    issuer_country: string | null;
+    subject: string | null;
+    valid_from: string | null;     // stored as DATE in DB
+    valid_to: string | null;       // stored as DATE in DB
+    fingerprint: string | null;
+    key_size: number | null;
+    signature_algorithm: string | null;
   };
+
   const [sslRow] = await callPgExecutor<SSLRow>(
     pgExec,
     `
-    SELECT id, issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm
-    FROM ssl_certificates
-    WHERE domain_id = $1
-    ORDER BY created_at DESC
-    LIMIT 1
+    SELECT id,
+           issuer,
+           issuer_country,
+           subject,
+           valid_from,
+           valid_to,
+           fingerprint,
+           key_size,
+           signature_algorithm
+      FROM ssl_certificates
+     WHERE domain_id = $1::uuid
+     ORDER BY created_at DESC
+     LIMIT 1
     `,
     [domainRow.id]
   );
 
-  // If no fresh SSL data, do nothing
+  // 2. If there's no fresh SSL info at all, do nothing
   if (!freshInfo.ssl) {
     return;
   }
 
-  // If no existing row, create one
+  // 3. If no existing row, create one
   if (!sslRow) {
     await callPgExecutor(pgExec,
       `
       INSERT INTO ssl_certificates
-        (domain_id, issuer, issuer_country, subject, valid_from, valid_to, fingerprint, key_size, signature_algorithm)
+        (domain_id,
+         issuer,
+         issuer_country,
+         subject,
+         valid_from,
+         valid_to,
+         fingerprint,
+         key_size,
+         signature_algorithm)
       VALUES
-        ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ($1::uuid,
+         $2::text,
+         $3::text,
+         $4::text,
+         $5::date,
+         $6::date,
+         $7::text,
+         $8::int,
+         $9::text)
       `,
       [
         domainRow.id,
         freshInfo.ssl.issuer || null,
         freshInfo.ssl.issuer_country || null,
         freshInfo.ssl.subject || null,
-        normalizeDate(freshInfo.ssl.valid_from),
-        normalizeDate(freshInfo.ssl.valid_to),
+        toDateOnly(freshInfo.ssl.valid_from),  // store just the date
+        toDateOnly(freshInfo.ssl.valid_to),    // store just the date
         freshInfo.ssl.fingerprint || null,
         freshInfo.ssl.key_size || null,
         freshInfo.ssl.signature_algorithm || null,
       ]
     );
+
     changes.push('SSL created');
-    await recordDomainUpdate(pgExec, domainRow.id, 'SSL record created', 'ssl_change', '', JSON.stringify(freshInfo.ssl));
+    await recordDomainUpdate(
+      pgExec,
+      domainRow.id,
+      'SSL record created',
+      'ssl_change',            // or 'expiry_ssl' if you prefer
+      '',
+      JSON.stringify(freshInfo.ssl)
+    );
     return;
   }
 
-  // Otherwise compare each field
+  // 4. Compare each field in the existing row vs fresh data
   interface SSLFieldMap {
-    label: string;
-    dbValue: string | number | null;
-    freshValue: string | number | null;
-    dbCol: string;        // column name in DB
-    changeType: string;   // for domain_updates & notifications
-    isDate?: boolean;     // if we need date normalization
+    label: string;         // human label: "SSL Issuer"
+    dbValue: string|null|number;    // existing DB value
+    freshValue: string|null|number; // new data
+    dbCol: string;         // column in the DB
+    changeType: string;    // domain_updates.change_type
+    isDate?: boolean;      // if we should store as date
   }
+
   const fields: SSLFieldMap[] = [
     {
       label: 'SSL Issuer',
@@ -551,43 +655,62 @@ async function updateSSL(
   const updateParams: any[] = [];
 
   for (const field of fields) {
-    let oldValStr = field.dbValue == null ? '' : String(field.dbValue);
-    let newValStr = field.freshValue == null ? '' : String(field.freshValue);
+    // Convert to strings for easy comparison
+    let oldValStr = (field.dbValue ?? '').toString().trim(); 
+    let newValStr = (field.freshValue ?? '').toString().trim();
+
+    // If date, we store only day in DB. Compare as "YYYY-MM-DD"
     if (field.isDate) {
-      oldValStr = normalizeDate(oldValStr);
-      newValStr = normalizeDate(newValStr);
+      oldValStr = toDateOnly(oldValStr); 
+      newValStr = toDateOnly(newValStr);
     } else {
-      oldValStr = normalizeStr(oldValStr);
-      newValStr = normalizeStr(newValStr);
+      // Normal string or numeric fields – for consistent comparison, 
+      // you might do case-insensitive if you prefer:
+      oldValStr = oldValStr.toLowerCase();
+      newValStr = newValStr.toLowerCase();
     }
 
-    if (oldValStr !== newValStr) {
-      // Record the domain update
+    // If different, record a domain update & add to the update statement
+    if (oldValStr.substring(0, 8) !== newValStr.substring(0, 8)) {
       await recordDomainUpdate(
         pgExec,
         domainRow.id,
         `${field.label} changed`,
         field.changeType,
-        String(field.dbValue || ''),
-        String(field.freshValue || '')
+        (field.dbValue ?? '').toString(),
+        (field.freshValue ?? '').toString()
       );
       changes.push(field.label);
 
       updateNeeded = true;
-      updateSet.push(`${field.dbCol} = $${updateSet.length + 2}`);
-      updateParams.push(field.isDate ? normalizeDate(field.freshValue as string) : field.freshValue);
+      
+      // If it's date, cast param to '::date'
+      if (field.isDate) {
+        updateSet.push(`${field.dbCol} = $${updateSet.length + 2}::date`);
+        updateParams.push(toDateOnly(field.freshValue));
+      } else if (typeof field.dbValue === 'number') {
+        // if the column is actually integer, we could do `::int`
+        updateSet.push(`${field.dbCol} = $${updateSet.length + 2}::int`);
+        updateParams.push(field.freshValue ?? null);
+      } else {
+        // text
+        updateSet.push(`${field.dbCol} = $${updateSet.length + 2}::text`);
+        updateParams.push(field.freshValue ?? null);
+      }
     }
   }
 
+  // 5. If we have any changed fields, do the update
   if (updateNeeded) {
     const updateQuery = `
       UPDATE ssl_certificates
       SET ${updateSet.join(', ')}
-      WHERE id = $1
+      WHERE id = $1::uuid
     `;
     await callPgExecutor(pgExec, updateQuery, [sslRow.id, ...updateParams]);
   }
 }
+
 
 async function updateDNS(
   pgExec: string,
@@ -646,7 +769,7 @@ async function updateDNS(
   for (const fr of freshRecords) {
     const key = `${fr.type.toUpperCase()}|${normalizeStr(fr.value)}`;
     if (!existingSet.has(key) && normalizeStr(fr.value) !== '') {
-      await recordDomainUpdate(pgExec, domainRow.id, `DNS record added (${fr.type})`, 'dns_change', '', fr.value);
+      await recordDomainUpdate(pgExec, domainRow.id, `DNS record added (${fr.type})`, 'dns_', '', fr.value);
       await callPgExecutor(pgExec,
         `INSERT INTO dns_records (domain_id, record_type, record_value)
          VALUES ($1, $2, $3)`,
@@ -660,7 +783,7 @@ async function updateDNS(
   for (const ex of existing) {
     const key = `${ex.record_type.toUpperCase()}|${normalizeStr(ex.record_value)}`;
     if (!freshSet.has(key)) {
-      await recordDomainUpdate(pgExec, domainRow.id, `DNS record removed (${ex.record_type})`, 'dns_change', ex.record_value, '');
+      await recordDomainUpdate(pgExec, domainRow.id, `DNS record removed (${ex.record_type})`, 'dns_', ex.record_value, '');
       await callPgExecutor(pgExec,
         `DELETE FROM dns_records WHERE id = $1`,
         [ex.id]
@@ -716,11 +839,15 @@ async function compareAndUpdateDomain(
  */
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
-  const lang = query['lang'] || 'en'; // example usage, not strictly needed
+  const lang = query['lang'] || 'en';
+
+  if (getEnvVar('DL_ENV_TYPE') !== 'selfHosted') {
+    return { error: 'This endpoint is only available in self-hosted environments.' };
+  }
 
   try {
     // Env vars
-    const baseUrl = getEnvVar('BASE_URL', 'http://localhost:3000');
+    const baseUrl = getEnvVar('BASE_URL', '') || getEnvVar('DL_BASE_URL', 'http://localhost:3000');
     const domainInfoEndpoint = `${baseUrl}/api/domain-info`;
     const pgExecutorEndpoint = `${baseUrl}/api/pg-executer`;
 
