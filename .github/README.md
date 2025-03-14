@@ -56,7 +56,7 @@ You'll never again loose track of your domains, miss an expiration, or forget wh
 
 ### Features
 
-- 📡 Auto-fetched assets: SSL certs, hosts, registrars, IPs, subdomains, DNS, etc
+- 📡 Auto-fetched data: SSL certs, hosts, registrars, IPs, subdomains, DNS, etc
 - 🔬 View detailed metrics and analysis for each domain
 - 📊 Visual analytics and breakdowns and trends across your portfolio
 - 💬 Configurable alerts and webhook notifications
@@ -66,7 +66,6 @@ You'll never again loose track of your domains, miss an expiration, or forget wh
 - 💹 Keep record of purchase prices and renewal costs
 - 🔖 Add categories, and link related resources to domains
 - 🎨 Multi-language support, dark/light/custom themes
-
 
 ### Demo
 
@@ -78,12 +77,15 @@ Try the live demo to [demo.domain-locker.com](https://demo.domain-locker.com) <b
 ## Get Started
 
 To use Domain Locker, you have two options:
+1. 💻 The managed instance, at **[domain-locker.com](http://domain-locker.com/)** _(free)_
+2. 🏗️ Or **[self-hosting](#deployment)** yourself via Docker _(also free, ofc!)_
 
-1. The managed instance, at **[domain-locker.com](http://domain-locker.com/)** _(free)_
-2. Or **[self-hosting](#deployment)** yourself via Docker _(also free, ofc!)_
+### Option 1: Domain-Locker.com
 
+Domain Locker is up and running at **[domain-locker.com](https://domain-locker.com)**<br>
+It's free to use starter plan, no setup required, just sign in & start tracking domains
 
-### Self-Hosting
+### Option 2: Self-Hosting
 
 > [!WARNING]
 > The self-hosted version is in Alpha phase, and still under active development

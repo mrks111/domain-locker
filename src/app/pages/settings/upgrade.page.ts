@@ -24,7 +24,7 @@ export default class UpgradePage implements OnInit {
   currentPlan$: Observable<string | null>;
   public availablePlans = pricingFeatures;
   public billingInfo: any;
-  
+
   public isAnnual = true;
   public billingCycleOptions = [
     { label: 'Annual', value: true, icon: 'pi pi-calendar-plus' },
@@ -33,7 +33,7 @@ export default class UpgradePage implements OnInit {
 
   public status: 'nothing' | 'success' | 'failed' = 'nothing';
 
-  disableBilling$ = this.featureService.isFeatureEnabled('disableBilling');
+  enableBilling$ = this.featureService.isFeatureEnabled('enableBilling');
 
   constructor(
     private billingService: BillingService,
@@ -57,7 +57,7 @@ export default class UpgradePage implements OnInit {
     const sessionId = this.route.snapshot.queryParamMap.get('session_id');
     const success = this.route.snapshot.queryParamMap.get('success');
     const cancelled = this.route.snapshot.queryParamMap.get('canceled');
-    
+
     if (success && sessionId) {
       this.status = 'success';
     } else if (cancelled) {

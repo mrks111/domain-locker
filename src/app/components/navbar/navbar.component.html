@@ -16,12 +16,12 @@
     <p-menubar [model]="items" [styleClass]="'bg-transparent border-none p-0'"></p-menubar>
 
     <p-button
-      *ngIf="!isAuthenticated && !(disabledSignUp$ | async)"
+      *ngIf="!isAuthenticated && (enableSignUp$ | async)"
       routerLink="/login"
       [queryParams]="{ newUser: 'true' }"
-      label="Sign Up" 
+      label="Sign Up"
       size="small"
-      icon="pi pi-face-smile" 
+      icon="pi pi-face-smile"
       class="ml-1"
     />
 

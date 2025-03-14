@@ -223,7 +223,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   /* Check if documentation enabled before navigating to any /about page */
   private async checkIfDocsDisabled(docsPath?: string): Promise<void> {
-    if (await this.featureService.isFeatureEnabledPromise('disableDocs')) {
+    if (!(await this.featureService.isFeatureEnabledPromise('enableDocs'))) {
       // Docs disabled, show warning and navigate back to home
       this.globalMessageService.showWarn(
         'Docs Disabled',
