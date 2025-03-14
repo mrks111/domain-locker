@@ -111,13 +111,13 @@ export default class HomePageComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error fetching domains:', error);
-        this.loading = false;
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: 'Couldn\'t fetch domains from database' 
+        this.errorHandlerService.handleError({
+          message: 'Failed to load domains',
+          error,
+          showToast: true,
+          location: 'HomePageComponent.loadDomains'
         });
+        this.loading = false;
       }
     });
   }

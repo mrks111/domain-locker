@@ -77,13 +77,12 @@ Try the live demo to [demo.domain-locker.com](https://demo.domain-locker.com) <b
 ## Get Started
 
 To use Domain Locker, you have two options:
-1. 💻 The managed instance, at **[domain-locker.com](http://domain-locker.com/)** _(free)_
+1. 💻 The managed instance, at **[domain-locker.com](https://domain-locker.com/)** _(free)_
 2. 🏗️ Or **[self-hosting](#deployment)** yourself via Docker _(also free, ofc!)_
 
 ### Option 1: Domain-Locker.com
-
-Domain Locker is up and running at **[domain-locker.com](https://domain-locker.com)**<br>
-It's free to use starter plan, no setup required, just sign in & start tracking domains
+Head to [our website](https://domain-locker.com), and sign up with Google, GitHub or your email.<br>
+The starter plan is free, and no setup is required. Just sign in, add your domains, and start tracking them.
 
 ### Option 2: Self-Hosting
 
@@ -192,7 +191,9 @@ graph TD;
 
 #### Database
 
-A database is needed to store all your domains and associated info. Domain Locker supports both Supabase and standard Postgres for storing data. The db used will depend on which env vars are set.
+A database is needed to store all your domains and associated info.
+Domain Locker supports both Supabase and standard Postgres for storing data.
+The db used will depend on which env vars are set.
 
 - **Supabase**: Follow the Supabase [self-hosting docs](https://supabase.com/docs/guides/self-hosting), then use [dl-sb-iac](https://github.com/lissy93/dl-sb-iac) to import the schema and configure auth, edge functions, emails, etc.
 	- Then set: `SUPABASE_URL` and `SUPABASE_ANON_KEY` environmental variables

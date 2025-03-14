@@ -5,6 +5,7 @@ import { SupabaseService } from '~/app/services/supabase.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HelpfulLinksComponent } from '~/app/components/misc/helpful-links.component';
+import { ErrorHandlerService } from '~/app/services/error-handler.service';
 
 interface QueryInfo {
   [key: string]: {
@@ -87,6 +88,7 @@ export default class ContactPageComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private supabaseService: SupabaseService,
+    private errorHandler: ErrorHandlerService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -152,14 +154,16 @@ export default class ContactPageComponent implements OnInit {
 
   async onSubmit(): Promise<void> {
     if (this.contactForm.invalid) return;
-
-    const { name, email, queryType, body } = this.contactForm.getRawValue();
-
+    // const { name, email, queryType, body } = this.contactForm.getRawValue();
     try {
-      // Replace with your email sending logic
-      console.log('Submitting form:', { name, email, queryType, body });
+      // TODO: Submit { name, email, queryType, body }
     } catch (error) {
-      console.error('Failed to submit form:', error);
+      this.errorHandler.handleError({
+        error,
+        message: 'Failed to submit form',
+        showToast: true,
+        location: 'contact.page',
+      });
     }
   }
 

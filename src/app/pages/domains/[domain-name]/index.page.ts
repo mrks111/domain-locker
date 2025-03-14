@@ -124,11 +124,11 @@ export default class DomainDetailsPage implements OnInit {
         this.router.navigate(['/domains']);
       },
       error: (err) => {
-        console.error('Error deleting domain:', err);
-        this.globalMessageService.showMessage({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.message || 'Failed to delete domain'
+        this.errorHandler.handleError({
+          error: err,
+          message: 'Failed to delete domain',
+          showToast: true,
+          location: 'Domain',
         });
       }
     });

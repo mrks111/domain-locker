@@ -51,7 +51,7 @@ export default class UpgradePage implements OnInit {
   ngOnInit(): void {
     // Ensure the user's current plan is fetched
     this.billingService.fetchUserPlan().catch((error) =>
-      console.error('Failed to fetch current plan:', error)
+      this.errorHandler.handleError({ error, message: 'Failed to fetch user plan', showToast: true }),
     );
 
     const sessionId = this.route.snapshot.queryParamMap.get('session_id');
