@@ -23,7 +23,6 @@ import { GlobalMessageService } from '~/app/services/messaging.service';
 import { SupabaseService } from '~/app/services/supabase.service';
 import { HitCountingService } from '~/app/services/hit-counting.service';
 import { ErrorHandlerService, GlobalErrorHandler } from '~/app/services/error-handler.service';
-import { TranslationService } from '~/app/services/translation.service';
 import { AccessibilityService } from '~/app/services/accessibility-options.service';
 import { EnvService } from '~/app/services/environment.service';
 import { FeatureService } from '~/app/services/features.service';
