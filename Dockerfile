@@ -15,24 +15,31 @@ COPY . .
 ENV NODE_OPTIONS="--max-old-space-size=8192"
 RUN npm run build
 
-# Stage 2: Create a minimal runtime image
-FROM node:20-alpine AS runner
+
+# Stage 2: Create a minimal runtime image with a non-root user
+FROM node:20-alpine AS user-setup
+RUN addgroup --system appgroup && adduser --system --group appuser
+
+
+# Stage 3: Create a minimal runtime image
+FROM gcr.io/distroless/nodejs20 AS runner
 
 # Set working directory
 WORKDIR /app
 
-# Copy built application from the previous stage
+# Copy built application
 COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/package.json ./
 
-# Install only production dependencies
-RUN npm install --omit=dev --legacy-peer-deps
+# Switch to non-root user
+USER appuser
 
-# Expose application port
+# Expose port
 EXPOSE 3000
 
-# Set environment variables with sensible defaults
-ENV DL_ENV_TYPE="selfHosted"
+# Healthcheck to verify the app is running
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget --spider -q http://localhost:3000/api/health || exit 1
 
-# Start the application
+# Start the app with logging
 CMD ["node", "dist/analog/server/index.mjs"]
