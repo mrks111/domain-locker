@@ -83,17 +83,8 @@ export class ErrorHandlerService {
     const glitchTipDsn = this.envService.getGlitchTipDsn(); // Get DSN from environment service
     const disabledByUser = localStorage.getItem(this.lsKey) !== null; // Check if user disabled error tracking
     const isLocal = isDevMode(); // Check if we are running in development mode
-
-    // If there's any reason to disable GlitchTip, log it and skip initialization
-    if (!glitchTipDsn || disabledByUser || isLocal) {
-      const whyDisabled = [];
-      if (!glitchTipDsn) whyDisabled.push('No GlitchTip DSN Provided');
-      if (disabledByUser) whyDisabled.push('Error tracking disabled by user');
-      if (isLocal) whyDisabled.push('App running in dev mode');
-      console.log(`GlitchTip not enabled due to: ${whyDisabled.join(', ')}`);
-      return false;
-    }
-    return true;
+    // Return false if no DSN, disabled by user, or running locally
+    return (!glitchTipDsn || disabledByUser || isLocal) ? false : true;
   }
 
   /* Initializes GlitchTip error tracking (if not disabled by user or admin) */
