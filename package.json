@@ -10,7 +10,7 @@
   "scripts": {
     "ng": "ng",
     "dev": "ng serve",
-    "start": "node check.js || true && node dist/analog/server/index.mjs",
+    "start": "node dist/analog/server/index.mjs",
     "start:deno": "deno run --unstable --allow-net --allow-read --allow-env .output/server/index.ts",
     "build": "ng build",
     "build:vercel": "NITRO_PRESET=vercel ng build --configuration production",
