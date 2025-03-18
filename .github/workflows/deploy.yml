@@ -90,6 +90,7 @@ jobs:
           else
             echo "Deploying to feature environment"
             npx vercel deploy --prebuilt --yes --target=staging --token $VERCEL_TOKEN
+          fi
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
