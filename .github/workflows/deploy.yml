@@ -83,13 +83,13 @@ jobs:
           BRANCH="${{ steps.determine_branch.outputs.branchName }}"
           if [ "$BRANCH" = "main" ]; then
             echo "Deploying to production"
-            vercel deploy --prebuilt --prod --yes --token $VERCEL_TOKEN
+            npx vercel deploy --prebuilt --prod --yes --token $VERCEL_TOKEN
           elif [ "$BRANCH" = "demo" ]; then
             echo "Deploying to demo"
-            vercel deploy --prebuilt --yes --target=demo --token $VERCEL_TOKEN
+            npx vercel deploy --prebuilt --yes --target=demo --token $VERCEL_TOKEN
           else
             echo "Deploying to feature environment"
-            vercel deploy --prebuilt --yes --target=staging --token $VERCEL_TOKEN
+            npx vercel deploy --prebuilt --yes --target=staging --token $VERCEL_TOKEN
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
