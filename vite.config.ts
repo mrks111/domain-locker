@@ -60,27 +60,12 @@ export default defineConfig( ({ mode }) => {
 
   const env = loadEnv(mode, process.cwd(), '')
   const buildPreset = env['BUILD_PRESET'] || env['NITRO_PRESET'] || 'node';
+  const targetEnv = env['DL_ENV_TYPE'] || 'unspecified/self-hosted';
+  const nitroPreset =  buildPreset || 'node-server';
 
-  const nitroPreset = (() => {
-    switch (buildPreset) {
-      case 'vercel':
-        console.log('🔼 Building for Vercel');
-        return 'vercel';
-      case 'netlify':
-        console.log('🪁 Building for Netlify');
-        return 'netlify';
-      case 'deno':
-      case 'deno_server':
-        console.log('🦕 Building for Deno');
-        return 'deno_server';
-      case 'bun':
-        console.log('🐰 Building for Bun');
-        return 'bun';
-      default:
-        console.log('🚀 Building for Node.js');
-        return 'node-server';
-    }
-  })();
+  // Print info message
+  const emoji: any = {'vercel': '🔼', 'netlify': '🪁', 'deno': '🦕', 'bun': '🐰'};
+  console.log(`${emoji[buildPreset] || '🚀'} Building for ${buildPreset} as ${mode} mode for ${targetEnv} environment`);
 
   return {
     base: '/',
