@@ -51,7 +51,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideAnimations(),
     provideFileRouter(
-      withInMemoryScrolling({ anchorScrolling: 'enabled' }),
+      withInMemoryScrolling({scrollPositionRestoration: 'enabled'}),
       withEnabledBlockingInitialNavigation(),
     ),
     // HTTP Interceptors
