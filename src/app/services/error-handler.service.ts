@@ -147,9 +147,10 @@ export class ErrorHandlerService {
 
   /* Entry point for error handler, takes appropriate logging action */
   public handleError(params: ErrorParams): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const { error, message, location, showToast } = params;
     if (!error && !message) return; // Not much I can do without an error or message!
-    
+
     // Log to console in development mode
     this.printToConsole(message, location, error);
 
