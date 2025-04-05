@@ -3,7 +3,7 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: domain-locker-db
-    restart: unless-stopped
+    restart: always
 
     # Env vars for initial DB
     environment:
