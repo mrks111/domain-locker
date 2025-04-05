@@ -11,8 +11,8 @@ services:
       POSTGRES_USER: ${DL_PG_USER:-postgres}
       POSTGRES_PASSWORD: ${DL_PG_PASSWORD:-changeme2420}
 
-    ports:
-      - "${DL_PG_PORT:-5432}:5432"
+    # ports:
+    #  - "${DL_PG_PORT:-5432}:5432"
 
     # Mount volume and init scripts
     volumes:
